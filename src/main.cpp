@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
     std::ofstream output_file;
     output_file.open(output_file_path);
 
-//    uint16_t window = std::stoi(argv[4]);
+    uint16_t window = std::stoi(argv[4]);
 
     if (not male_vcf_file.is_open()) {
 
@@ -42,21 +42,21 @@ int main(int argc, char *argv[]) {
         exit(0);
     }
 
-//    std::cout << "Getting contig lengths" << std::endl;
-//    std::unordered_map<std::string, uint32_t> contig_lengths;
-//    get_contig_lengths(male_vcf_file, contig_lengths);
+    std::cout << "Getting contig lengths" << std::endl;
+    std::unordered_map<std::string, uint32_t> contig_lengths;
+    get_contig_lengths(male_vcf_file, contig_lengths);
 
-//    std::cout << "Creating data structure" << std::endl;
+    std::cout << "Creating data structure" << std::endl;
 
-//    variants data;
-//    std::vector<Position> temp;
-//    for (auto contig : contig_lengths) {
-//        data[contig.first] = temp;
-//        data[contig.first].resize(contig.second);
-//    }
+    variants data;
+    std::vector<Position> temp;
+    for (auto contig : contig_lengths) {
+        data[contig.first] = temp;
+        data[contig.first].resize(contig.second);
+    }
 
-    std::cout << "Filling data structure" << std::endl;
-    get_variant_data(male_vcf_file, female_vcf_file);
+//    std::cout << "Filling data structure" << std::endl;
+//    get_variant_data(male_vcf_file, data);
 
 //    std::cout << "Generating output" << std::endl;
 //    output_data(data, output_file);

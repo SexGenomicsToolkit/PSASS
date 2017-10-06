@@ -76,4 +76,5 @@ Thumbs.db
 bin/
 build/
 test/
+*.tsv
 
