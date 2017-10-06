@@ -1,6 +1,6 @@
 #include "stats.h"
 
-void calculate_fst(variants& data, std::ofstream& output_file, uint32_t window, std::unordered_map<std::string, uint32_t>& contig_lengths) {
+void calculate_fst(variants& data, std::ofstream& output_file, uint32_t window) {
 
     output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
 
