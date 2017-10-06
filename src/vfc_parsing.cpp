@@ -24,30 +24,115 @@ void get_contig_lengths(std::ifstream& vcf_file, std::unordered_map<std::string,
 
 
 
-void get_variant_data(std::ifstream& file, variants& data) {
+void get_variant_data(std::ifstream& file, variants& data, bool male) {
 
-    std::string line = "";
-    std::string contig = "";
+    std::string line = "", contig = "", base = "";
+    std::vector<std::string> fields, coverages, alleles;
     uint64_t position = 0;
-    size_t start, pos;
+    uint16_t coverage = 0;
 
     while(std::getline(file, line)) {
 
         if (line.substr(0, 1) != "#" and line.size() > 1) {
 
-            start = pos + 1;
-            pos = line.substr(start).find("\t");
-            position = std::stoi(line.substr(start, pos));
+            fields = split(line, "\t");
+            contig = fields[0];
+            position = std::stoi(fields[1]) - 1;
 
-            std::cout << contig << " | " << position << std::endl;
+            // Coverage for each allele
+            coverages = split(split(fields[9], ":")[2], ",");
 
-//            temp = split(fields[9], ":");
-//            coverage = std::stoi(temp[1]);
-//            main_coverage = std::stoi(split(temp[2], ",")[0]);
-//            data[contig][position].male_coverage += male_coverage;
-//            if (male_coverage > 0 and main_coverage / male_coverage < 0.9) {
-//                data[contig][position].male_heterozygote += 1;
-//            }
+            // Reference allele
+            base = fields[3];
+            coverage = std::stoi(coverages[0]);
+
+            if (base.size() == 1) {
+                if (male) {
+                    switch(base[0]){
+                        case 'A':
+                            data[contig][position].male_bases[0] = coverage;
+                            break;
+                        case 'T':
+                            data[contig][position].male_bases[1] = coverage;
+                            break;
+                        case 'G':
+                            data[contig][position].male_bases[2] = coverage;
+                            break;
+                        case 'C':
+                            data[contig][position].male_bases[3] = coverage;
+                            break;
+                        default:
+                            break;
+                    }
+                } else {
+                    switch(base[0]){
+                        case 'A':
+                            data[contig][position].female_bases[0] = coverage;
+                            break;
+                        case 'T':
+                            data[contig][position].female_bases[1] = coverage;
+                            break;
+                        case 'G':
+                            data[contig][position].female_bases[2] = coverage;
+                            break;
+                        case 'C':
+                            data[contig][position].female_bases[3] = coverage;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            // Other alleles
+            alleles = split(fields[4], ",");
+
+            for (uint i=0; i < alleles.size() - 1; ++i) {
+
+                base = alleles[i];
+                coverage = std::stoi(coverages[i+1]);
+
+                if (base.size() == 1) {
+                    if (male) {
+                        switch(base[0]){
+                            case 'A':
+                                data[contig][position].male_bases[0] = coverage;
+                                break;
+                            case 'T':
+                                data[contig][position].male_bases[1] = coverage;
+                                break;
+                            case 'G':
+                                data[contig][position].male_bases[2] = coverage;
+                                break;
+                            case 'C':
+                                data[contig][position].male_bases[3] = coverage;
+                                break;
+                            default:
+                                break;
+                        }
+                    } else {
+                        switch(base[0]){
+                            case 'A':
+                                data[contig][position].female_bases[0] = coverage;
+                                break;
+                            case 'T':
+                                data[contig][position].female_bases[1] = coverage;
+                                break;
+                            case 'G':
+                                data[contig][position].female_bases[2] = coverage;
+                                break;
+                            case 'C':
+                                data[contig][position].female_bases[3] = coverage;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                } else {
+                    if (male) data[contig][position].male_bases[4] = coverage;
+                    else data[contig][position].female_bases[4] = coverage;
+                }
+            }
         }
     }
 }

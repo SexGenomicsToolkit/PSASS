@@ -2,6 +2,7 @@
 #include "variant_data.h"
 #include "vcf_parsing.h"
 #include "output.h"
+#include "stats.h"
 
 
 int main(int argc, char *argv[]) {
@@ -22,7 +23,7 @@ int main(int argc, char *argv[]) {
     std::ofstream output_file;
     output_file.open(output_file_path);
 
-    uint16_t window = std::stoi(argv[4]);
+    uint32_t window = std::stoi(argv[4]);
 
     if (not male_vcf_file.is_open()) {
 
@@ -55,11 +56,14 @@ int main(int argc, char *argv[]) {
         data[contig.first].resize(contig.second);
     }
 
-//    std::cout << "Filling data structure" << std::endl;
-//    get_variant_data(male_vcf_file, data);
+    std::cout << "Getting male bases structure" << std::endl;
+    get_variant_data(male_vcf_file, data, true);
 
-//    std::cout << "Generating output" << std::endl;
-//    output_data(data, output_file);
+    std::cout << "Getting female bases structure" << std::endl;
+    get_variant_data(female_vcf_file, data, false);
+
+    std::cout << "Generating output" << std::endl;
+    calculate_fst(data, output_file, window, contig_lengths);
 
     return 0;
 }
