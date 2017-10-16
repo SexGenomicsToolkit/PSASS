@@ -1,4 +1,4 @@
 #pragma once
 #include "variant_data.h"
 
-void calculate_fst(variants &data, std::ofstream& output_file, uint32_t window);
+void analysis(std::ifstream& input_file, std::ofstream& output_file, uint32_t window, uint16_t min_reads_sex, float range);
