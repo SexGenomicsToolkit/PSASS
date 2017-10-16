@@ -1,12 +1,12 @@
 #include "stats.h"
 
-void analysis(std::ifstream& input_file, std::ofstream& output_file, uint32_t window, uint16_t min_reads_sex, float range) {
+void analysis(std::ifstream& input_file, std::ofstream& fst_output_file, std::ofstream& snps_output_file, uint16_t min_reads_sex, float range, float min_fst) {
 
-    output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\t" << "Snp_M" << "\t" << "Snp_F" << "\t" << "Spec_M" << "\t" << "Spec_F" << "\n";
+    fst_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
+    snps_output_file << "Contig" << "\t" << "Position" << "\t" << "Sex" << "\n";
 
     uint16_t male_bases[6], female_bases[6];
-    float fst_window = 0;
-    uint32_t snp_m = 0, snp_f = 0, spec_m = 0, spec_f = 0;
+    bool snp_m = false, snp_f = false;
 
     // Total reads
     float males_total = 0, females_total = 0;
@@ -23,7 +23,7 @@ void analysis(std::ifstream& input_file, std::ofstream& output_file, uint32_t wi
 
     // Reading optimization parameters
     char buff[2048];
-    uint k=0, field=0, subfield=0, window_count = 0, position = 0;
+    uint k=0, field=0, subfield=0, position = 0;
     std::string contig = "", current_contig = "";
     std::string temp = "";
 
@@ -40,6 +40,9 @@ void analysis(std::ifstream& input_file, std::ofstream& output_file, uint32_t wi
                 break;
 
             case '\n':
+                fst = 0;
+                snp_f = false;
+                snp_m = false;
 
                 female_bases[5] = std::stoi(temp);
 
@@ -92,7 +95,7 @@ void analysis(std::ifstream& input_file, std::ofstream& output_file, uint32_t wi
                             (males_c_freq > 0.5 - range and males_c_freq < 0.5 + range and females_c_freq > 0.9) or
                             (males_i_freq > 0.5 - range and males_i_freq < 0.5 + range and females_i_freq > 0.9)) {
 
-                        ++snp_m;
+                        snp_m = true;
                     }
 
                     if ((females_a_freq > 0.5 - range and females_a_freq < 0.5 + range and males_a_freq > 0.9) or
@@ -101,68 +104,29 @@ void analysis(std::ifstream& input_file, std::ofstream& output_file, uint32_t wi
                              (females_c_freq > 0.5 - range and females_c_freq < 0.5 + range and males_c_freq > 0.9) or
                              (females_i_freq > 0.5 - range and females_i_freq < 0.5 + range and males_i_freq > 0.9)) {
 
-                         ++snp_f;
+                         snp_f = true;
                      }
 
-                    ++window_count;
-                    fst_window += fst;
-
-                } else if (males_total > min_reads_sex and females_total < 2) {
-
-                    ++spec_m;
-
-                } else if (females_total > min_reads_sex and males_total < 2) {
-
-                    ++spec_f;
 
                 }
 
-                if (contig != current_contig and current_contig != "") {
+                if (fst > min_fst) {
 
-                    std::cout << "Finished analyzing contig :  " << current_contig << std::endl;
+                    fst_output_file << contig << "\t" << position << "\t" << fst << "\n";
 
-                    if (window_count > 0) {
+                }
 
-                        output_file << contig << "\t" << uint(position / window) << "\t" << float(fst_window / window_count) << "\t" <<
-                                       snp_m << "\t" << snp_f << "\t" <<
-                                       spec_m << "\t" << spec_m << "\n";
+                if (snp_m and snp_f) {
 
-                    } else {
+                    snps_output_file << contig << "\t" << position << "\t" << "B" << "\n";
 
-                        output_file << contig << "\t" << uint(position / window) << "\t" << 0 << "\t" <<
-                                       0 << "\t" << 0 << "\t" <<
-                                       spec_m << "\t" << spec_m << "\n";
-                    }
+                } else if (snp_m) {
 
+                    snps_output_file << contig << "\t" << position << "\t" << "M" << "\n";
 
-                    fst_window = 0;
-                    snp_f = 0;
-                    snp_m = 0;
-                    spec_f = 0;
-                    spec_m = 0;
-                    window_count = 0;
+                } else if (snp_f) {
 
-                } else if (position % window == 0 and position > 0) {
-
-                    if (window_count > 0) {
-
-                        output_file << contig << "\t" << uint(position / window) << "\t" << float(fst_window / window_count) << "\t" <<
-                                       snp_m << "\t" << snp_f << "\t" <<
-                                       spec_m << "\t" << spec_m << "\n";
-
-                    } else {
-
-                        output_file << contig << "\t" << uint(position / window) << "\t" << 0 << "\t" <<
-                                       0 << "\t" << 0 << "\t" <<
-                                       spec_m << "\t" << spec_m << "\n";
-                    }
-
-                    fst_window = 0;
-                    snp_f = 0;
-                    snp_m = 0;
-                    spec_f = 0;
-                    spec_m = 0;
-                    window_count = 0;
+                    snps_output_file << contig << "\t" << position << "\t" << "F" << "\n";
 
                 }
 
@@ -226,17 +190,24 @@ void analysis(std::ifstream& input_file, std::ofstream& output_file, uint32_t wi
 
     } while (input_file);
 
-    if (window_count > 0) {
+    if (fst > min_fst) {
 
-        output_file << contig << "\t" << uint(position / window) << "\t" << float(fst_window / window_count) << "\t" <<
-                       snp_m << "\t" << snp_f << "\t" <<
-                       spec_m << "\t" << spec_m << "\n";
+        fst_output_file << contig << "\t" << position << "\t" << fst << "\n";
 
-    } else {
+    }
 
-        output_file << contig << "\t" << uint(position / window) << "\t" << 0 << "\t" <<
-                       0 << "\t" << 0 << "\t" <<
-                       spec_m << "\t" << spec_m << "\n";
+    if (snp_m and snp_f) {
+
+        snps_output_file << contig << "\t" << position << "\t" << "B" << "\n";
+
+    } else if (snp_m) {
+
+        snps_output_file << contig << "\t" << position << "\t" << "M" << "\n";
+
+    } else if (snp_f) {
+
+        snps_output_file << contig << "\t" << position << "\t" << "F" << "\n";
+
     }
 
 }
