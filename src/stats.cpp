@@ -110,7 +110,7 @@ void analysis(std::ifstream& input_file, std::ofstream& fst_output_file, std::of
 
                 }
 
-                if (fst > min_fst) {
+                if (fst >= min_fst) {
 
                     fst_output_file << contig << "\t" << position << "\t" << fst << "\n";
 
