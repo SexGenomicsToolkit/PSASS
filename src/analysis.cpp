@@ -168,7 +168,12 @@ void analysis(Parameters& parameters) {
 
                     if ((position - window_range) % parameters.output_resolution == 0 and position >= window_range) {
                         parameters.fst_window_output_file << contig << "\t" << position - window_range << "\t" << fst_window << "\n";
-                        parameters.snps_output_file << contig << "\t" << position - window_range << "\t" << snp_1_window << "\t" << snp_2_window << "\n";
+                        parameters.snps_output_file << contig << "\t" << position - window_range << "\t";
+                        if (parameters.male_pool == 1) {
+                            parameters.snps_output_file << snp_1_window << "\t" << snp_2_window << "\n";
+                        } else {
+                            parameters.snps_output_file << snp_2_window << "\t" << snp_1_window << "\n";
+                        }
                     }
 
                     fst_window = 0;
@@ -182,7 +187,12 @@ void analysis(Parameters& parameters) {
 
                     if ((position - window_range) % parameters.output_resolution == 0 and position >= window_range) {
                         parameters.fst_window_output_file << contig << "\t" << position - window_range << "\t" << fst_window << "\n";
-                        parameters.snps_output_file << contig << "\t" << position - window_range << "\t" << snp_1_window << "\t" << snp_2_window << "\n";
+                        parameters.snps_output_file << contig << "\t" << position - window_range << "\t";
+                        if (parameters.male_pool == 1) {
+                            parameters.snps_output_file << snp_1_window << "\t" << snp_2_window << "\n";
+                        } else {
+                            parameters.snps_output_file << snp_2_window << "\t" << snp_1_window << "\n";
+                        }
                     }
                 }
 
@@ -252,7 +262,12 @@ void analysis(Parameters& parameters) {
 
     if ((position - window_range) % parameters.output_resolution == 0 and position >= window_range) {
         parameters.fst_window_output_file << contig << "\t" << position - window_range << "\t" << fst_window << "\n";
-        parameters.snps_output_file << contig << "\t" << position - window_range << "\t" << snp_1_window << "\t" << snp_2_window << "\n";
+        parameters.snps_output_file << contig << "\t" << position - window_range << "\t";
+        if (parameters.male_pool == 1) {
+            parameters.snps_output_file << snp_1_window << "\t" << snp_2_window << "\n";
+        } else {
+            parameters.snps_output_file << snp_2_window << "\t" << snp_1_window << "\n";
+        }
     }
 
 }

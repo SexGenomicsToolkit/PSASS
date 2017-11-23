@@ -18,6 +18,7 @@ class ArgParser {
                                                                         {"-s", {"0.1", "float", "Range to consider a sex-linked SNP"} },
                                                                         {"-w", {"100000", "int", "Size of the sliding window (in bp)"} },
                                                                         {"-r", {"500", "int", "Output resolution (in bp)"} } ,
+                                                                        {"-m", {"1", "int", "Male pool (1/2)"} } ,
                                                                         {"-i", {"", "string", "Input file (popoolation sync file)"} },
                                                                         {"-o", {"", "string", "Output file"} }
                                                                       };

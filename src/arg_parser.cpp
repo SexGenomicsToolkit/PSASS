@@ -37,6 +37,7 @@ void ArgParser::set_parameters(Parameters& parameters) {
     parameters.output_resolution = std::stoul(this->set_value("-r"));
     parameters.input_file_path = this->set_value("-i");
     parameters.output_file_path = this->set_value("-o");
+    parameters.male_pool = std::stoul(this->set_value("-m"));
 
     parameters.input_file.open(parameters.input_file_path);
 

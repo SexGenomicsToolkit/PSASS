@@ -9,6 +9,7 @@ struct Parameters{
     float snp_range;
     uint window_size;
     uint output_resolution;
+    uint male_pool;
     std::string input_file_path;
     std::string output_file_path;
     std::ifstream input_file;
