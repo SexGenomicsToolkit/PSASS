@@ -5,14 +5,12 @@ CONFIG -= qt
 
 SOURCES += \
     src/main.cpp \
-    src/output.cpp \
-    src/utils.cpp \
-    src/vfc_parsing.cpp \
-    src/stats.cpp
+    src/arg_parser.cpp \
+    src/analysis.cpp \
+    src/utils.cpp
 
 HEADERS += \
-    src/output.h \
-    src/utils.h \
-    src/variant_data.h \
-    src/vcf_parsing.h \
-    src/stats.h
+    src/arg_parser.h \
+    src/parameters.h \
+    src/analysis.h \
+    src/utils.h
