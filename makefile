@@ -30,7 +30,7 @@ $(BUILD)/%.o: $(SRC)/%.cpp
 	$(CC) $(CFLAGS) -c -o $@ $^
 
 clean:
-	rm -rf $(BUILD)/*.o $(BUILD)/*.o
+	rm -rf $(BUILD)/*.o
 	rm -rf $(BIN)/$(TARGET)
 
 init:
