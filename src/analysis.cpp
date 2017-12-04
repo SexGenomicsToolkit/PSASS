@@ -95,21 +95,21 @@ void analysis(Parameters& parameters) {
                     }
 
                     // pool1 specific snps
-                    if ((pool1_a_freq > 0.5 - parameters.snp_range and pool1_a_freq < 0.5 + parameters.snp_range and pool2_a_freq > 1 - parameters.snp_range) or
-                            (pool1_t_freq > 0.5 - parameters.snp_range and pool1_t_freq < 0.5 + parameters.snp_range and pool2_t_freq > 1 - parameters.snp_range) or
-                            (pool1_g_freq > 0.5 - parameters.snp_range and pool1_g_freq < 0.5 + parameters.snp_range and pool2_g_freq > 1 - parameters.snp_range) or
-                            (pool1_c_freq > 0.5 - parameters.snp_range and pool1_c_freq < 0.5 + parameters.snp_range and pool2_c_freq > 1 - parameters.snp_range) or
-                            (pool1_i_freq > 0.5 - parameters.snp_range and pool1_i_freq < 0.5 + parameters.snp_range and pool2_i_freq > 1 - parameters.snp_range)) {
+                    if ((pool1_a_freq > 0.5 - parameters.snp_range and pool1_a_freq < 0.5 + parameters.snp_range and pool2_a_freq > 1 - parameters.fixed_range) or
+                            (pool1_t_freq > 0.5 - parameters.snp_range and pool1_t_freq < 0.5 + parameters.snp_range and pool2_t_freq > 1 - parameters.fixed_range) or
+                            (pool1_g_freq > 0.5 - parameters.snp_range and pool1_g_freq < 0.5 + parameters.snp_range and pool2_g_freq > 1 - parameters.fixed_range) or
+                            (pool1_c_freq > 0.5 - parameters.snp_range and pool1_c_freq < 0.5 + parameters.snp_range and pool2_c_freq > 1 - parameters.fixed_range) or
+                            (pool1_i_freq > 0.5 - parameters.snp_range and pool1_i_freq < 0.5 + parameters.snp_range and pool2_i_freq > 1 - parameters.fixed_range)) {
 
                         snp_1 = true;
                     }
 
                     // pool2 specific snps
-                    if ((pool2_a_freq > 0.5 - parameters.snp_range and pool2_a_freq < 0.5 + parameters.snp_range and pool1_a_freq > 1 - parameters.snp_range) or
-                             (pool2_t_freq > 0.5 - parameters.snp_range and pool2_t_freq < 0.5 + parameters.snp_range and pool1_t_freq > 1 - parameters.snp_range) or
-                             (pool2_g_freq > 0.5 - parameters.snp_range and pool2_g_freq < 0.5 + parameters.snp_range and pool1_g_freq > 1 - parameters.snp_range) or
-                             (pool2_c_freq > 0.5 - parameters.snp_range and pool2_c_freq < 0.5 + parameters.snp_range and pool1_c_freq > 1 - parameters.snp_range) or
-                             (pool2_i_freq > 0.5 - parameters.snp_range and pool2_i_freq < 0.5 + parameters.snp_range and pool1_i_freq > 1 - parameters.snp_range)) {
+                    if ((pool2_a_freq > 0.5 - parameters.snp_range and pool2_a_freq < 0.5 + parameters.snp_range and pool1_a_freq > 1 - parameters.fixed_range) or
+                             (pool2_t_freq > 0.5 - parameters.snp_range and pool2_t_freq < 0.5 + parameters.snp_range and pool1_t_freq > 1 - parameters.fixed_range) or
+                             (pool2_g_freq > 0.5 - parameters.snp_range and pool2_g_freq < 0.5 + parameters.snp_range and pool1_g_freq > 1 - parameters.fixed_range) or
+                             (pool2_c_freq > 0.5 - parameters.snp_range and pool2_c_freq < 0.5 + parameters.snp_range and pool1_c_freq > 1 - parameters.fixed_range) or
+                             (pool2_i_freq > 0.5 - parameters.snp_range and pool2_i_freq < 0.5 + parameters.snp_range and pool1_i_freq > 1 - parameters.fixed_range)) {
 
                          snp_2 = true;
                      }

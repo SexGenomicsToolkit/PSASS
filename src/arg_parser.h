@@ -16,6 +16,7 @@ class ArgParser {
                                                                         {"-d", {"10", "int", "Minimum depth to consider a site"} },
                                                                         {"-f", {"0.2", "float", "FST threshold"} },
                                                                         {"-s", {"0.1", "float", "Range to consider a sex-linked SNP"} },
+                                                                        {"-x", {"0.1", "float", "Range to consider a fixed SNP"} },
                                                                         {"-w", {"100000", "int", "Size of the sliding window (in bp)"} },
                                                                         {"-r", {"500", "int", "Output resolution (in bp)"} } ,
                                                                         {"-m", {"1", "int", "Male pool (1/2)"} } ,

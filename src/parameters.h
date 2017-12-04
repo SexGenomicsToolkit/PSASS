@@ -7,6 +7,7 @@ struct Parameters{
     uint min_depth;
     float min_fst;
     float snp_range;
+    float fixed_range;
     uint window_size;
     uint output_resolution;
     uint male_pool;

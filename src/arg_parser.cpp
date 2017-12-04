@@ -10,13 +10,13 @@ ArgParser::ArgParser(int &argc, char **argv) {
         exit(0);
     }
 
-    if (!this->contains("-i")){
+    if (!this->contains("-i")) {
         std::cout << std::endl << "** Error: no input file specified" << std::endl;
         this->usage();
         exit(0);
     }
 
-    if (!this->contains("-o")){
+    if (!this->contains("-o")) {
         std::cout << std::endl << "** Error: no output file specified" << std::endl;
         this->usage();
         exit(0);
@@ -33,6 +33,8 @@ void ArgParser::set_parameters(Parameters& parameters) {
     if (parameters.min_fst > 0) parameters.min_fst -= 0.000001; //Set value - 0.000001 to avoid doing ">=" later
     parameters.snp_range = std::stof(this->set_value("-s"));
     if (parameters.snp_range < 1) parameters.snp_range += 0.000001; //Set value + 0.000001 to avoid doing "<=" later
+    parameters.fixed_range = std::stof(this->set_value("-x"));
+    if (parameters.fixed_range > 0) parameters.fixed_range -= 0.000001; //Set value - 0.000001 to avoid doing ">=" later
     parameters.window_size = std::stoul(this->set_value("-w"));
     parameters.output_resolution = std::stoul(this->set_value("-r"));
     parameters.input_file_path = this->set_value("-i");
