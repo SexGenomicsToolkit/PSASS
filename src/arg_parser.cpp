@@ -36,10 +36,10 @@ void ArgParser::set_parameters(Parameters& parameters) {
     parameters.fixed_range = std::stof(this->set_value("-x"));
     if (parameters.fixed_range > 0) parameters.fixed_range -= 0.000001; //Set value - 0.000001 to avoid doing ">=" later
     parameters.window_size = std::stoul(this->set_value("-w"));
+    parameters.male_pool = std::stoul(this->set_value("-m"));
     parameters.output_resolution = std::stoul(this->set_value("-r"));
     parameters.input_file_path = this->set_value("-i");
     parameters.output_file_path = this->set_value("-o");
-    parameters.male_pool = std::stoul(this->set_value("-m"));
 
     parameters.input_file.open(parameters.input_file_path);
 
@@ -49,6 +49,7 @@ void ArgParser::set_parameters(Parameters& parameters) {
     }
 
     if (parameters.output_file_path != "") parameters.output_file_path += "_";
+
     std::string snps_output_file_path = parameters.output_file_path + "snps.tsv";
     parameters.snps_output_file.open(snps_output_file_path);
     if (not parameters.snps_output_file.is_open()) {
@@ -70,9 +71,17 @@ void ArgParser::set_parameters(Parameters& parameters) {
         exit(0);
     }
 
+    std::string coverage_output_file_path = parameters.output_file_path + "coverage.tsv";
+    parameters.coverage_output_file.open(coverage_output_file_path);
+    if (not parameters.coverage_output_file.is_open()) {
+        std::cout << "Error: cannot open coverage output file (" << coverage_output_file_path << ")." << std::endl;
+        exit(0);
+    }
+
     parameters.fst_threshold_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
     parameters.fst_window_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
     parameters.snps_output_file << "Contig" << "\t" << "Position" << "\t" << "Males" << "\t" << "Females" << "\n";
+    parameters.coverage_output_file << "Contig" << "\t" << "Position" << "\t" << "Males" << "\t" << "Females" << "\n";
 
 }
 

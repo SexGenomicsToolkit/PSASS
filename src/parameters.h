@@ -17,6 +17,5 @@ struct Parameters{
     std::ofstream snps_output_file;
     std::ofstream fst_threshold_output_file;
     std::ofstream fst_window_output_file;
+    std::ofstream coverage_output_file;
 };
-
-

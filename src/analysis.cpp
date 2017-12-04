@@ -28,7 +28,9 @@ void analysis(Parameters& parameters) {
 
     // Sliding window
     uint fst_window = 0, snp_1_window = 0, snp_2_window = 0;
+    float coverage_1_window = 0, coverage_2_window = 0;
     std::deque<bool> fst_sliding_window, snp_1_sliding_window, snp_2_sliding_window;
+    std::deque<float> coverage_1_sliding_window, coverage_2_sliding_window;
 
     do {
 
@@ -116,7 +118,6 @@ void analysis(Parameters& parameters) {
 
                 } // Could handle other cases, they could be interesting too
 
-
                 // Refactor this part
                 if (fst > parameters.min_fst) {
                     parameters.fst_threshold_output_file << contig << "\t" << position << "\t" << fst << "\n";
@@ -134,7 +135,6 @@ void analysis(Parameters& parameters) {
                     fst_window += (fst > parameters.min_fst);
                     fst_sliding_window.pop_front();
                 }
-
 
                 if (snp_1_sliding_window.size() <= parameters.window_size) {
                     snp_1_sliding_window.push_back(snp_1);
@@ -162,36 +162,73 @@ void analysis(Parameters& parameters) {
                     snp_2_sliding_window.pop_front();
                 }
 
+                if (coverage_1_sliding_window.size() <= parameters.window_size) {
+                    coverage_1_sliding_window.push_back(pool1_total);
+                } else {
+                    coverage_1_sliding_window.resize(0);
+                }
+                if (coverage_1_sliding_window.size() == parameters.window_size) {
+                    coverage_1_window = 1.0*std::accumulate(coverage_1_sliding_window.begin(), coverage_1_sliding_window.end(), 0.0);
+                } else if (coverage_1_sliding_window.size() == parameters.window_size + 1) {
+                    coverage_1_window -= coverage_1_sliding_window[0];
+                    coverage_1_window += pool1_total;
+                    coverage_1_sliding_window.pop_front();
+                }
+
+                if (coverage_2_sliding_window.size() <= parameters.window_size) {
+                    coverage_2_sliding_window.push_back(pool2_total);
+                } else {
+                    coverage_2_sliding_window.resize(0);
+                }
+                if (coverage_2_sliding_window.size() == parameters.window_size) {
+                    coverage_2_window = 1.0*std::accumulate(coverage_2_sliding_window.begin(), coverage_2_sliding_window.end(), 0.0);
+                } else if (coverage_2_sliding_window.size() == parameters.window_size + 1) {
+                    coverage_2_window -= coverage_2_sliding_window[0];
+                    coverage_2_window += pool2_total;
+                    coverage_2_sliding_window.pop_front();
+                }
+
                 if (contig != current_contig and current_contig != "") {
 
                     std::cout << "Finished analyzing contig :  " << current_contig << std::endl;
 
-                    if ((position - window_range) % parameters.output_resolution == 0 and position >= window_range) {
+                    if ((position - window_range) % parameters.output_resolution == 0 and position > parameters.window_size) {
                         parameters.fst_window_output_file << contig << "\t" << position - window_range << "\t" << fst_window << "\n";
                         parameters.snps_output_file << contig << "\t" << position - window_range << "\t";
+                        parameters.coverage_output_file << contig << "\t" << position - window_range << "\t";
                         if (parameters.male_pool == 1) {
                             parameters.snps_output_file << snp_1_window << "\t" << snp_2_window << "\n";
+                            parameters.coverage_output_file << uint(coverage_1_window / parameters.window_size) << "\t" << uint(coverage_2_window / parameters.window_size) << "\n";
                         } else {
                             parameters.snps_output_file << snp_2_window << "\t" << snp_1_window << "\n";
+                            parameters.coverage_output_file << uint(coverage_2_window / parameters.window_size) << "\t" << uint(coverage_1_window / parameters.window_size) << "\n";
                         }
                     }
 
                     fst_window = 0;
                     snp_1_window = 0;
                     snp_2_window = 0;
+                    coverage_1_window = 0;
+                    coverage_2_window = 0;
                     fst_sliding_window.resize(0);
                     snp_1_sliding_window.resize(0);
                     snp_2_sliding_window.resize(0);
+                    coverage_1_sliding_window.resize(0);
+                    coverage_2_sliding_window.resize(0);
 
                 } else {
 
-                    if ((position - window_range) % parameters.output_resolution == 0 and position >= window_range) {
+                    if ((position - window_range) % parameters.output_resolution == 0 and position > parameters.window_size) {
+//                        std::cout << position << "\t" << coverage_2_window << "\t" << coverage_1_window << std::endl;
                         parameters.fst_window_output_file << contig << "\t" << position - window_range << "\t" << fst_window << "\n";
                         parameters.snps_output_file << contig << "\t" << position - window_range << "\t";
+                        parameters.coverage_output_file << contig << "\t" << position - window_range << "\t";
                         if (parameters.male_pool == 1) {
                             parameters.snps_output_file << snp_1_window << "\t" << snp_2_window << "\n";
+                            parameters.coverage_output_file << uint(coverage_1_window / parameters.window_size) << "\t" << uint(coverage_2_window / parameters.window_size) << "\n";
                         } else {
                             parameters.snps_output_file << snp_2_window << "\t" << snp_1_window << "\n";
+                            parameters.coverage_output_file << uint(coverage_2_window / parameters.window_size) << "\t" << uint(coverage_1_window / parameters.window_size) << "\n";
                         }
                     }
                 }
@@ -260,13 +297,16 @@ void analysis(Parameters& parameters) {
         parameters.fst_threshold_output_file << contig << "\t" << position << "\t" << fst << "\n";
     }
 
-    if ((position - window_range) % parameters.output_resolution == 0 and position >= window_range) {
+    if ((position - window_range) % parameters.output_resolution == 0 and position > parameters.window_size) {
         parameters.fst_window_output_file << contig << "\t" << position - window_range << "\t" << fst_window << "\n";
         parameters.snps_output_file << contig << "\t" << position - window_range << "\t";
+        parameters.coverage_output_file << contig << "\t" << position - window_range << "\t";
         if (parameters.male_pool == 1) {
             parameters.snps_output_file << snp_1_window << "\t" << snp_2_window << "\n";
+            parameters.coverage_output_file << uint(coverage_1_window / parameters.window_size) << "\t" << uint(coverage_2_window / parameters.window_size) << "\n";
         } else {
             parameters.snps_output_file << snp_2_window << "\t" << snp_1_window << "\n";
+            parameters.coverage_output_file << uint(coverage_2_window / parameters.window_size) << "\t" << uint(coverage_1_window / parameters.window_size) << "\n";
         }
     }
 
