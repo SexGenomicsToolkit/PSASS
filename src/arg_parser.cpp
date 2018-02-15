@@ -30,11 +30,11 @@ void ArgParser::set_parameters(Parameters& parameters) {
     parameters.min_depth = std::stoul(this->set_value("-d"));
     if (parameters.min_depth > 0) parameters.min_depth -= 1; //Set value - 1 to avoid doing ">=" later
     parameters.min_fst = std::stof(this->set_value("-f"));
-    if (parameters.min_fst > 0) parameters.min_fst -= 0.000001; //Set value - 0.000001 to avoid doing ">=" later
+    if (parameters.min_fst > 0) parameters.min_fst -= 0.001; //Set value - 0.001 to avoid doing ">=" later
     parameters.snp_range = std::stof(this->set_value("-s"));
-    if (parameters.snp_range < 1) parameters.snp_range += 0.000001; //Set value + 0.000001 to avoid doing "<=" later
+    if (parameters.snp_range < 1) parameters.snp_range += 0.001; //Set value + 0.001 to avoid doing "<=" later
     parameters.fixed_range = std::stof(this->set_value("-x"));
-    if (parameters.fixed_range > 0) parameters.fixed_range -= 0.000001; //Set value - 0.000001 to avoid doing ">=" later
+    if (parameters.fixed_range < 1) parameters.fixed_range += 0.001; //Set value - 0.001 to avoid doing ">=" later
     parameters.window_size = std::stoul(this->set_value("-w"));
     parameters.male_pool = std::stoul(this->set_value("-m"));
     parameters.output_resolution = std::stoul(this->set_value("-r"));
