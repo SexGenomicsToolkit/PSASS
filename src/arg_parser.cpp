@@ -81,7 +81,7 @@ void ArgParser::set_parameters(Parameters& parameters) {
     parameters.fst_threshold_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
     parameters.fst_window_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
     parameters.snps_output_file << "Contig" << "\t" << "Position" << "\t" << "Males" << "\t" << "Females" << "\n";
-    parameters.coverage_output_file << "Contig" << "\t" << "Position" << "\t" << "Males" << "\t" << "Females" << "\n";
+    parameters.coverage_output_file << "Contig" << "\t" << "Position" << "\t" << "Males_rel" << "\t" << "Females_rel" << "\t" << "Males_abs" << "\t" << "Females_abs" << "\n";
 
 }
 

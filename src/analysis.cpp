@@ -319,13 +319,18 @@ void analysis(Parameters& parameters) {
             if (parameters.male_pool == 1) {
                 parameters.coverage_output_file << contig.first << "\t" << position.first << "\t" << std::fixed << std::setprecision(2) <<
                                                    float((position.second.first / parameters.window_size)/ average_coverage_1) <<
-                                                   "\t" << float((position.second.second / parameters.window_size) / average_coverage_2) << "\n";
+                                                   "\t" << float((position.second.second / parameters.window_size) / average_coverage_2) <<
+                                                   "\t" << float(position.second.first / parameters.window_size) <<
+                                                   "\t" << float(position.second.second / parameters.window_size) <<
+                                                   "\n";
             } else {
                 parameters.coverage_output_file << contig.first << "\t" << position.first << "\t" << std::fixed << std::setprecision(2) <<
-                                                   float((position.second.first / parameters.window_size) / average_coverage_2) <<
-                                                   "\t" << float((position.second.second / parameters.window_size) / average_coverage_1) << "\n";
+                                                   float((position.second.second / parameters.window_size) / average_coverage_2) <<
+                                                   "\t" << float((position.second.first / parameters.window_size) / average_coverage_1) <<
+                                                   "\t" << float(position.second.second / parameters.window_size) <<
+                                                   "\t" << float(position.second.first / parameters.window_size) <<
+                                                   "\n";
             }
-
         }
     }
 }
