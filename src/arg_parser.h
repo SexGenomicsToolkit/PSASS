@@ -21,7 +21,8 @@ class ArgParser {
                                                                         {"-r", {"500", "int", "Output resolution (in bp)"} } ,
                                                                         {"-m", {"1", "int", "Male pool (1/2)"} } ,
                                                                         {"-i", {"", "string", "Input file (popoolation sync file)"} },
-                                                                        {"-o", {"", "string", "Output file"} }
+                                                                        {"-o", {"", "string", "Output file"} },
+                                                                        {"-c", {"1", "bool", "Output coverage"}}
                                                                       };
 
         ArgParser(int &argc, char **argv);

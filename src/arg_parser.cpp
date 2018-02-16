@@ -40,6 +40,7 @@ void ArgParser::set_parameters(Parameters& parameters) {
     parameters.output_resolution = std::stoul(this->set_value("-r"));
     parameters.input_file_path = this->set_value("-i");
     parameters.output_file_path = this->set_value("-o");
+    parameters.output_coverage = this->set_value("-c") != "0";
 
     parameters.input_file.open(parameters.input_file_path);
 
@@ -55,6 +56,8 @@ void ArgParser::set_parameters(Parameters& parameters) {
     if (not parameters.snps_output_file.is_open()) {
         std::cout << "Error: cannot open SNPs output file (" << snps_output_file_path << ")." << std::endl;
         exit(0);
+    } else {
+        parameters.snps_output_file << "Contig" << "\t" << "Position" << "\t" << "Males" << "\t" << "Females" << "\n";
     }
 
     std::string fst_threshold_output_file_path = parameters.output_file_path + "fst_threshold.tsv";
@@ -62,6 +65,8 @@ void ArgParser::set_parameters(Parameters& parameters) {
     if (not parameters.fst_threshold_output_file.is_open()) {
         std::cout << "Error: cannot open Fst threshold output file (" << fst_threshold_output_file_path << ")." << std::endl;
         exit(0);
+    } else {
+        parameters.fst_threshold_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
     }
 
     std::string fst_window_output_file_path = parameters.output_file_path + "fst_window.tsv";
@@ -69,20 +74,21 @@ void ArgParser::set_parameters(Parameters& parameters) {
     if (not parameters.fst_window_output_file.is_open()) {
         std::cout << "Error: cannot open Fst window output file (" << fst_window_output_file_path << ")." << std::endl;
         exit(0);
+    } else {
+        parameters.fst_window_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
     }
 
-    std::string coverage_output_file_path = parameters.output_file_path + "coverage.tsv";
-    parameters.coverage_output_file.open(coverage_output_file_path);
-    if (not parameters.coverage_output_file.is_open()) {
-        std::cout << "Error: cannot open coverage output file (" << coverage_output_file_path << ")." << std::endl;
-        exit(0);
+    if (parameters.output_coverage) {
+        std::string coverage_output_file_path = parameters.output_file_path + "coverage.tsv";
+        parameters.coverage_output_file.open(coverage_output_file_path);
+        if (not parameters.coverage_output_file.is_open()) {
+            std::cout << "Error: cannot open coverage output file (" << coverage_output_file_path << ")." << std::endl;
+            exit(0);
+        } else {
+            parameters.coverage_output_file << "Contig" << "\t" << "Position" << "\t" << "Males_rel" << "\t" << "Females_rel" << "\t" << "Males_abs" << "\t" << "Females_abs" << "\n";
+        }
+
     }
-
-    parameters.fst_threshold_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
-    parameters.fst_window_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
-    parameters.snps_output_file << "Contig" << "\t" << "Position" << "\t" << "Males" << "\t" << "Females" << "\n";
-    parameters.coverage_output_file << "Contig" << "\t" << "Position" << "\t" << "Males_rel" << "\t" << "Females_rel" << "\t" << "Males_abs" << "\t" << "Females_abs" << "\n";
-
 }
 
 

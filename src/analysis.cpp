@@ -28,12 +28,14 @@ void analysis(Parameters& parameters) {
 
     // Sliding window
     uint fst_window = 0, snp_1_window = 0, snp_2_window = 0;
-    float coverage_1_window = 0, coverage_2_window = 0;
     std::deque<bool> fst_sliding_window, snp_1_sliding_window, snp_2_sliding_window;
-    std::deque<float> coverage_1_sliding_window, coverage_2_sliding_window;
 
+    float coverage_1_window = 0, coverage_2_window = 0;
+    std::deque<float> coverage_1_sliding_window, coverage_2_sliding_window;
+    uint64_t total_coverage_1 = 0, total_coverage_2 = 0;
     table coverage;
-    uint64_t total_bases = 0, total_coverage_1 = 0, total_coverage_2 = 0;
+
+    uint64_t total_bases = 0;
 
     do {
 
@@ -165,35 +167,38 @@ void analysis(Parameters& parameters) {
                     snp_2_sliding_window.pop_front();
                 }
 
-                if (coverage_1_sliding_window.size() <= parameters.window_size) {
-                    coverage_1_sliding_window.push_back(pool1_total);
-                } else {
-                    coverage_1_sliding_window.resize(0);
-                }
-                if (coverage_1_sliding_window.size() == parameters.window_size) {
-                    coverage_1_window = 1.0*std::accumulate(coverage_1_sliding_window.begin(), coverage_1_sliding_window.end(), 0.0);
-                } else if (coverage_1_sliding_window.size() == parameters.window_size + 1) {
-                    coverage_1_window -= coverage_1_sliding_window[0];
-                    coverage_1_window += pool1_total;
-                    coverage_1_sliding_window.pop_front();
-                }
+                if (parameters.output_coverage) {
 
-                if (coverage_2_sliding_window.size() <= parameters.window_size) {
-                    coverage_2_sliding_window.push_back(pool2_total);
-                } else {
-                    coverage_2_sliding_window.resize(0);
-                }
-                if (coverage_2_sliding_window.size() == parameters.window_size) {
-                    coverage_2_window = 1.0*std::accumulate(coverage_2_sliding_window.begin(), coverage_2_sliding_window.end(), 0.0);
-                } else if (coverage_2_sliding_window.size() == parameters.window_size + 1) {
-                    coverage_2_window -= coverage_2_sliding_window[0];
-                    coverage_2_window += pool2_total;
-                    coverage_2_sliding_window.pop_front();
+                    if (coverage_1_sliding_window.size() <= parameters.window_size) {
+                        coverage_1_sliding_window.push_back(pool1_total);
+                    } else {
+                        coverage_1_sliding_window.resize(0);
+                    }
+                    if (coverage_1_sliding_window.size() == parameters.window_size) {
+                        coverage_1_window = 1.0*std::accumulate(coverage_1_sliding_window.begin(), coverage_1_sliding_window.end(), 0.0);
+                    } else if (coverage_1_sliding_window.size() == parameters.window_size + 1) {
+                        coverage_1_window -= coverage_1_sliding_window[0];
+                        coverage_1_window += pool1_total;
+                        coverage_1_sliding_window.pop_front();
+                    }
+
+                    if (coverage_2_sliding_window.size() <= parameters.window_size) {
+                        coverage_2_sliding_window.push_back(pool2_total);
+                    } else {
+                        coverage_2_sliding_window.resize(0);
+                    }
+                    if (coverage_2_sliding_window.size() == parameters.window_size) {
+                        coverage_2_window = 1.0*std::accumulate(coverage_2_sliding_window.begin(), coverage_2_sliding_window.end(), 0.0);
+                    } else if (coverage_2_sliding_window.size() == parameters.window_size + 1) {
+                        coverage_2_window -= coverage_2_sliding_window[0];
+                        coverage_2_window += pool2_total;
+                        coverage_2_sliding_window.pop_front();
+                    }
+                    total_coverage_1 += uint(pool1_total);
+                    total_coverage_2 += uint(pool2_total);
                 }
 
                 ++total_bases;
-                total_coverage_1 += uint(pool1_total);
-                total_coverage_2 += uint(pool2_total);
 
                 if (contig != current_contig and current_contig != "") {
 
@@ -204,23 +209,26 @@ void analysis(Parameters& parameters) {
                         parameters.snps_output_file << contig << "\t" << position - window_range << "\t";
                         if (parameters.male_pool == 1) {
                             parameters.snps_output_file << snp_1_window << "\t" << snp_2_window << "\n";
-                            coverage[contig][position] = std::pair<float, float>(coverage_1_window, coverage_2_window);
+                            if (parameters.output_coverage) coverage[contig][position] = std::pair<float, float>(coverage_1_window, coverage_2_window);
                         } else {
                             parameters.snps_output_file << snp_2_window << "\t" << snp_1_window << "\n";
-                            coverage[contig][position] = std::pair<float, float>(coverage_2_window, coverage_1_window);
+                            if (parameters.output_coverage) coverage[contig][position] = std::pair<float, float>(coverage_2_window, coverage_1_window);
                         }
                     }
 
                     fst_window = 0;
                     snp_1_window = 0;
                     snp_2_window = 0;
-                    coverage_1_window = 0;
-                    coverage_2_window = 0;
                     fst_sliding_window.resize(0);
                     snp_1_sliding_window.resize(0);
                     snp_2_sliding_window.resize(0);
-                    coverage_1_sliding_window.resize(0);
-                    coverage_2_sliding_window.resize(0);
+
+                    if (parameters.output_coverage) {
+                        coverage_2_window = 0;
+                        coverage_1_window = 0;
+                        coverage_1_sliding_window.resize(0);
+                        coverage_2_sliding_window.resize(0);
+                    }
 
                 } else {
 
@@ -229,10 +237,10 @@ void analysis(Parameters& parameters) {
                         parameters.snps_output_file << contig << "\t" << position - window_range << "\t";
                         if (parameters.male_pool == 1) {
                             parameters.snps_output_file << snp_1_window << "\t" << snp_2_window << "\n";
-                            coverage[contig][position] = std::pair<float, float>(coverage_1_window, coverage_2_window);
+                            if (parameters.output_coverage) coverage[contig][position] = std::pair<float, float>(coverage_1_window, coverage_2_window);
                         } else {
                             parameters.snps_output_file << snp_2_window << "\t" << snp_1_window << "\n";
-                            coverage[contig][position] = std::pair<float, float>(coverage_2_window, coverage_1_window);
+                            if (parameters.output_coverage) coverage[contig][position] = std::pair<float, float>(coverage_2_window, coverage_1_window);
                         }
                     }
                 }
@@ -311,25 +319,27 @@ void analysis(Parameters& parameters) {
         }
     }
 
-    float average_coverage_1 = float(total_coverage_1) / float(total_bases);
-    float average_coverage_2 = float(total_coverage_2) / float(total_bases);
+    if (parameters.output_coverage) {
+        float average_coverage_1 = float(total_coverage_1) / float(total_bases);
+        float average_coverage_2 = float(total_coverage_2) / float(total_bases);
 
-    for (auto const& contig : coverage) {
-        for (auto const& position: contig.second) {
-            if (parameters.male_pool == 1) {
-                parameters.coverage_output_file << contig.first << "\t" << position.first << "\t" << std::fixed << std::setprecision(2) <<
-                                                   float((position.second.first / parameters.window_size)/ average_coverage_1) <<
-                                                   "\t" << float((position.second.second / parameters.window_size) / average_coverage_2) <<
-                                                   "\t" << float(position.second.first / parameters.window_size) <<
-                                                   "\t" << float(position.second.second / parameters.window_size) <<
-                                                   "\n";
-            } else {
-                parameters.coverage_output_file << contig.first << "\t" << position.first << "\t" << std::fixed << std::setprecision(2) <<
-                                                   float((position.second.second / parameters.window_size) / average_coverage_2) <<
-                                                   "\t" << float((position.second.first / parameters.window_size) / average_coverage_1) <<
-                                                   "\t" << float(position.second.second / parameters.window_size) <<
-                                                   "\t" << float(position.second.first / parameters.window_size) <<
-                                                   "\n";
+        for (auto const& contig : coverage) {
+            for (auto const& position: contig.second) {
+                if (parameters.male_pool == 1) {
+                    parameters.coverage_output_file << contig.first << "\t" << position.first << "\t" << std::fixed << std::setprecision(2) <<
+                                                       float((position.second.first / parameters.window_size)/ average_coverage_1) <<
+                                                       "\t" << float((position.second.second / parameters.window_size) / average_coverage_2) <<
+                                                       "\t" << float(position.second.first / parameters.window_size) <<
+                                                       "\t" << float(position.second.second / parameters.window_size) <<
+                                                       "\n";
+                } else {
+                    parameters.coverage_output_file << contig.first << "\t" << position.first << "\t" << std::fixed << std::setprecision(2) <<
+                                                       float((position.second.second / parameters.window_size) / average_coverage_2) <<
+                                                       "\t" << float((position.second.first / parameters.window_size) / average_coverage_1) <<
+                                                       "\t" << float(position.second.second / parameters.window_size) <<
+                                                       "\t" << float(position.second.first / parameters.window_size) <<
+                                                       "\n";
+                }
             }
         }
     }
