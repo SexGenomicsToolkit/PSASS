@@ -6,6 +6,7 @@
 #include <iostream>
 #include <deque>
 #include <algorithm>
+#include <numeric>
 #include <map>
 #include <iomanip>
 #include "parameters.h"
