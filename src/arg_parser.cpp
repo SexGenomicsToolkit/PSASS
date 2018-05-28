@@ -41,6 +41,7 @@ void ArgParser::set_parameters(Parameters& parameters) {
     parameters.input_file_path = this->set_value("-i");
     parameters.output_file_path = this->set_value("-o");
     parameters.output_coverage = this->set_value("-c") != "0";
+    parameters.output_snps_pos = this->set_value("-p") != "0";
 
     parameters.input_file.open(parameters.input_file_path);
 
@@ -89,6 +90,18 @@ void ArgParser::set_parameters(Parameters& parameters) {
         }
 
     }
+
+    if (parameters.output_snps_pos) {
+        std::string snps_pos_output_file_path = parameters.output_file_path + "snps_pos.tsv";
+        parameters.snps_pos_output_file.open(snps_pos_output_file_path);
+        if (not parameters.snps_pos_output_file.is_open()) {
+            std::cout << "Error: cannot open snps pos output file (" << snps_pos_output_file_path << ")." << std::endl;
+            exit(0);
+        } else {
+            parameters.snps_pos_output_file << "Contig" << "\t" << "Position" << "\t" << "Sex" << "\n";
+        }
+
+    }
 }
 
 
@@ -129,6 +142,7 @@ void ArgParser::usage() {
     for (auto o: this->options) std::cout << "\t" << o.first << " <" << o.second[1] << ">  " << o.second[2] << "  [" << o.second[0] << "]" << std::endl;
     std::cout << std::endl;
 }
+
 
 
 void ArgParser::print_parameters() {

@@ -198,6 +198,37 @@ void analysis(Parameters& parameters) {
                     total_coverage_2 += uint(pool2_total);
                 }
 
+                if (parameters.output_snps_pos) {
+
+                    if (snp_1 and snp_2) std::cout << "SNP in both sexes !" << std::endl;
+
+                    if (snp_1) {
+
+                        if (parameters.male_pool == 1) {
+
+                            parameters.snps_pos_output_file << contig << "\t" << position << "\t" << "M" << "\n";
+
+                        } else {
+
+                            parameters.snps_pos_output_file << contig << "\t" << position << "\t" << "F" << "\n";
+
+                        }
+
+                    } else if (snp_2) {
+
+                        if (parameters.male_pool == 1) {
+
+                            parameters.snps_pos_output_file << contig << "\t" << position << "\t" << "F" << "\n";
+
+                        } else {
+
+                            parameters.snps_pos_output_file << contig << "\t" << position << "\t" << "M" << "\n";
+
+                        }
+
+                    }
+                }
+
                 ++total_bases;
 
                 if (contig != current_contig and current_contig != "") {
