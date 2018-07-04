@@ -1,4 +1,5 @@
 #include "analysis.h"
+#include <numeric>
 
 void analysis(Parameters& parameters) {
 
