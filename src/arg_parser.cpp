@@ -52,7 +52,7 @@ void ArgParser::set_parameters(Parameters& parameters) {
 
     if (parameters.output_file_path != "") parameters.output_file_path += "_";
 
-    std::string snps_output_file_path = parameters.output_file_path + "snps.tsv";
+    std::string snps_output_file_path = parameters.output_file_path + "window_snp.tsv";
     parameters.snps_output_file.open(snps_output_file_path);
     if (not parameters.snps_output_file.is_open()) {
         std::cout << "Error: cannot open SNPs output file (" << snps_output_file_path << ")." << std::endl;
@@ -61,7 +61,7 @@ void ArgParser::set_parameters(Parameters& parameters) {
         parameters.snps_output_file << "Contig" << "\t" << "Position" << "\t" << "Males" << "\t" << "Females" << "\n";
     }
 
-    std::string fst_threshold_output_file_path = parameters.output_file_path + "fst_threshold.tsv";
+    std::string fst_threshold_output_file_path = parameters.output_file_path + "position_fst.tsv";
     parameters.fst_threshold_output_file.open(fst_threshold_output_file_path);
     if (not parameters.fst_threshold_output_file.is_open()) {
         std::cout << "Error: cannot open Fst threshold output file (" << fst_threshold_output_file_path << ")." << std::endl;
@@ -70,7 +70,7 @@ void ArgParser::set_parameters(Parameters& parameters) {
         parameters.fst_threshold_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
     }
 
-    std::string fst_window_output_file_path = parameters.output_file_path + "fst_window.tsv";
+    std::string fst_window_output_file_path = parameters.output_file_path + "window_fst.tsv";
     parameters.fst_window_output_file.open(fst_window_output_file_path);
     if (not parameters.fst_window_output_file.is_open()) {
         std::cout << "Error: cannot open Fst window output file (" << fst_window_output_file_path << ")." << std::endl;
@@ -92,13 +92,13 @@ void ArgParser::set_parameters(Parameters& parameters) {
     }
 
     if (parameters.output_snps_pos) {
-        std::string snps_pos_output_file_path = parameters.output_file_path + "snps_pos.tsv";
+        std::string snps_pos_output_file_path = parameters.output_file_path + "position_snp.tsv";
         parameters.snps_pos_output_file.open(snps_pos_output_file_path);
         if (not parameters.snps_pos_output_file.is_open()) {
             std::cout << "Error: cannot open snps pos output file (" << snps_pos_output_file_path << ")." << std::endl;
             exit(0);
         } else {
-            parameters.snps_pos_output_file << "Contig" << "\t" << "Position" << "\t" << "Sex" << "\n";
+            parameters.snps_pos_output_file << "Contig" << "\t" << "Position" << "\t" << "Sex" << "\t" << "M_freq" << "\t" << "F_freq" << "\n";
         }
 
     }
