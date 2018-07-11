@@ -214,11 +214,25 @@ void analysis(Parameters& parameters) {
 
                         if (parameters.male_pool == 1) {
 
-                            parameters.snps_pos_output_file << contig << "\t" << position << "\t" << "M" << "\n";
+                            parameters.snps_pos_output_file << std::fixed << std::setprecision(2)
+                                                            << contig << "\t" << position << "\t" << "M" << "\t"
+                                                            << pool1_a_freq << "\t" << pool1_t_freq << "\t"
+                                                            << pool1_g_freq << "\t" << pool1_c_freq << "\t"
+                                                            << pool1_i_freq << "\t"
+                                                            << pool2_a_freq << "\t" << pool2_t_freq << "\t"
+                                                            << pool2_g_freq << "\t" << pool2_c_freq << "\t"
+                                                            << pool2_i_freq << "\n";
 
                         } else {
 
-                            parameters.snps_pos_output_file << contig << "\t" << position << "\t" << "F" << "\n";
+                            parameters.snps_pos_output_file << std::fixed << std::setprecision(2)
+                                                            << contig << "\t" << position << "\t" << "F" << "\t"
+                                                            << pool2_a_freq << "\t" << pool2_t_freq << "\t"
+                                                            << pool2_g_freq << "\t" << pool2_c_freq << "\t"
+                                                            << pool2_i_freq << "\n"
+                                                            << pool1_a_freq << "\t" << pool1_t_freq << "\t"
+                                                            << pool1_g_freq << "\t" << pool1_c_freq << "\t"
+                                                            << pool1_i_freq << "\n";
 
                         }
 
@@ -226,11 +240,25 @@ void analysis(Parameters& parameters) {
 
                         if (parameters.male_pool == 1) {
 
-                            parameters.snps_pos_output_file << contig << "\t" << position << "\t" << "F" << "\n";
+                            parameters.snps_pos_output_file << std::fixed << std::setprecision(2)
+                                                            << contig << "\t" << position << "\t" << "F" << "\t"
+                                                            << pool1_a_freq << "\t" << pool1_t_freq << "\t"
+                                                            << pool1_g_freq << "\t" << pool1_c_freq << "\t"
+                                                            << pool1_i_freq << "\t"
+                                                            << pool2_a_freq << "\t" << pool2_t_freq << "\t"
+                                                            << pool2_g_freq << "\t" << pool2_c_freq << "\t"
+                                                            << pool2_i_freq << "\n";
 
                         } else {
 
-                            parameters.snps_pos_output_file << contig << "\t" << position << "\t" << "M" << "\n";
+                            parameters.snps_pos_output_file << std::fixed << std::setprecision(2)
+                                                            << contig << "\t" << position << "\t" << "M" << "\t"
+                                                            << pool2_a_freq << "\t" << pool2_t_freq << "\t"
+                                                            << pool2_g_freq << "\t" << pool2_c_freq << "\t"
+                                                            << pool2_i_freq << "\n"
+                                                            << pool1_a_freq << "\t" << pool1_t_freq << "\t"
+                                                            << pool1_g_freq << "\t" << pool1_c_freq << "\t"
+                                                            << pool1_i_freq << "\n";
 
                         }
 

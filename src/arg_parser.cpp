@@ -98,7 +98,9 @@ void ArgParser::set_parameters(Parameters& parameters) {
             std::cout << "Error: cannot open snps pos output file (" << snps_pos_output_file_path << ")." << std::endl;
             exit(0);
         } else {
-            parameters.snps_pos_output_file << "Contig" << "\t" << "Position" << "\t" << "Sex" << "\t" << "M_freq" << "\t" << "F_freq" << "\n";
+            parameters.snps_pos_output_file << "Contig" << "\t" << "Position" << "\t" << "Sex" << "\t" <<
+                                               "M_A" << "\t" << "M_T" << "\t" << "M_G" << "\t" << "M_C" << "\t" << "M_I" << "\t" <<
+                                               "F_A" << "\t" << "F_T" << "\t" << "F_G" << "\t" << "F_C" << "\t" << "F_I" << "\n";
         }
 
     }
