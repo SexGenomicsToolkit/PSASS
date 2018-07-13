@@ -7,7 +7,6 @@ SOURCES += \
     src/main.cpp \
     src/arg_parser.cpp \
     src/analysis.cpp \
-    src/utils.cpp \
     src/gff_file.cpp
 
 HEADERS += \

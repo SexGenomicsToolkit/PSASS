@@ -101,6 +101,7 @@ void ArgParser::set_parameters(Parameters& parameters) {
     }
     write_log("OK", parameters.log_file, false, true);
 
+
     // Open GFF file
     if (this->contains("--gff-file")) {
         write_log("Opening gff file: ", parameters.log_file, true, false);
@@ -111,8 +112,9 @@ void ArgParser::set_parameters(Parameters& parameters) {
             write_log("cannot open input file (" + parameters.gff_file_path + ").", parameters.log_file, false, true);
             exit(1);
         }
+        write_log("OK", parameters.log_file, false, true);
     }
-    write_log("OK", parameters.log_file, false, true);
+
 
     // Create base output file path
     if (parameters.output_prefix != "") parameters.output_prefix += "_";
@@ -128,11 +130,10 @@ void ArgParser::set_parameters(Parameters& parameters) {
             std::cout << "Error: cannot open Fst threshold output file (" << fst_position_output_file_path << ")." << std::endl;
             write_log("cannot open input file (" + fst_position_output_file_path + ").", parameters.log_file, false, true);
             exit(1);
-        } else {
-            parameters.fst_pos_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
         }
+        parameters.fst_pos_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
+        write_log("OK", parameters.log_file, false, true);
     }
-    write_log("OK", parameters.log_file, false, true);
 
     // Window Fst output file
     if (parameters.output_fst_win) {
@@ -143,11 +144,10 @@ void ArgParser::set_parameters(Parameters& parameters) {
             std::cout << "Error: cannot open Fst window output file (" << fst_win_output_file_path << ")." << std::endl;
             write_log("cannot open input file (" + fst_win_output_file_path + ").", parameters.log_file, false, true);
             exit(1);
-        } else {
-            parameters.fst_win_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
         }
+        parameters.fst_win_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
+        write_log("OK", parameters.log_file, false, true);
     }
-    write_log("OK", parameters.log_file, false, true);
 
     // Position SNPs output file
     if (parameters.output_snps_pos) {
@@ -158,13 +158,12 @@ void ArgParser::set_parameters(Parameters& parameters) {
             std::cout << "Error: cannot open snps pos output file (" << snps_pos_output_file_path << ")." << std::endl;
             write_log("cannot open input file (" + snps_pos_output_file_path + ").", parameters.log_file, false, true);
             exit(1);
-        } else {
-            parameters.snps_pos_output_file << "Contig" << "\t" << "Position" << "\t" << "Sex" << "\t" <<
-                                               "M_A" << "\t" << "M_T" << "\t" << "M_G" << "\t" << "M_C" << "\t" << "M_I" << "\t" <<
-                                               "F_A" << "\t" << "F_T" << "\t" << "F_G" << "\t" << "F_C" << "\t" << "F_I" << "\n";
         }
+        parameters.snps_pos_output_file << "Contig" << "\t" << "Position" << "\t" << "Sex" << "\t" <<
+                                           "M_A" << "\t" << "M_T" << "\t" << "M_G" << "\t" << "M_C" << "\t" << "M_I" << "\t" <<
+                                           "F_A" << "\t" << "F_T" << "\t" << "F_G" << "\t" << "F_C" << "\t" << "F_I" << "\n";
+        write_log("OK", parameters.log_file, false, true);
     }
-    write_log("OK", parameters.log_file, false, true);
 
     // Window SNPs output file
     if (parameters.output_snps_win) {
@@ -175,11 +174,10 @@ void ArgParser::set_parameters(Parameters& parameters) {
             std::cout << "Error: cannot open SNPs output file (" << snps_win_output_file_path << ")." << std::endl;
             write_log("cannot open input file (" + snps_win_output_file_path + ").", parameters.log_file, false, true);
             exit(1);
-        } else {
-            parameters.snps_win_output_file << "Contig" << "\t" << "Position" << "\t" << "Males" << "\t" << "Females" << "\n";
         }
+        parameters.snps_win_output_file << "Contig" << "\t" << "Position" << "\t" << "Males" << "\t" << "Females" << "\n";
+        write_log("OK", parameters.log_file, false, true);
     }
-    write_log("OK", parameters.log_file, false, true);
 
     // Coverage output file
     if (parameters.output_coverage) {
@@ -190,11 +188,11 @@ void ArgParser::set_parameters(Parameters& parameters) {
             std::cout << "Error: cannot open coverage output file (" << coverage_output_file_path << ")." << std::endl;
             write_log("cannot open input file (" + coverage_output_file_path + ").", parameters.log_file, false, true);
             exit(1);
-        } else {
-            parameters.coverage_output_file << "Contig" << "\t" << "Position" << "\t" << "Males_rel" << "\t" << "Females_rel" << "\t" << "Males_abs" << "\t" << "Females_abs" << "\n";
         }
+        parameters.coverage_output_file << "Contig" << "\t" << "Position" << "\t" << "Males_rel" << "\t" << "Females_rel" << "\t" << "Males_abs" << "\t" << "Females_abs" << "\n";
+        write_log("OK", parameters.log_file, false, true);
     }
-    write_log("OK", parameters.log_file, false, true);
+
 
     // Genes output file
     if (this->contains("--gff-file")) {
@@ -205,18 +203,16 @@ void ArgParser::set_parameters(Parameters& parameters) {
             std::cout << "Error: cannot open genes output file (" << genes_output_file_path << ")." << std::endl;
             write_log("cannot open input file (" + genes_output_file_path + ").", parameters.log_file, false, true);
             exit(1);
-        } else {
-            parameters.genes_output_file << "Contig" << "\t" << "Start" << "\t" << "End" << "\t" <<
-                                            "Name" << "\t" << "Product" << "\t" <<
-                                            "Cov_males" << "\t" << "Cov_males_coding" << "\t" << "Cov_males_noncoding" << "\t" <<
-                                            "Cov_females" << "\t" << "Cov_females_coding" << "\t" << "Cov_females_noncoding" << "\t" <<
-                                            "Snp_males" << "\t" << "Snp_males_coding" << "\t" << "Snp_males_noncoding" << "\t" <<
-                                            "Snp_females" << "\t" << "Snp_females_coding" << "\t" << "Snp_females_noncoding" << "\n";
         }
+        parameters.genes_output_file << "Contig" << "\t" << "Start" << "\t" << "End" << "\t" <<
+                                        "Name" << "\t" << "Product" << "\t" <<
+                                        "Cov_males" << "\t" << "Cov_males_coding" << "\t" << "Cov_males_noncoding" << "\t" <<
+                                        "Cov_females" << "\t" << "Cov_females_coding" << "\t" << "Cov_females_noncoding" << "\t" <<
+                                        "Snp_males" << "\t" << "Snp_males_coding" << "\t" << "Snp_males_noncoding" << "\t" <<
+                                        "Snp_females" << "\t" << "Snp_females_coding" << "\t" << "Snp_females_noncoding" << "\n";
         parameters.output_genes = true;
+        write_log("OK", parameters.log_file, false, true);
     }
-    write_log("OK", parameters.log_file, false, true);
-
 }
 
 
