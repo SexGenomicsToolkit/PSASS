@@ -31,7 +31,7 @@ void ArgParser::set_parameters(Parameters& parameters) {
     parameters.output_prefix = this->set_value("--output-prefix");
     parameters.log_file.open(parameters.output_prefix + ".log");
 
-    write_log("Retrieving parameter values", parameters.log_file, true, true);
+    write_log("Retrieving parameter values ... \n", parameters.log_file, true, true);
 
     // Retrieve parameter values
     parameters.min_depth = std::stoul(this->set_value("--min-depth"));
@@ -103,7 +103,6 @@ void ArgParser::set_parameters(Parameters& parameters) {
 
     // Open GFF file
     if (this->contains("--gff-file")) {
-        write_log("\n", parameters.log_file, false, false);
         write_log("Opening gff file: ", parameters.log_file, true, false);
         parameters.gff_file_path = this->set_value("--gff-file");
         parameters.gff_file.open(parameters.gff_file_path);
@@ -118,8 +117,7 @@ void ArgParser::set_parameters(Parameters& parameters) {
     // Create base output file path
     if (parameters.output_prefix != "") parameters.output_prefix += "_";
 
-    write_log("\n", parameters.log_file, false, false);
-    write_log("Creating basic output files", parameters.log_file, true, true);
+    write_log("Creating basic output files ... \n", parameters.log_file, true, true);
 
     // Position Fst output file
     if (parameters.output_fst_pos) {

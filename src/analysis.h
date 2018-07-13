@@ -15,4 +15,4 @@
 
 typedef std::map<std::string, std::map<uint, std::pair<float, float> > > table;
 
-void analysis(Parameters& parameters);
+uint analysis(Parameters& parameters);

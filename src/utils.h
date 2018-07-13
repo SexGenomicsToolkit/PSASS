@@ -17,8 +17,8 @@
 // Output current date and time in format specified in utils.h
 inline char* print_time (char *buff) {
 
-    time_t t = time (0);
-    strftime (buff, DTTMSZ, DTTMFMT, localtime (&t));
+    time_t t = time(0);
+    strftime(buff, DTTMSZ, DTTMFMT, localtime (&t));
     return buff;
 }
 

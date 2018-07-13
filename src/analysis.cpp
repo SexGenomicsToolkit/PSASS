@@ -1,13 +1,21 @@
 #include "analysis.h"
 #include <numeric>
 
-void analysis(Parameters& parameters) {
+uint analysis(Parameters& parameters) {
 
     if (parameters.output_genes) {
+
+        write_log("\n", parameters.log_file, false, false);
+        write_log("Reading GFF file : ", parameters.log_file, true, false);
+
         std::unordered_map<std::string, std::unordered_map<uint, std::string>> regions;
         std::unordered_map<std::string, Gene> genes;
         read_gff_file(parameters.gff_file, regions, genes);
+
+        write_log(genes.size(), parameters.log_file, false, false);
+        write_log(" genes found.", parameters.log_file, false, true);
     }
+
 
     const uint window_range = parameters.window_size / 2;
 
@@ -29,7 +37,7 @@ void analysis(Parameters& parameters) {
 
     // Reading optimization parameters
     char buff[2048];
-    uint k=0, field=0, subfield=0, position = 0;
+    uint k=0, field=0, subfield=0, position = 0, n_lines = 0;
     std::string contig = "", current_contig = "";
     std::string temp = "";
 
@@ -44,6 +52,8 @@ void analysis(Parameters& parameters) {
 
     uint64_t total_bases = 0;
 
+    write_log("Processing input sync file ...", parameters.log_file, true, true);
+
     do {
 
         parameters.input_file.read(buff, sizeof(buff));
@@ -57,6 +67,12 @@ void analysis(Parameters& parameters) {
                 break;
 
             case '\n':
+                ++n_lines;
+                if (n_lines % 1000000 == 0) {
+                    write_log("Processed ", parameters.log_file, true, false);
+                    write_log(n_lines / 1000000, parameters.log_file, false, false);
+                    write_log(" M. lines.", parameters.log_file, false, true);
+                }
                 // Fill last pool2 base
                 pool2_bases[5] = fast_stoi(temp.c_str());
 
@@ -392,6 +408,7 @@ void analysis(Parameters& parameters) {
         }
     }
 
+    write_log("Generating coverage output file...", parameters.log_file, true, true);
     if (parameters.output_coverage) {
 
         float average_coverage_m = 0;
@@ -414,4 +431,6 @@ void analysis(Parameters& parameters) {
             }
         }
     }
+
+    return n_lines;
 }
