@@ -109,21 +109,21 @@ void analysis(Parameters& parameters) {
                     }
 
                     // pool1 specific snps
-                    if ((pool1_a_freq > 0.5 - parameters.snp_range and pool1_a_freq < 0.5 + parameters.snp_range and pool2_a_freq > 1 - parameters.fixed_range) or
-                            (pool1_t_freq > 0.5 - parameters.snp_range and pool1_t_freq < 0.5 + parameters.snp_range and pool2_t_freq > 1 - parameters.fixed_range) or
-                            (pool1_g_freq > 0.5 - parameters.snp_range and pool1_g_freq < 0.5 + parameters.snp_range and pool2_g_freq > 1 - parameters.fixed_range) or
-                            (pool1_c_freq > 0.5 - parameters.snp_range and pool1_c_freq < 0.5 + parameters.snp_range and pool2_c_freq > 1 - parameters.fixed_range) or
-                            (pool1_i_freq > 0.5 - parameters.snp_range and pool1_i_freq < 0.5 + parameters.snp_range and pool2_i_freq > 1 - parameters.fixed_range)) {
+                    if ((pool1_a_freq > 0.5 - parameters.range_het and pool1_a_freq < 0.5 + parameters.range_het and pool2_a_freq > 1 - parameters.range_hom) or
+                            (pool1_t_freq > 0.5 - parameters.range_het and pool1_t_freq < 0.5 + parameters.range_het and pool2_t_freq > 1 - parameters.range_hom) or
+                            (pool1_g_freq > 0.5 - parameters.range_het and pool1_g_freq < 0.5 + parameters.range_het and pool2_g_freq > 1 - parameters.range_hom) or
+                            (pool1_c_freq > 0.5 - parameters.range_het and pool1_c_freq < 0.5 + parameters.range_het and pool2_c_freq > 1 - parameters.range_hom) or
+                            (pool1_i_freq > 0.5 - parameters.range_het and pool1_i_freq < 0.5 + parameters.range_het and pool2_i_freq > 1 - parameters.range_hom)) {
 
                         snp_1 = true;
                     }
 
                     // pool2 specific snps
-                    if ((pool2_a_freq > 0.5 - parameters.snp_range and pool2_a_freq < 0.5 + parameters.snp_range and pool1_a_freq > 1 - parameters.fixed_range) or
-                             (pool2_t_freq > 0.5 - parameters.snp_range and pool2_t_freq < 0.5 + parameters.snp_range and pool1_t_freq > 1 - parameters.fixed_range) or
-                             (pool2_g_freq > 0.5 - parameters.snp_range and pool2_g_freq < 0.5 + parameters.snp_range and pool1_g_freq > 1 - parameters.fixed_range) or
-                             (pool2_c_freq > 0.5 - parameters.snp_range and pool2_c_freq < 0.5 + parameters.snp_range and pool1_c_freq > 1 - parameters.fixed_range) or
-                             (pool2_i_freq > 0.5 - parameters.snp_range and pool2_i_freq < 0.5 + parameters.snp_range and pool1_i_freq > 1 - parameters.fixed_range)) {
+                    if ((pool2_a_freq > 0.5 - parameters.range_het and pool2_a_freq < 0.5 + parameters.range_het and pool1_a_freq > 1 - parameters.range_hom) or
+                             (pool2_t_freq > 0.5 - parameters.range_het and pool2_t_freq < 0.5 + parameters.range_het and pool1_t_freq > 1 - parameters.range_hom) or
+                             (pool2_g_freq > 0.5 - parameters.range_het and pool2_g_freq < 0.5 + parameters.range_het and pool1_g_freq > 1 - parameters.range_hom) or
+                             (pool2_c_freq > 0.5 - parameters.range_het and pool2_c_freq < 0.5 + parameters.range_het and pool1_c_freq > 1 - parameters.range_hom) or
+                             (pool2_i_freq > 0.5 - parameters.range_het and pool2_i_freq < 0.5 + parameters.range_het and pool1_i_freq > 1 - parameters.range_hom)) {
 
                          snp_2 = true;
                      }
@@ -132,7 +132,7 @@ void analysis(Parameters& parameters) {
 
                 // Refactor this part
                 if (fst > parameters.min_fst) {
-                    parameters.fst_threshold_output_file << contig << "\t" << position << "\t" << fst << "\n";
+                    parameters.fst_pos_output_file << contig << "\t" << position << "\t" << fst << "\n";
                 }
 
                 if (fst_sliding_window.size() <= parameters.window_size) {
@@ -278,13 +278,13 @@ void analysis(Parameters& parameters) {
                     std::cout << "Finished analyzing contig :  " << current_contig << std::endl;
 
                     if ((position - window_range) % parameters.output_resolution == 0 and position > window_range) {
-                        parameters.fst_window_output_file << contig << "\t" << position - window_range << "\t" << fst_window << "\n";
-                        parameters.snps_output_file << contig << "\t" << position - window_range << "\t";
+                        parameters.fst_win_output_file << contig << "\t" << position - window_range << "\t" << fst_window << "\n";
+                        parameters.snps_win_output_file << contig << "\t" << position - window_range << "\t";
                         if (parameters.male_pool == 1) {
-                            parameters.snps_output_file << snp_1_window << "\t" << snp_2_window << "\n";
+                            parameters.snps_win_output_file << snp_1_window << "\t" << snp_2_window << "\n";
                             if (parameters.output_coverage) coverage[contig][position] = std::pair<float, float>(coverage_1_window, coverage_2_window);
                         } else {
-                            parameters.snps_output_file << snp_2_window << "\t" << snp_1_window << "\n";
+                            parameters.snps_win_output_file << snp_2_window << "\t" << snp_1_window << "\n";
                             if (parameters.output_coverage) coverage[contig][position] = std::pair<float, float>(coverage_2_window, coverage_1_window);
                         }
                     }
@@ -306,13 +306,13 @@ void analysis(Parameters& parameters) {
                 } else {
 
                     if ((position - window_range) % parameters.output_resolution == 0 and position > window_range) {
-                        parameters.fst_window_output_file << contig << "\t" << position - window_range << "\t" << fst_window << "\n";
-                        parameters.snps_output_file << contig << "\t" << position - window_range << "\t";
+                        parameters.fst_win_output_file << contig << "\t" << position - window_range << "\t" << fst_window << "\n";
+                        parameters.snps_win_output_file << contig << "\t" << position - window_range << "\t";
                         if (parameters.male_pool == 1) {
-                            parameters.snps_output_file << snp_1_window << "\t" << snp_2_window << "\n";
+                            parameters.snps_win_output_file << snp_1_window << "\t" << snp_2_window << "\n";
                             if (parameters.output_coverage) coverage[contig][position] = std::pair<float, float>(coverage_1_window, coverage_2_window);
                         } else {
-                            parameters.snps_output_file << snp_2_window << "\t" << snp_1_window << "\n";
+                            parameters.snps_win_output_file << snp_2_window << "\t" << snp_1_window << "\n";
                             if (parameters.output_coverage) coverage[contig][position] = std::pair<float, float>(coverage_2_window, coverage_1_window);
                         }
                     }
@@ -379,16 +379,16 @@ void analysis(Parameters& parameters) {
     } while (parameters.input_file);
 
     if (fst > parameters.min_fst) {
-        parameters.fst_threshold_output_file << contig << "\t" << position << "\t" << fst << "\n";
+        parameters.fst_pos_output_file << contig << "\t" << position << "\t" << fst << "\n";
     }
 
     if ((position - window_range) % parameters.output_resolution == 0 and position > window_range) {
-        parameters.fst_window_output_file << contig << "\t" << position - window_range << "\t" << fst_window << "\n";
-        parameters.snps_output_file << contig << "\t" << position - window_range << "\t";
+        parameters.fst_win_output_file << contig << "\t" << position - window_range << "\t" << fst_window << "\n";
+        parameters.snps_win_output_file << contig << "\t" << position - window_range << "\t";
         if (parameters.male_pool == 1) {
-            parameters.snps_output_file << snp_1_window << "\t" << snp_2_window << "\n";
+            parameters.snps_win_output_file << snp_1_window << "\t" << snp_2_window << "\n";
         } else {
-            parameters.snps_output_file << snp_2_window << "\t" << snp_1_window << "\n";
+            parameters.snps_win_output_file << snp_2_window << "\t" << snp_1_window << "\n";
         }
     }
 

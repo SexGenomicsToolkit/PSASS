@@ -5,6 +5,7 @@
 #include <map>
 #include <iostream>
 #include "parameters.h"
+#include "utils.h"
 
 
 class ArgParser {
@@ -12,19 +13,27 @@ class ArgParser {
     public:
 
         // Options: flag -> [default, type, help message]
-        std::map<std::string, std::vector<std::string>> const options { {"-h", {"0", "bool", "Prints this message"} },
-                                                                        {"-d", {"10", "int", "Minimum depth to consider a site"} },
-                                                                        {"-f", {"0.2", "float", "FST threshold"} },
-                                                                        {"-s", {"0.1", "float", "Range to consider a sex-linked SNP"} },
-                                                                        {"-x", {"0.1", "float", "Range to consider a fixed SNP"} },
-                                                                        {"-w", {"100000", "int", "Size of the sliding window (in bp)"} },
-                                                                        {"-r", {"500", "int", "Output resolution (in bp)"} } ,
-                                                                        {"-m", {"1", "int", "Male pool (1/2)"} } ,
-                                                                        {"-i", {"", "string", "Input file (popoolation sync file)"} },
-                                                                        {"-o", {"", "string", "Output file"} },
-                                                                        {"-c", {"1", "bool", "Output coverage"} },
-                                                                        {"-p", {"1", "bool", "Output snps positions"} },
-                                                                        {"-g", {"", "string", "GFF file for gene-specific output"} }
+        std::map<std::string, std::vector<std::string>> const options { {"--help", {"0", "bool", "Prints this message"} },
+
+                                                                        {"--output-fst-pos", {"1", "bool", "Output fst positions"} },
+                                                                        {"--output-fst-win", {"1", "bool", "Output fst sliding window"} },
+                                                                        {"--output-snps-pos", {"1", "bool", "Output snps positions"} },
+                                                                        {"--output-snps-win", {"1", "bool", "Output snps sliding window"} },
+                                                                        {"--output-coverage", {"1", "bool", "Output coverage"} },
+                                                                        {"--male-pool", {"2", "int", "Male pool (1/2)"} } ,
+
+                                                                        {"--min-depth", {"10", "int", "Minimum depth to consider a site"} },
+                                                                        {"--min-fst", {"0.25", "float", "FST threshold"} },
+                                                                        {"--freq-het", {"0.5", "float", "Frequency of a sex-linked SNP in the heterogametic sex"} },
+                                                                        {"--freq-hom", {"1", "float", "Frequency of a sex-linked SNP in the homogametic sex"} },
+                                                                        {"--range-het", {"0.1", "float", "Range of frequency for a sex-linked SNP in the heterogametic sex"} },
+                                                                        {"--range-hom", {"0.05", "float", "Range of frequency for a sex-linked SNP in the homogametic sex"} },
+                                                                        {"--window-size", {"100000", "int", "Size of the sliding window (in bp)"} },
+                                                                        {"--output-resolution", {"500", "int", "Output resolution (in bp)"} } ,
+
+                                                                        {"--input-file", {"", "string", "Input file (popoolation sync file)"} },
+                                                                        {"--output-prefix", {"", "string", "Full prefix (including path) for output files"} },
+                                                                        {"--gff-file", {"", "string", "GFF file for gene-specific output"} }
                                                                       };
 
         ArgParser(int &argc, char **argv);
