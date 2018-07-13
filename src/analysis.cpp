@@ -3,19 +3,20 @@
 
 uint analysis(Parameters& parameters) {
 
+    // GFF data structures
+    std::unordered_map<std::string, std::unordered_map<uint, std::pair<std::string, bool>>> regions;
+    std::unordered_map<std::string, Gene> genes;
+
     if (parameters.output_genes) {
 
         write_log("\n", parameters.log_file, false, false);
         write_log("Reading GFF file : ", parameters.log_file, true, false);
 
-        std::unordered_map<std::string, std::unordered_map<uint, std::string>> regions;
-        std::unordered_map<std::string, Gene> genes;
         read_gff_file(parameters.gff_file, regions, genes);
 
         write_log(genes.size(), parameters.log_file, false, false);
         write_log(" genes found.", parameters.log_file, false, true);
     }
-
 
     const uint window_range = parameters.window_size / 2;
 
@@ -52,6 +53,11 @@ uint analysis(Parameters& parameters) {
 
     uint64_t total_bases = 0;
 
+    // Gene filtering
+    std::string gene;
+    bool coding;
+
+
     write_log("Processing input sync file ...", parameters.log_file, true, true);
 
     do {
@@ -67,12 +73,15 @@ uint analysis(Parameters& parameters) {
                 break;
 
             case '\n':
+
+                // Update log file
                 ++n_lines;
-                if (n_lines % 1000000 == 0) {
+                if (n_lines % 5000000 == 0) {
                     write_log("Processed ", parameters.log_file, true, false);
                     write_log(n_lines / 1000000, parameters.log_file, false, false);
                     write_log(" M. lines.", parameters.log_file, false, true);
                 }
+
                 // Fill last pool2 base
                 pool2_bases[5] = fast_stoi(temp.c_str());
 
@@ -118,83 +127,157 @@ uint analysis(Parameters& parameters) {
                     within_pi = float((pool1_pi + pool2_pi) / 2);
 
                     // Fst
-                    if (total_pi > 0) {
-                        fst = float((total_pi - within_pi) / total_pi);
-                    } else {
-                        fst = 0;
+                    if (parameters.output_fst_pos or parameters.output_fst_win) {
+                        if (total_pi > 0) {
+                            fst = float((total_pi - within_pi) / total_pi);
+                        } else {
+                            fst = 0;
+                        }
                     }
 
-                    // pool1 specific snps
-                    if ((pool1_a_freq > 0.5 - parameters.range_het and pool1_a_freq < 0.5 + parameters.range_het and pool2_a_freq > 1 - parameters.range_hom) or
-                            (pool1_t_freq > 0.5 - parameters.range_het and pool1_t_freq < 0.5 + parameters.range_het and pool2_t_freq > 1 - parameters.range_hom) or
-                            (pool1_g_freq > 0.5 - parameters.range_het and pool1_g_freq < 0.5 + parameters.range_het and pool2_g_freq > 1 - parameters.range_hom) or
-                            (pool1_c_freq > 0.5 - parameters.range_het and pool1_c_freq < 0.5 + parameters.range_het and pool2_c_freq > 1 - parameters.range_hom) or
-                            (pool1_i_freq > 0.5 - parameters.range_het and pool1_i_freq < 0.5 + parameters.range_het and pool2_i_freq > 1 - parameters.range_hom)) {
+                    // Snps
+                    if (parameters.output_snps_pos or parameters.output_snps_win or parameters.output_genes) {
 
-                        snp_1 = true;
+                        // pool1 specific snps
+                        if ((pool1_a_freq > 0.5 - parameters.range_het and pool1_a_freq < 0.5 + parameters.range_het and pool2_a_freq > 1 - parameters.range_hom) or
+                                (pool1_t_freq > 0.5 - parameters.range_het and pool1_t_freq < 0.5 + parameters.range_het and pool2_t_freq > 1 - parameters.range_hom) or
+                                (pool1_g_freq > 0.5 - parameters.range_het and pool1_g_freq < 0.5 + parameters.range_het and pool2_g_freq > 1 - parameters.range_hom) or
+                                (pool1_c_freq > 0.5 - parameters.range_het and pool1_c_freq < 0.5 + parameters.range_het and pool2_c_freq > 1 - parameters.range_hom) or
+                                (pool1_i_freq > 0.5 - parameters.range_het and pool1_i_freq < 0.5 + parameters.range_het and pool2_i_freq > 1 - parameters.range_hom)) {
+
+                            snp_1 = true;
+                        }
+
+                        // pool2 specific snps
+                        if ((pool2_a_freq > 0.5 - parameters.range_het and pool2_a_freq < 0.5 + parameters.range_het and pool1_a_freq > 1 - parameters.range_hom) or
+                                 (pool2_t_freq > 0.5 - parameters.range_het and pool2_t_freq < 0.5 + parameters.range_het and pool1_t_freq > 1 - parameters.range_hom) or
+                                 (pool2_g_freq > 0.5 - parameters.range_het and pool2_g_freq < 0.5 + parameters.range_het and pool1_g_freq > 1 - parameters.range_hom) or
+                                 (pool2_c_freq > 0.5 - parameters.range_het and pool2_c_freq < 0.5 + parameters.range_het and pool1_c_freq > 1 - parameters.range_hom) or
+                                 (pool2_i_freq > 0.5 - parameters.range_het and pool2_i_freq < 0.5 + parameters.range_het and pool1_i_freq > 1 - parameters.range_hom)) {
+
+                             snp_2 = true;
+                         }
                     }
-
-                    // pool2 specific snps
-                    if ((pool2_a_freq > 0.5 - parameters.range_het and pool2_a_freq < 0.5 + parameters.range_het and pool1_a_freq > 1 - parameters.range_hom) or
-                             (pool2_t_freq > 0.5 - parameters.range_het and pool2_t_freq < 0.5 + parameters.range_het and pool1_t_freq > 1 - parameters.range_hom) or
-                             (pool2_g_freq > 0.5 - parameters.range_het and pool2_g_freq < 0.5 + parameters.range_het and pool1_g_freq > 1 - parameters.range_hom) or
-                             (pool2_c_freq > 0.5 - parameters.range_het and pool2_c_freq < 0.5 + parameters.range_het and pool1_c_freq > 1 - parameters.range_hom) or
-                             (pool2_i_freq > 0.5 - parameters.range_het and pool2_i_freq < 0.5 + parameters.range_het and pool1_i_freq > 1 - parameters.range_hom)) {
-
-                         snp_2 = true;
-                     }
 
                 } // Could handle other cases, they could be interesting too
 
-                // Refactor this part
-                if (fst > parameters.min_fst) {
+                // FST positions
+                if (parameters.output_fst_pos and fst > parameters.min_fst) {
                     parameters.fst_pos_output_file << contig << "\t" << position << "\t" << fst << "\n";
                 }
 
-                if (fst_sliding_window.size() <= parameters.window_size) {
-                    fst_sliding_window.push_back(fst > parameters.min_fst);
-                } else {
-                    fst_sliding_window.resize(0);
+                // FST sliding window
+                if (parameters.output_fst_win) {
+                    if (fst_sliding_window.size() <= parameters.window_size) {
+                        fst_sliding_window.push_back(fst > parameters.min_fst);
+                    } else {
+                        fst_sliding_window.resize(0);
+                    }
+
+                    if (fst_sliding_window.size() == parameters.window_size) {
+                        fst_window = std::accumulate(fst_sliding_window.begin(), fst_sliding_window.end(), 0);
+                    } else if (fst_sliding_window.size() == parameters.window_size + 1) {
+                        fst_window -= fst_sliding_window[0];
+                        fst_window += (fst > parameters.min_fst);
+                        fst_sliding_window.pop_front();
+                    }
                 }
 
-                if (fst_sliding_window.size() == parameters.window_size) {
-                    fst_window = std::accumulate(fst_sliding_window.begin(), fst_sliding_window.end(), 0);
-                } else if (fst_sliding_window.size() == parameters.window_size + 1) {
-                    fst_window -= fst_sliding_window[0];
-                    fst_window += (fst > parameters.min_fst);
-                    fst_sliding_window.pop_front();
+                // SNPs positions
+                if (parameters.output_snps_pos) {
+
+                    if (snp_1 and snp_2) std::cout << "SNP in both sexes !" << std::endl;
+
+                    if (snp_1) {
+
+                        if (parameters.male_pool == 1) {
+
+                            parameters.snps_pos_output_file << std::fixed << std::setprecision(2)
+                                                            << contig << "\t" << position << "\t" << "M" << "\t"
+                                                            << pool1_a_freq << "\t" << pool1_t_freq << "\t"
+                                                            << pool1_g_freq << "\t" << pool1_c_freq << "\t"
+                                                            << pool1_i_freq << "\t"
+                                                            << pool2_a_freq << "\t" << pool2_t_freq << "\t"
+                                                            << pool2_g_freq << "\t" << pool2_c_freq << "\t"
+                                                            << pool2_i_freq << "\n";
+
+                        } else {
+
+                            parameters.snps_pos_output_file << std::fixed << std::setprecision(2)
+                                                            << contig << "\t" << position << "\t" << "F" << "\t"
+                                                            << pool2_a_freq << "\t" << pool2_t_freq << "\t"
+                                                            << pool2_g_freq << "\t" << pool2_c_freq << "\t"
+                                                            << pool2_i_freq << "\t"
+                                                            << pool1_a_freq << "\t" << pool1_t_freq << "\t"
+                                                            << pool1_g_freq << "\t" << pool1_c_freq << "\t"
+                                                            << pool1_i_freq << "\n";
+
+                        }
+
+                    } else if (snp_2) {
+
+                        if (parameters.male_pool == 1) {
+
+                            parameters.snps_pos_output_file << std::fixed << std::setprecision(2)
+                                                            << contig << "\t" << position << "\t" << "F" << "\t"
+                                                            << pool1_a_freq << "\t" << pool1_t_freq << "\t"
+                                                            << pool1_g_freq << "\t" << pool1_c_freq << "\t"
+                                                            << pool1_i_freq << "\t"
+                                                            << pool2_a_freq << "\t" << pool2_t_freq << "\t"
+                                                            << pool2_g_freq << "\t" << pool2_c_freq << "\t"
+                                                            << pool2_i_freq << "\n";
+
+                        } else {
+
+                            parameters.snps_pos_output_file << std::fixed << std::setprecision(2)
+                                                            << contig << "\t" << position << "\t" << "M" << "\t"
+                                                            << pool2_a_freq << "\t" << pool2_t_freq << "\t"
+                                                            << pool2_g_freq << "\t" << pool2_c_freq << "\t"
+                                                            << pool2_i_freq << "\t"
+                                                            << pool1_a_freq << "\t" << pool1_t_freq << "\t"
+                                                            << pool1_g_freq << "\t" << pool1_c_freq << "\t"
+                                                            << pool1_i_freq << "\n";
+
+                        }
+                    }
                 }
 
-                if (snp_1_sliding_window.size() <= parameters.window_size) {
-                    snp_1_sliding_window.push_back(snp_1);
-                } else {
-                    snp_1_sliding_window.resize(0);
+                // SNPs window
+                if (parameters.output_snps_win) {
+
+                    // SNP 1 sliding window
+                    if (snp_1_sliding_window.size() <= parameters.window_size) {
+                        snp_1_sliding_window.push_back(snp_1);
+                    } else {
+                        snp_1_sliding_window.resize(0);
+                    }
+
+                    if (snp_1_sliding_window.size() == parameters.window_size) {
+                        snp_1_window = 1.0*std::accumulate(snp_1_sliding_window.begin(), snp_1_sliding_window.end(), 0.0);
+                    } else if (snp_1_sliding_window.size() == parameters.window_size + 1) {
+                        snp_1_window -= snp_1_sliding_window[0];
+                        snp_1_window += snp_1;
+                        snp_1_sliding_window.pop_front();
+                    }
+
+                    // SNP 2 sliding window
+                    if (snp_2_sliding_window.size() <= parameters.window_size) {
+                        snp_2_sliding_window.push_back(snp_2);
+                    } else {
+                        snp_2_sliding_window.resize(0);
+                    }
+
+                    if (snp_2_sliding_window.size() == parameters.window_size) {
+                        snp_2_window = 1.0*std::accumulate(snp_2_sliding_window.begin(), snp_2_sliding_window.end(), 0.0);
+                    } else if (snp_2_sliding_window.size() == parameters.window_size + 1) {
+                        snp_2_window -= snp_2_sliding_window[0];
+                        snp_2_window += snp_2;
+                        snp_2_sliding_window.pop_front();
+                    }
                 }
 
-                if (snp_1_sliding_window.size() == parameters.window_size) {
-                    snp_1_window = 1.0*std::accumulate(snp_1_sliding_window.begin(), snp_1_sliding_window.end(), 0.0);
-                } else if (snp_1_sliding_window.size() == parameters.window_size + 1) {
-                    snp_1_window -= snp_1_sliding_window[0];
-                    snp_1_window += snp_1;
-                    snp_1_sliding_window.pop_front();
-                }
-
-
-                if (snp_2_sliding_window.size() <= parameters.window_size) {
-                    snp_2_sliding_window.push_back(snp_2);
-                } else {
-                    snp_2_sliding_window.resize(0);
-                }
-
-                if (snp_2_sliding_window.size() == parameters.window_size) {
-                    snp_2_window = 1.0*std::accumulate(snp_2_sliding_window.begin(), snp_2_sliding_window.end(), 0.0);
-                } else if (snp_2_sliding_window.size() == parameters.window_size + 1) {
-                    snp_2_window -= snp_2_sliding_window[0];
-                    snp_2_window += snp_2;
-                    snp_2_sliding_window.pop_front();
-                }
-
-                if (parameters.output_coverage) {
+                // Coverage
+                if (parameters.output_coverage or parameters.output_genes) {
 
                     if (coverage_1_sliding_window.size() <= parameters.window_size) {
                         coverage_1_sliding_window.push_back(pool1_total);
@@ -228,82 +311,61 @@ uint analysis(Parameters& parameters) {
                     total_coverage_2 += uint(pool2_total);
                 }
 
-                if (parameters.output_snps_pos) {
+                // Genes
+                if (parameters.output_genes) {
 
-                    if (snp_1 and snp_2) std::cout << "SNP in both sexes !" << std::endl;
+                    if (regions[contig].find(position) != regions[contig].end()) {
 
-                    if (snp_1) {
+                        gene = regions[contig][position].first;
+                        coding = regions[contig][position].second;
 
-                        if (parameters.male_pool == 1) {
-
-                            parameters.snps_pos_output_file << std::fixed << std::setprecision(2)
-                                                            << contig << "\t" << position << "\t" << "M" << "\t"
-                                                            << pool1_a_freq << "\t" << pool1_t_freq << "\t"
-                                                            << pool1_g_freq << "\t" << pool1_c_freq << "\t"
-                                                            << pool1_i_freq << "\t"
-                                                            << pool2_a_freq << "\t" << pool2_t_freq << "\t"
-                                                            << pool2_g_freq << "\t" << pool2_c_freq << "\t"
-                                                            << pool2_i_freq << "\n";
-
+                        if (coding) {
+                            if (parameters.male_pool == 1) {
+                                genes[gene].coverage[0] += pool1_total;
+                                genes[gene].coverage[2] += pool2_total;
+                                genes[gene].snps[0] += snp_1;
+                                genes[gene].snps[2] += snp_2;
+                            } else {
+                                genes[gene].coverage[0] += pool2_total;
+                                genes[gene].coverage[2] += pool1_total;
+                                genes[gene].snps[0] += snp_2;
+                                genes[gene].snps[2] += snp_1;
+                            }
                         } else {
-
-                            parameters.snps_pos_output_file << std::fixed << std::setprecision(2)
-                                                            << contig << "\t" << position << "\t" << "F" << "\t"
-                                                            << pool2_a_freq << "\t" << pool2_t_freq << "\t"
-                                                            << pool2_g_freq << "\t" << pool2_c_freq << "\t"
-                                                            << pool2_i_freq << "\n"
-                                                            << pool1_a_freq << "\t" << pool1_t_freq << "\t"
-                                                            << pool1_g_freq << "\t" << pool1_c_freq << "\t"
-                                                            << pool1_i_freq << "\n";
-
+                            if (parameters.male_pool == 1) {
+                                genes[gene].coverage[1] += pool1_total;
+                                genes[gene].coverage[3] += pool2_total;
+                                genes[gene].snps[1] += snp_1;
+                                genes[gene].snps[3] += snp_2;
+                            } else {
+                                genes[gene].coverage[1] += pool2_total;
+                                genes[gene].coverage[3] += pool1_total;
+                                genes[gene].snps[1] += snp_2;
+                                genes[gene].snps[3] += snp_1;
+                            }
                         }
-
-                    } else if (snp_2) {
-
-                        if (parameters.male_pool == 1) {
-
-                            parameters.snps_pos_output_file << std::fixed << std::setprecision(2)
-                                                            << contig << "\t" << position << "\t" << "F" << "\t"
-                                                            << pool1_a_freq << "\t" << pool1_t_freq << "\t"
-                                                            << pool1_g_freq << "\t" << pool1_c_freq << "\t"
-                                                            << pool1_i_freq << "\t"
-                                                            << pool2_a_freq << "\t" << pool2_t_freq << "\t"
-                                                            << pool2_g_freq << "\t" << pool2_c_freq << "\t"
-                                                            << pool2_i_freq << "\n";
-
-                        } else {
-
-                            parameters.snps_pos_output_file << std::fixed << std::setprecision(2)
-                                                            << contig << "\t" << position << "\t" << "M" << "\t"
-                                                            << pool2_a_freq << "\t" << pool2_t_freq << "\t"
-                                                            << pool2_g_freq << "\t" << pool2_c_freq << "\t"
-                                                            << pool2_i_freq << "\n"
-                                                            << pool1_a_freq << "\t" << pool1_t_freq << "\t"
-                                                            << pool1_g_freq << "\t" << pool1_c_freq << "\t"
-                                                            << pool1_i_freq << "\n";
-
-                        }
-
                     }
                 }
 
                 ++total_bases;
 
+                // Output window results (fst, snps, coverage)
+                if ((position - window_range) % parameters.output_resolution == 0 and position > window_range) {
+                    if (parameters.output_fst_win) parameters.fst_win_output_file << contig << "\t" << position - window_range << "\t" << fst_window << "\n";
+                    if (parameters.output_snps_win) parameters.snps_win_output_file << contig << "\t" << position - window_range << "\t";
+                    if (parameters.male_pool == 1) {
+                        if (parameters.output_snps_win) parameters.snps_win_output_file << snp_1_window << "\t" << snp_2_window << "\n";
+                        if (parameters.output_coverage) coverage[contig][position] = std::pair<float, float>(coverage_1_window, coverage_2_window);
+                    } else {
+                        if (parameters.output_snps_win) parameters.snps_win_output_file << snp_2_window << "\t" << snp_1_window << "\n";
+                        if (parameters.output_coverage) coverage[contig][position] = std::pair<float, float>(coverage_2_window, coverage_1_window);
+                    }
+                }
+
+                // Change of contig
                 if (contig != current_contig and current_contig != "") {
 
                     std::cout << "Finished analyzing contig :  " << current_contig << std::endl;
-
-                    if ((position - window_range) % parameters.output_resolution == 0 and position > window_range) {
-                        parameters.fst_win_output_file << contig << "\t" << position - window_range << "\t" << fst_window << "\n";
-                        parameters.snps_win_output_file << contig << "\t" << position - window_range << "\t";
-                        if (parameters.male_pool == 1) {
-                            parameters.snps_win_output_file << snp_1_window << "\t" << snp_2_window << "\n";
-                            if (parameters.output_coverage) coverage[contig][position] = std::pair<float, float>(coverage_1_window, coverage_2_window);
-                        } else {
-                            parameters.snps_win_output_file << snp_2_window << "\t" << snp_1_window << "\n";
-                            if (parameters.output_coverage) coverage[contig][position] = std::pair<float, float>(coverage_2_window, coverage_1_window);
-                        }
-                    }
 
                     fst_window = 0;
                     snp_1_window = 0;
@@ -319,19 +381,6 @@ uint analysis(Parameters& parameters) {
                         coverage_2_sliding_window.resize(0);
                     }
 
-                } else {
-
-                    if ((position - window_range) % parameters.output_resolution == 0 and position > window_range) {
-                        parameters.fst_win_output_file << contig << "\t" << position - window_range << "\t" << fst_window << "\n";
-                        parameters.snps_win_output_file << contig << "\t" << position - window_range << "\t";
-                        if (parameters.male_pool == 1) {
-                            parameters.snps_win_output_file << snp_1_window << "\t" << snp_2_window << "\n";
-                            if (parameters.output_coverage) coverage[contig][position] = std::pair<float, float>(coverage_1_window, coverage_2_window);
-                        } else {
-                            parameters.snps_win_output_file << snp_2_window << "\t" << snp_1_window << "\n";
-                            if (parameters.output_coverage) coverage[contig][position] = std::pair<float, float>(coverage_2_window, coverage_1_window);
-                        }
-                    }
                 }
 
                 current_contig = contig;
@@ -389,25 +438,10 @@ uint analysis(Parameters& parameters) {
                 temp += buff[i];
                 break;
             }
-
         }
-
     } while (parameters.input_file);
 
-    if (fst > parameters.min_fst) {
-        parameters.fst_pos_output_file << contig << "\t" << position << "\t" << fst << "\n";
-    }
-
-    if ((position - window_range) % parameters.output_resolution == 0 and position > window_range) {
-        parameters.fst_win_output_file << contig << "\t" << position - window_range << "\t" << fst_window << "\n";
-        parameters.snps_win_output_file << contig << "\t" << position - window_range << "\t";
-        if (parameters.male_pool == 1) {
-            parameters.snps_win_output_file << snp_1_window << "\t" << snp_2_window << "\n";
-        } else {
-            parameters.snps_win_output_file << snp_2_window << "\t" << snp_1_window << "\n";
-        }
-    }
-
+    // Output coverage results
     write_log("Generating coverage output file...", parameters.log_file, true, true);
     if (parameters.output_coverage) {
 
@@ -431,6 +465,42 @@ uint analysis(Parameters& parameters) {
             }
         }
     }
+
+    // Output genes results
+    if (parameters.output_genes) {
+        uint gene_length, male_coverage, female_coverage;
+        write_log("Generating genes output file...", parameters.log_file, true, true);
+        for (auto gene: genes) {
+
+            gene_length = std::stoi(gene.second.end) -  std::stoi(gene.second.start);
+            male_coverage = (gene.second.coverage[0] + gene.second.coverage[1]) / gene_length;
+            female_coverage = (gene.second.coverage[2] + gene.second.coverage[3]) / gene_length;
+            gene.second.noncoding_length = gene_length -  gene.second.coding_length;
+
+            if (gene.second.coding_length == 0) {
+                gene.second.coverage[0] = 0;
+                gene.second.coverage[2] = 0;
+            } else {
+                gene.second.coverage[0] /= gene.second.coding_length;
+                gene.second.coverage[2] /= gene.second.coding_length;
+            }
+
+            if (gene.second.noncoding_length == 0) {
+                gene.second.coverage[1] = 0;
+                gene.second.coverage[3] = 0;
+            } else {
+                gene.second.coverage[1] /= gene.second.noncoding_length;
+                gene.second.coverage[3] /= gene.second.noncoding_length;
+            }
+
+            parameters.genes_output_file << gene.second.contig << "\t" << gene.second.start << "\t" << gene.second.end << "\t" << gene.second.name << "\t" << gene.second.product << "\t"
+                                         << male_coverage << "\t" << gene.second.coverage[0] << "\t" << gene.second.coverage[1] << "\t"
+                                         << female_coverage << "\t" << gene.second.coverage[2] << "\t" << gene.second.coverage[3] << "\t"
+                                         << gene.second.snps[0] + gene.second.snps[1] << "\t" << gene.second.snps[0] << "\t" << gene.second.snps[1] << "\t"
+                                         << gene.second.snps[2] + gene.second.snps[3] << "\t" << gene.second.snps[2] << "\t" << gene.second.snps[3] << "\n";
+        }
+    }
+
 
     return n_lines;
 }

@@ -208,10 +208,10 @@ void ArgParser::set_parameters(Parameters& parameters) {
         } else {
             parameters.genes_output_file << "Contig" << "\t" << "Start" << "\t" << "End" << "\t" <<
                                             "Name" << "\t" << "Product" << "\t" <<
-                                            "Cov_males_coding" << "\t" << "Cov_males_noncoding" << "\t" <<
-                                            "Cov_females_coding" << "\t" << "Cov_females_noncoding" << "\t" <<
-                                            "Snp_males_coding" << "\t" << "Snp_males_noncoding" << "\t" <<
-                                            "Snp_females_coding" << "\t" << "Snp_females_noncoding" << "\n";
+                                            "Cov_males" << "\t" << "Cov_males_coding" << "\t" << "Cov_males_noncoding" << "\t" <<
+                                            "Cov_females" << "\t" << "Cov_females_coding" << "\t" << "Cov_females_noncoding" << "\t" <<
+                                            "Snp_males" << "\t" << "Snp_males_coding" << "\t" << "Snp_males_noncoding" << "\t" <<
+                                            "Snp_females" << "\t" << "Snp_females_coding" << "\t" << "Snp_females_noncoding" << "\n";
         }
         parameters.output_genes = true;
     }
