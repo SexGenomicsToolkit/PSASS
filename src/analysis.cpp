@@ -10,10 +10,11 @@ uint analysis(Parameters& parameters) {
     if (parameters.output_genes) {
 
         write_log("\n", parameters.log_file, false, false);
-        write_log("Reading GFF file : ", parameters.log_file, true, false);
+        write_log("Reading GFF file...", parameters.log_file, true, true);
 
         read_gff_file(parameters.gff_file, regions, genes);
 
+        write_log("Finished reading GFF file : ", parameters.log_file, true, false);
         write_log(genes.size(), parameters.log_file, false, false);
         write_log(" genes found.", parameters.log_file, false, true);
     }
