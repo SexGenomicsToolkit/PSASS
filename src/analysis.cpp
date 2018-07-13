@@ -3,6 +3,12 @@
 
 void analysis(Parameters& parameters) {
 
+    if (parameters.output_genes) {
+        std::unordered_map<std::string, std::unordered_map<uint, std::string>> regions;
+        std::unordered_map<std::string, Gene> genes;
+        read_gff_file(parameters.gff_file, regions, genes);
+    }
+
     const uint window_range = parameters.window_size / 2;
 
     uint16_t pool1_bases[6], pool2_bases[6];

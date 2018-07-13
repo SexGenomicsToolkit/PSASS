@@ -1,11 +1,14 @@
-#ifndef GFF_FILE_H
-#define GFF_FILE_H
+#pragma once
+#include "utils.h"
 
-
-class gff_file
-{
-    public:
-        gff_file();
+struct Gene {
+    std::string contig;
+    std::string start;
+    std::string end;
+    std::string name;
+    std::string product;
+    uint coverage[4]; // Coding male, Non-coding male, Coding female, Non-coding female
+    uint snps[4]; // Coding male, Non-coding male, Coding female, Non-coding female
 };
 
-#endif // GFF_FILE_H
+void read_gff_file(std::ifstream& input_file, std::unordered_map<std::string, std::unordered_map<uint, std::string>>& regions, std::unordered_map<std::string, Gene>& genes);
