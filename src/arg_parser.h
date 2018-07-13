@@ -23,7 +23,8 @@ class ArgParser {
                                                                         {"-i", {"", "string", "Input file (popoolation sync file)"} },
                                                                         {"-o", {"", "string", "Output file"} },
                                                                         {"-c", {"1", "bool", "Output coverage"} },
-                                                                        {"-p", {"1", "bool", "Output snps positions"} }
+                                                                        {"-p", {"1", "bool", "Output snps positions"} },
+                                                                        {"-g", {"", "string", "GFF file for gene-specific output"} }
                                                                       };
 
         ArgParser(int &argc, char **argv);

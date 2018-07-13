@@ -7,19 +7,19 @@ ArgParser::ArgParser(int &argc, char **argv) {
 
     if (this->contains("-h")) {
         this->usage();
-        exit(0);
+        exit(1);
     }
 
     if (!this->contains("-i")) {
         std::cout << std::endl << "** Error: no input file specified" << std::endl;
         this->usage();
-        exit(0);
+        exit(1);
     }
 
     if (!this->contains("-o")) {
         std::cout << std::endl << "** Error: no output file specified" << std::endl;
         this->usage();
-        exit(0);
+        exit(1);
     }
 }
 
@@ -36,73 +36,108 @@ void ArgParser::set_parameters(Parameters& parameters) {
     parameters.fixed_range = std::stof(this->set_value("-x"));
     if (parameters.fixed_range < 1) parameters.fixed_range += 0.001; //Set value - 0.001 to avoid doing ">=" later
     parameters.window_size = std::stoul(this->set_value("-w"));
-    parameters.male_pool = std::stoul(this->set_value("-m"));
     parameters.output_resolution = std::stoul(this->set_value("-r"));
+
+    parameters.male_pool = std::stoul(this->set_value("-m"));
+    parameters.output_snps_pos = this->set_value("-p") != "0";
+    parameters.output_coverage = this->set_value("-c") != "0";
+
     parameters.input_file_path = this->set_value("-i");
     parameters.output_file_path = this->set_value("-o");
-    parameters.output_coverage = this->set_value("-c") != "0";
-    parameters.output_snps_pos = this->set_value("-p") != "0";
+
 
     parameters.input_file.open(parameters.input_file_path);
-
     if (not parameters.input_file.is_open()) {
         std::cout << "Error: cannot open input file (" << parameters.input_file_path << ")." << std::endl;
-        exit(0);
+        exit(1);
     }
 
+
+    if (this->contains("-g")) {
+        parameters.gff_file_path = this->set_value("-g");
+        parameters.gff_file.open(parameters.gff_file_path);
+        if (not parameters.gff_file.is_open()) {
+            std::cout << "Error: cannot open gff file (" << parameters.gff_file_path << ")." << std::endl;
+            exit(1);
+        }
+    }
+
+
     if (parameters.output_file_path != "") parameters.output_file_path += "_";
+
 
     std::string snps_output_file_path = parameters.output_file_path + "window_snp.tsv";
     parameters.snps_output_file.open(snps_output_file_path);
     if (not parameters.snps_output_file.is_open()) {
         std::cout << "Error: cannot open SNPs output file (" << snps_output_file_path << ")." << std::endl;
-        exit(0);
+        exit(1);
     } else {
         parameters.snps_output_file << "Contig" << "\t" << "Position" << "\t" << "Males" << "\t" << "Females" << "\n";
     }
+
 
     std::string fst_threshold_output_file_path = parameters.output_file_path + "position_fst.tsv";
     parameters.fst_threshold_output_file.open(fst_threshold_output_file_path);
     if (not parameters.fst_threshold_output_file.is_open()) {
         std::cout << "Error: cannot open Fst threshold output file (" << fst_threshold_output_file_path << ")." << std::endl;
-        exit(0);
+        exit(1);
     } else {
         parameters.fst_threshold_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
     }
+
 
     std::string fst_window_output_file_path = parameters.output_file_path + "window_fst.tsv";
     parameters.fst_window_output_file.open(fst_window_output_file_path);
     if (not parameters.fst_window_output_file.is_open()) {
         std::cout << "Error: cannot open Fst window output file (" << fst_window_output_file_path << ")." << std::endl;
-        exit(0);
+        exit(1);
     } else {
         parameters.fst_window_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
     }
+
 
     if (parameters.output_coverage) {
         std::string coverage_output_file_path = parameters.output_file_path + "coverage.tsv";
         parameters.coverage_output_file.open(coverage_output_file_path);
         if (not parameters.coverage_output_file.is_open()) {
             std::cout << "Error: cannot open coverage output file (" << coverage_output_file_path << ")." << std::endl;
-            exit(0);
+            exit(1);
         } else {
             parameters.coverage_output_file << "Contig" << "\t" << "Position" << "\t" << "Males_rel" << "\t" << "Females_rel" << "\t" << "Males_abs" << "\t" << "Females_abs" << "\n";
         }
 
     }
 
+
     if (parameters.output_snps_pos) {
         std::string snps_pos_output_file_path = parameters.output_file_path + "position_snp.tsv";
         parameters.snps_pos_output_file.open(snps_pos_output_file_path);
         if (not parameters.snps_pos_output_file.is_open()) {
             std::cout << "Error: cannot open snps pos output file (" << snps_pos_output_file_path << ")." << std::endl;
-            exit(0);
+            exit(1);
         } else {
             parameters.snps_pos_output_file << "Contig" << "\t" << "Position" << "\t" << "Sex" << "\t" <<
                                                "M_A" << "\t" << "M_T" << "\t" << "M_G" << "\t" << "M_C" << "\t" << "M_I" << "\t" <<
                                                "F_A" << "\t" << "F_T" << "\t" << "F_G" << "\t" << "F_C" << "\t" << "F_I" << "\n";
         }
+    }
 
+
+    if (this->contains("-g")) {
+        std::string genes_output_file_path = parameters.output_file_path + "genes.tsv";
+        parameters.genes_output_file.open(genes_output_file_path);
+        if (not parameters.genes_output_file.is_open()) {
+            std::cout << "Error: cannot open genes output file (" << genes_output_file_path << ")." << std::endl;
+            exit(1);
+        } else {
+            parameters.genes_output_file << "Contig" << "\t" << "Start" << "\t" << "End" << "\t" <<
+                                            "Name" << "\t" << "Product" << "\t" <<
+                                            "Cov_males_coding" << "\t" << "Cov_males_noncoding" << "\t" <<
+                                            "Cov_females_coding" << "\t" << "Cov_females_noncoding" << "\t" <<
+                                            "Snp_males_coding" << "\t" << "Snp_males_noncoding" << "\t" <<
+                                            "Snp_females_coding" << "\t" << "Snp_females_noncoding" << "\n";
+        }
+        parameters.output_genes = true;
     }
 }
 
