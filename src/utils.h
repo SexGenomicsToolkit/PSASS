@@ -30,7 +30,7 @@ inline void write_log(T line, std::ofstream& log_file, bool timestamp, bool newl
 
     char logtime[DTTMSZ];
     if (timestamp) log_file << "[" << print_time(logtime) << "]" << "    ";
-    log_file << std::noboolalpha << line;
+    log_file << std::boolalpha << line;
     if (newline) log_file << std::endl;
 }
 
