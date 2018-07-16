@@ -1,7 +1,7 @@
 #include "gff_file.h"
 
 
-void read_gff_file(std::ifstream& input_file, std::unordered_map<std::string, std::unordered_map<uint, std::pair<std::string, bool>>>& regions, std::unordered_map<std::string, Gene>& genes) {
+void read_gff_file(std::ifstream& input_file, std::unordered_map<std::string, std::vector<std::vector<std::string>>>& file, std::unordered_map<std::string, Gene>& genes) {
 
     std::string line, gene, product;
     std::vector<std::string> fields, infos;
@@ -29,7 +29,7 @@ void read_gff_file(std::ifstream& input_file, std::unordered_map<std::string, st
                     genes[gene].start = fields[3];
                     genes[gene].end = fields[4];
                     genes[gene].name = gene;
-                    for (int i=std::stoi(fields[3]); i < std::stoi(fields[4]) + 1; ++i) regions[fields[0]][i] = std::pair<std::string, bool>(gene, false);
+                    file[fields[0]].push_back(fields);
 
                 } else if (fields[2] == "exon") {
 
@@ -40,10 +40,8 @@ void read_gff_file(std::ifstream& input_file, std::unordered_map<std::string, st
 
                     if (gene != "" and (genes.find(gene) != genes.end())) {
                         genes[gene].product = product;
-                        for (int i=std::stoi(fields[3]); i < std::stoi(fields[4]) + 1; ++i) {
-                            regions[fields[0]][i] = std::pair<std::string, bool>(gene, true);
-                            genes[gene].coding_length += 1;
-                        }
+                        genes[gene].coding_length += std::stoi(fields[4]) - std::stoi(fields[3]);
+                        file[fields[0]].push_back(fields);
                     }
                 }
             }

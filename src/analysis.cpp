@@ -4,15 +4,16 @@
 uint analysis(Parameters& parameters) {
 
     // GFF data structures
-    std::unordered_map<std::string, std::unordered_map<uint, std::pair<std::string, bool>>> regions;
+    std::unordered_map<std::string, std::vector<std::vector<std::string>>> gff_data;
     std::unordered_map<std::string, Gene> genes;
+    std::unordered_map<uint, std::pair<std::string, bool>> regions;
 
     if (parameters.output_genes) {
 
         write_log("\n", parameters.log_file, false, false);
         write_log("Reading GFF file...", parameters.log_file, true, true);
 
-        read_gff_file(parameters.gff_file, regions, genes);
+        read_gff_file(parameters.gff_file, gff_data, genes);
 
         write_log("Finished reading GFF file : ", parameters.log_file, true, false);
         write_log(genes.size(), parameters.log_file, false, false);
@@ -56,6 +57,7 @@ uint analysis(Parameters& parameters) {
 
     // Gene filtering
     std::string gene;
+    std::vector<std::string> infos;
     bool coding;
 
 
@@ -315,10 +317,10 @@ uint analysis(Parameters& parameters) {
                 // Genes
                 if (parameters.output_genes) {
 
-                    if (regions[contig].find(position) != regions[contig].end()) {
+                    if (regions.find(position) != regions.end()) {
 
-                        gene = regions[contig][position].first;
-                        coding = regions[contig][position].second;
+                        gene = regions[position].first;
+                        coding = regions[position].second;
 
                         if (coding) {
                             if (parameters.male_pool == 1) {
@@ -364,22 +366,41 @@ uint analysis(Parameters& parameters) {
                 }
 
                 // Change of contig
-                if (contig != current_contig and current_contig != "") {
+                if (contig != current_contig) {
 
-                    std::cout << "Finished analyzing contig :  " << current_contig << std::endl;
+                    regions.clear();
 
-                    fst_window = 0;
-                    snp_1_window = 0;
-                    snp_2_window = 0;
-                    fst_sliding_window.resize(0);
-                    snp_1_sliding_window.resize(0);
-                    snp_2_sliding_window.resize(0);
+                    for (auto line: gff_data[contig]) {
 
-                    if (parameters.output_coverage) {
-                        coverage_2_window = 0;
-                        coverage_1_window = 0;
-                        coverage_1_sliding_window.resize(0);
-                        coverage_2_sliding_window.resize(0);
+                        infos = split(line[8], ";");
+                        for (auto i: infos) {
+                            if (i.substr(0, 5) == "gene=") gene = split(i, "=")[1];
+                        }
+
+                        if (line[2] == "gene") {
+                            for (int i=std::stoi(line[3]); i < std::stoi(line[4]) + 1; ++i) regions[i] = std::pair<std::string, bool>(gene, false);
+                        } else {
+                            for (int i=std::stoi(line[3]); i < std::stoi(line[4]) + 1; ++i) regions[i] = std::pair<std::string, bool>(gene, true);
+                        }
+                    }
+
+                    if (current_contig != "") {
+
+                        std::cout << "Finished analyzing contig :  " << current_contig << std::endl;
+
+                        fst_window = 0;
+                        snp_1_window = 0;
+                        snp_2_window = 0;
+                        fst_sliding_window.resize(0);
+                        snp_1_sliding_window.resize(0);
+                        snp_2_sliding_window.resize(0);
+
+                        if (parameters.output_coverage) {
+                            coverage_2_window = 0;
+                            coverage_1_window = 0;
+                            coverage_1_sliding_window.resize(0);
+                            coverage_2_sliding_window.resize(0);
+                        }
                     }
 
                 }
@@ -469,8 +490,10 @@ uint analysis(Parameters& parameters) {
 
     // Output genes results
     if (parameters.output_genes) {
+
         uint gene_length, male_coverage, female_coverage;
         write_log("Generating genes output file...", parameters.log_file, true, true);
+
         for (auto gene: genes) {
 
             gene_length = std::stoi(gene.second.end) -  std::stoi(gene.second.start);

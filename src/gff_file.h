@@ -13,4 +13,4 @@ struct Gene {
     uint snps[4]; // Coding male, Non-coding male, Coding female, Non-coding female
 };
 
-void read_gff_file(std::ifstream& input_file, std::unordered_map<std::string, std::unordered_map<uint, std::pair<std::string, bool>>>& regions, std::unordered_map<std::string, Gene>& genes);
+void read_gff_file(std::ifstream& input_file, std::unordered_map<std::string, std::vector<std::vector<std::string>>>& file, std::unordered_map<std::string, Gene>& genes);
