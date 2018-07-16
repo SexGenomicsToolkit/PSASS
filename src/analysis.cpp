@@ -368,20 +368,28 @@ uint analysis(Parameters& parameters) {
                 // Change of contig
                 if (contig != current_contig) {
 
-                    regions.clear();
+                    if (current_contig != "") write_log("Finished analyzing contig " + current_contig, parameters.log_file, true, true);
 
-                    for (auto line: gff_data[contig]) {
+                    if (parameters.output_genes) {
+                        write_log("Loading genes information for " + contig + " : ", parameters.log_file, true, false);
 
-                        infos = split(line[8], ";");
-                        for (auto i: infos) {
-                            if (i.substr(0, 5) == "gene=") gene = split(i, "=")[1];
+                        regions.clear();
+
+                        for (auto line: gff_data[contig]) {
+
+                            infos = split(line[8], ";");
+                            for (auto i: infos) {
+                                if (i.substr(0, 5) == "gene=") gene = split(i, "=")[1];
+                            }
+
+                            if (line[2] == "gene") {
+                                for (int i=std::stoi(line[3]); i < std::stoi(line[4]) + 1; ++i) regions[i] = std::pair<std::string, bool>(gene, false);
+                            } else {
+                                for (int i=std::stoi(line[3]); i < std::stoi(line[4]) + 1; ++i) regions[i] = std::pair<std::string, bool>(gene, true);
+                            }
                         }
 
-                        if (line[2] == "gene") {
-                            for (int i=std::stoi(line[3]); i < std::stoi(line[4]) + 1; ++i) regions[i] = std::pair<std::string, bool>(gene, false);
-                        } else {
-                            for (int i=std::stoi(line[3]); i < std::stoi(line[4]) + 1; ++i) regions[i] = std::pair<std::string, bool>(gene, true);
-                        }
+                        write_log(std::to_string(regions.size()) + " bp. in genes.", parameters.log_file, false, true);
                     }
 
                     if (current_contig != "") {
@@ -402,7 +410,6 @@ uint analysis(Parameters& parameters) {
                             coverage_2_sliding_window.resize(0);
                         }
                     }
-
                 }
 
                 current_contig = contig;
