@@ -470,12 +470,13 @@ uint analysis(Parameters& parameters) {
         }
     } while (parameters.input_file);
 
+    float average_coverage_m = 0;
+    float average_coverage_f = 0;
+
     // Output coverage results
     write_log("Generating coverage output file...", parameters.log_file, true, true);
-    if (parameters.output_coverage) {
+    if (parameters.output_coverage or parameters.output_genes) {
 
-        float average_coverage_m = 0;
-        float average_coverage_f = 0;
         if (parameters.male_pool == 1) {
             average_coverage_m = float(total_coverage_1) / float(total_bases);
             average_coverage_f = float(total_coverage_2) / float(total_bases);
@@ -497,6 +498,10 @@ uint analysis(Parameters& parameters) {
 
     // Output genes results
     if (parameters.output_genes) {
+
+        float coverage_correction_males = (average_coverage_m + average_coverage_f) / 2 / average_coverage_m;
+        float coverage_correction_females = (average_coverage_m + average_coverage_f) / 2 / average_coverage_f;
+        std::cout << average_coverage_m << "," << average_coverage_f << "," << coverage_correction_males << "," << coverage_correction_females << std::endl;
 
         uint gene_length, male_coverage, female_coverage;
         write_log("Generating genes output file...", parameters.log_file, true, true);
@@ -525,8 +530,12 @@ uint analysis(Parameters& parameters) {
             }
 
             parameters.genes_output_file << gene.second.contig << "\t" << gene.second.start << "\t" << gene.second.end << "\t" << gene.second.name << "\t" << gene.second.product << "\t"
-                                         << male_coverage << "\t" << gene.second.coverage[0] << "\t" << gene.second.coverage[1] << "\t"
-                                         << female_coverage << "\t" << gene.second.coverage[2] << "\t" << gene.second.coverage[3] << "\t"
+                                         << male_coverage << "\t" << int(male_coverage * coverage_correction_males) << "\t"
+                                         << gene.second.coverage[0] << "\t" << int(gene.second.coverage[0] * coverage_correction_males) << "\t"
+                                         << gene.second.coverage[1] << "\t" << int(gene.second.coverage[1] * coverage_correction_males) << "\t"
+                                         << female_coverage << "\t" << int(female_coverage * coverage_correction_females) << "\t"
+                                         << gene.second.coverage[2] << "\t" << int(gene.second.coverage[2] * coverage_correction_females) << "\t"
+                                         << gene.second.coverage[3] << "\t" << int(gene.second.coverage[3] * coverage_correction_females) << "\t"
                                          << gene.second.snps[0] + gene.second.snps[1] << "\t" << gene.second.snps[0] << "\t" << gene.second.snps[1] << "\t"
                                          << gene.second.snps[2] + gene.second.snps[3] << "\t" << gene.second.snps[2] << "\t" << gene.second.snps[3] << "\n";
         }
