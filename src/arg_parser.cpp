@@ -160,8 +160,8 @@ void ArgParser::set_parameters(Parameters& parameters) {
             exit(1);
         }
         parameters.snps_pos_output_file << "Contig" << "\t" << "Position" << "\t" << "Sex" << "\t" <<
-                                           "M_A" << "\t" << "M_T" << "\t" << "M_G" << "\t" << "M_C" << "\t" << "M_I" << "\t" <<
-                                           "F_A" << "\t" << "F_T" << "\t" << "F_G" << "\t" << "F_C" << "\t" << "F_I" << "\n";
+                                           "M_A" << "\t" << "M_T" << "\t" << "M_G" << "\t" << "M_C" << "\t" <<
+                                           "F_A" << "\t" << "F_T" << "\t" << "F_G" << "\t" << "F_C" << "\n";
         write_log("OK", parameters.log_file, false, true);
     }
 
