@@ -25,6 +25,12 @@ void read_gff_file(std::ifstream& input_file, std::unordered_map<std::string, st
                         if (i.substr(0, 4) == "Name") gene = split(i, "=")[1];
                     }
 
+                    if (gene == "") {
+                        for (auto i: infos) {
+                            if (i.substr(0, 2) == "ID") gene = split(i, "=")[1];
+                        }
+                    }
+
                     genes[gene].contig = fields[0];
                     genes[gene].start = fields[3];
                     genes[gene].end = fields[4];
@@ -38,6 +44,12 @@ void read_gff_file(std::ifstream& input_file, std::unordered_map<std::string, st
                         else if (i.substr(0, 7) == "product") product = split(i, "=")[1];
                     }
 
+                    if (gene == "") {
+                        for (auto i: infos) {
+                            if (i.substr(0, 2) == "ID") gene = split(i, "=")[1];
+                        }
+                    }
+
                     if (gene != "" and (genes.find(gene) != genes.end())) {
                         genes[gene].product = product;
                         genes[gene].coding_length += std::stoi(fields[4]) - std::stoi(fields[3]);
@@ -45,6 +57,8 @@ void read_gff_file(std::ifstream& input_file, std::unordered_map<std::string, st
                     }
                 }
             }
+
+//            std::cout << genes[gene].name << std::endl;
         }
     }
 }
