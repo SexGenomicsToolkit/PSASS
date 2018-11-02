@@ -52,13 +52,11 @@ void read_gff_file(std::ifstream& input_file, std::unordered_map<std::string, st
 
                     if (gene != "" and (genes.find(gene) != genes.end())) {
                         genes[gene].product = product;
-                        genes[gene].coding_length += std::stoi(fields[4]) - std::stoi(fields[3]);
+                        genes[gene].coding_length += std::stoul(fields[4]) - std::stoul(fields[3]);
                         file[fields[0]].push_back(fields);
                     }
                 }
             }
-
-//            std::cout << genes[gene].name << std::endl;
         }
     }
 }

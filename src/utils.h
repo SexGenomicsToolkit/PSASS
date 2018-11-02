@@ -17,7 +17,7 @@
 // Output current date and time in format specified in utils.h
 inline char* print_time (char *buff) {
 
-    time_t t = time(0);
+    time_t t = time(nullptr);
     strftime(buff, DTTMSZ, DTTMFMT, localtime (&t));
     return buff;
 }
@@ -56,9 +56,9 @@ inline std::vector<std::string> split(std::string str, const std::string delimit
 
 
 // Faster string to int conversion
-inline uint64_t fast_stoi(const char* str) {
+inline int fast_stoi(const char* str) {
 
-    uint64_t val = 0;
+    int val = 0;
     while( *str ) {
         val = val*10 + (*str++ - '0');
     }

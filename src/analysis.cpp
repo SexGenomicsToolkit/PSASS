@@ -22,7 +22,7 @@ uint analysis(Parameters& parameters) {
 
     const uint window_range = parameters.window_size / 2;
 
-    uint16_t pool1_bases[6], pool2_bases[6];
+    long pool1_bases[6], pool2_bases[6];
     bool snp_1 = false, snp_2 = false;
 
     // Total reads
@@ -40,7 +40,8 @@ uint analysis(Parameters& parameters) {
 
     // Reading optimization parameters
     char buff[2048];
-    uint k=0, field=0, subfield=0, position = 0, n_lines = 0;
+    long k=0;
+    uint field=0, subfield=0, position = 0, n_lines = 0;
     std::string contig = "", current_contig = "";
     std::string temp = "";
 
@@ -142,21 +143,21 @@ uint analysis(Parameters& parameters) {
                     if (parameters.output_snps_pos or parameters.output_snps_win or parameters.output_genes) {
 
                         // pool1 specific snps
-                        if ((pool1_a_freq > 0.5 - parameters.range_het and pool1_a_freq < 0.5 + parameters.range_het and pool2_a_freq > 1 - parameters.range_hom) or
-                                (pool1_t_freq > 0.5 - parameters.range_het and pool1_t_freq < 0.5 + parameters.range_het and pool2_t_freq > 1 - parameters.range_hom) or
-                                (pool1_g_freq > 0.5 - parameters.range_het and pool1_g_freq < 0.5 + parameters.range_het and pool2_g_freq > 1 - parameters.range_hom) or
-                                (pool1_c_freq > 0.5 - parameters.range_het and pool1_c_freq < 0.5 + parameters.range_het and pool2_c_freq > 1 - parameters.range_hom) or
-                                (pool1_i_freq > 0.5 - parameters.range_het and pool1_i_freq < 0.5 + parameters.range_het and pool2_i_freq > 1 - parameters.range_hom)) {
+                        if ((pool1_a_freq > parameters.freq_het - parameters.range_het and pool1_a_freq < parameters.freq_het + parameters.range_het and pool2_a_freq > parameters.freq_hom - parameters.range_hom) or
+                                (pool1_t_freq > parameters.freq_het - parameters.range_het and pool1_t_freq < parameters.freq_het + parameters.range_het and pool2_t_freq > parameters.freq_hom - parameters.range_hom) or
+                                (pool1_g_freq > parameters.freq_het - parameters.range_het and pool1_g_freq < parameters.freq_het + parameters.range_het and pool2_g_freq > parameters.freq_hom - parameters.range_hom) or
+                                (pool1_c_freq > parameters.freq_het - parameters.range_het and pool1_c_freq < parameters.freq_het + parameters.range_het and pool2_c_freq > parameters.freq_hom - parameters.range_hom) or
+                                (pool1_i_freq > parameters.freq_het - parameters.range_het and pool1_i_freq < parameters.freq_het + parameters.range_het and pool2_i_freq > parameters.freq_hom - parameters.range_hom)) {
 
                             snp_1 = true;
                         }
 
                         // pool2 specific snps
-                        if ((pool2_a_freq > 0.5 - parameters.range_het and pool2_a_freq < 0.5 + parameters.range_het and pool1_a_freq > 1 - parameters.range_hom) or
-                                 (pool2_t_freq > 0.5 - parameters.range_het and pool2_t_freq < 0.5 + parameters.range_het and pool1_t_freq > 1 - parameters.range_hom) or
-                                 (pool2_g_freq > 0.5 - parameters.range_het and pool2_g_freq < 0.5 + parameters.range_het and pool1_g_freq > 1 - parameters.range_hom) or
-                                 (pool2_c_freq > 0.5 - parameters.range_het and pool2_c_freq < 0.5 + parameters.range_het and pool1_c_freq > 1 - parameters.range_hom) or
-                                 (pool2_i_freq > 0.5 - parameters.range_het and pool2_i_freq < 0.5 + parameters.range_het and pool1_i_freq > 1 - parameters.range_hom)) {
+                        if ((pool2_a_freq > parameters.freq_het - parameters.range_het and pool2_a_freq < parameters.freq_het + parameters.range_het and pool1_a_freq > parameters.freq_hom - parameters.range_hom) or
+                                 (pool2_t_freq > parameters.freq_het - parameters.range_het and pool2_t_freq < parameters.freq_het + parameters.range_het and pool1_t_freq > parameters.freq_hom - parameters.range_hom) or
+                                 (pool2_g_freq > parameters.freq_het - parameters.range_het and pool2_g_freq < parameters.freq_het + parameters.range_het and pool1_g_freq > parameters.freq_hom - parameters.range_hom) or
+                                 (pool2_c_freq > parameters.freq_het - parameters.range_het and pool2_c_freq < parameters.freq_het + parameters.range_het and pool1_c_freq > parameters.freq_hom - parameters.range_hom) or
+                                 (pool2_i_freq > parameters.freq_het - parameters.range_het and pool2_i_freq < parameters.freq_het + parameters.range_het and pool1_i_freq > parameters.freq_hom - parameters.range_hom)) {
 
                              snp_2 = true;
                          }
@@ -380,6 +381,12 @@ uint analysis(Parameters& parameters) {
                             infos = split(line[8], ";");
                             for (auto i: infos) {
                                 if (i.substr(0, 5) == "gene=") gene = split(i, "=")[1];
+                            }
+
+                            if (gene == "") {
+                                for (auto i: infos) {
+                                    if (i.substr(0, 2) == "ID") gene = split(i, "=")[1];
+                                }
                             }
 
                             if (line[2] == "gene") {
