@@ -31,11 +31,14 @@ void read_gff_file(std::ifstream& input_file, std::unordered_map<std::string, st
                         }
                     }
 
-                    genes[gene].contig = fields[0];
-                    genes[gene].start = fields[3];
-                    genes[gene].end = fields[4];
-                    genes[gene].name = gene;
-                    file[fields[0]].push_back(fields);
+                    if (gene != "") {
+                        genes[gene].contig = fields[0];
+                        genes[gene].start = fields[3];
+                        genes[gene].end = fields[4];
+                        genes[gene].name = gene;
+                        file[fields[0]].push_back(fields);
+                    }
+
 
                 } else if (fields[2] == "exon") {
 
@@ -53,7 +56,7 @@ void read_gff_file(std::ifstream& input_file, std::unordered_map<std::string, st
                     if (gene != "" and (genes.find(gene) != genes.end())) {
                         genes[gene].product = product;
                         genes[gene].coding_length += std::stoul(fields[4]) - std::stoul(fields[3]);
-                        file[fields[0]].push_back(fields);
+//                        file[fields[0]].push_back(fields);
                     }
                 }
             }

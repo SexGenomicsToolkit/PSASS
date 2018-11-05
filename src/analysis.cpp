@@ -80,7 +80,7 @@ uint analysis(Parameters& parameters) {
 
                 // Update log file
                 ++n_lines;
-                if (n_lines % 5000000 == 0) {
+                if (n_lines % 25000000 == 0) {
                     write_log("Processed ", parameters.log_file, true, false);
                     write_log(n_lines / 1000000, parameters.log_file, false, false);
                     write_log(" M. lines.", parameters.log_file, false, true);
@@ -257,7 +257,7 @@ uint analysis(Parameters& parameters) {
                     }
 
                     if (snp_1_sliding_window.size() == parameters.window_size) {
-                        snp_1_window = 1.0*std::accumulate(snp_1_sliding_window.begin(), snp_1_sliding_window.end(), 0.0);
+                        snp_1_window = 1.0 * std::accumulate(snp_1_sliding_window.begin(), snp_1_sliding_window.end(), 0.0);
                     } else if (snp_1_sliding_window.size() == parameters.window_size + 1) {
                         snp_1_window -= snp_1_sliding_window[0];
                         snp_1_window += snp_1;
@@ -272,7 +272,7 @@ uint analysis(Parameters& parameters) {
                     }
 
                     if (snp_2_sliding_window.size() == parameters.window_size) {
-                        snp_2_window = 1.0*std::accumulate(snp_2_sliding_window.begin(), snp_2_sliding_window.end(), 0.0);
+                        snp_2_window = 1.0 * std::accumulate(snp_2_sliding_window.begin(), snp_2_sliding_window.end(), 0.0);
                     } else if (snp_2_sliding_window.size() == parameters.window_size + 1) {
                         snp_2_window -= snp_2_sliding_window[0];
                         snp_2_window += snp_2;
@@ -322,6 +322,7 @@ uint analysis(Parameters& parameters) {
 
                         gene = regions[position].first;
                         coding = regions[position].second;
+//                        std::cout << gene << " : " << coding << std::endl;
 
                         if (coding) {
                             if (parameters.male_pool == 1) {
@@ -348,6 +349,18 @@ uint analysis(Parameters& parameters) {
                                 genes[gene].snps[3] += snp_1;
                             }
                         }
+                        if (parameters.male_pool == 1) {
+                            genes[gene].coverage[4] += pool1_total;
+                            genes[gene].coverage[5] += pool2_total;
+                            genes[gene].snps[4] += snp_1;
+                            genes[gene].snps[5] += snp_2;
+                        } else {
+                            genes[gene].coverage[4] += pool2_total;
+                            genes[gene].coverage[5] += pool1_total;
+                            genes[gene].snps[4] += snp_2;
+                            genes[gene].snps[5] += snp_1;
+                        }
+
                     }
                 }
 
@@ -377,6 +390,8 @@ uint analysis(Parameters& parameters) {
                         regions.clear();
 
                         for (auto line: gff_data[contig]) {
+
+                            gene = "";
 
                             infos = split(line[8], ";");
                             for (auto i: infos) {
@@ -516,8 +531,8 @@ uint analysis(Parameters& parameters) {
         for (auto gene: genes) {
 
             gene_length = std::stoi(gene.second.end) -  std::stoi(gene.second.start);
-            male_coverage = (gene.second.coverage[0] + gene.second.coverage[1]) / gene_length;
-            female_coverage = (gene.second.coverage[2] + gene.second.coverage[3]) / gene_length;
+            male_coverage = (gene.second.coverage[4]) / gene_length;
+            female_coverage = (gene.second.coverage[5]) / gene_length;
             gene.second.noncoding_length = gene_length -  gene.second.coding_length;
 
             if (gene.second.coding_length == 0) {
@@ -543,8 +558,8 @@ uint analysis(Parameters& parameters) {
                                          << female_coverage << "\t" << int(female_coverage * coverage_correction_females) << "\t"
                                          << gene.second.coverage[2] << "\t" << int(gene.second.coverage[2] * coverage_correction_females) << "\t"
                                          << gene.second.coverage[3] << "\t" << int(gene.second.coverage[3] * coverage_correction_females) << "\t"
-                                         << gene.second.snps[0] + gene.second.snps[1] << "\t" << gene.second.snps[0] << "\t" << gene.second.snps[1] << "\t"
-                                         << gene.second.snps[2] + gene.second.snps[3] << "\t" << gene.second.snps[2] << "\t" << gene.second.snps[3] << "\n";
+                                         << gene.second.snps[4] << "\t" << gene.second.snps[0] << "\t" << gene.second.snps[1] << "\t"
+                                         << gene.second.snps[5] << "\t" << gene.second.snps[2] << "\t" << gene.second.snps[3] << "\n";
         }
     }
 
