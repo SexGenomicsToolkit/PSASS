@@ -66,6 +66,10 @@ void ArgParser::set_parameters(Parameters& parameters) {
     write_log(" - Output resolution: ", parameters.log_file, false, false);
     write_log(parameters.output_resolution, parameters.log_file, false, true);
 
+    parameters.ignore_indels = this->set_value("--ignore-indels") != "0";
+    write_log(" - Ignore indels: ", parameters.log_file, false, false);
+    write_log(parameters.ignore_indels, parameters.log_file, false, true);
+
     parameters.male_pool = std::stoul(this->set_value("--male-pool"));
     write_log(" - Male pool: ", parameters.log_file, false, false);
     write_log(parameters.male_pool, parameters.log_file, false, true);
@@ -259,12 +263,12 @@ void ArgParser::usage() {
     std::cout << "--input-file           <string>    Input file (popoolation sync file)                                    [\"\"]" << std::endl;
     std::cout << "--output-prefix        <string>    Full prefix (including path) for output files                         [\"\"]" << std::endl;
     std::cout << "--gff-file             <string>    GFF file for gene-specific output                                     [\"\"]" << std::endl;
-    std::cout << "--output-fst-pos       <bool>      Output fst positions                                                  [1]" << std::endl;
-    std::cout << "--output-fst-win       <bool>      Output fst sliding window                                             [1]" << std::endl;
-    std::cout << "--output-snps-pos      <bool>      Output snps positions                                                 [1]" << std::endl;
-    std::cout << "--output-snps-win      <bool>      Output snps sliding window                                            [1]" << std::endl;
-    std::cout << "--output-coverage      <bool>      Output coverage                                                       [1]" << std::endl;
-    std::cout << "--male-pool            <int>       Male pool (1/2)                                                       [2]" << std::endl << std::endl;;
+    std::cout << "--output-fst-pos       <bool>      If true, output fst positions (0/1)                                   [1]" << std::endl;
+    std::cout << "--output-fst-win       <bool>      If true, output fst sliding window (0/1)                              [1]" << std::endl;
+    std::cout << "--output-snps-pos      <bool>      If true, output snps positions (0/1)                                  [1]" << std::endl;
+    std::cout << "--output-snps-win      <bool>      If true, output snps sliding window (0/1)                             [1]" << std::endl;
+    std::cout << "--output-coverage      <bool>      If true, output coverage (0/1)                                        [1]" << std::endl;
+    std::cout << "--male-pool            <int>       Male pool (1/2)                                                       [2]" << std::endl << std::endl;
     std::cout << "## Analysis" << std::endl;
     std::cout << "--min-depth            <int>       Minimum depth to consider a site                                      [10]" << std::endl;
     std::cout << "--min-fst              <float>     FST threshold                                                         [0.25]" << std::endl;
@@ -274,8 +278,7 @@ void ArgParser::usage() {
     std::cout << "--range-hom            <float>     Range of frequency for a sex-linked SNP in the homogametic sex        [0.05]" << std::endl;
     std::cout << "--window-size          <int>       Size of the sliding window (in bp)                                    [100000]" << std::endl;
     std::cout << "--output-resolution    <int>       Output resolution (in bp)                                             [500]" << std::endl;
-
-//    for (auto o: this->options) std::cout << "\t" << o.first << " <" << o.second[1] << ">  " << o.second[2] << "  [" << o.second[0] << "]" << std::endl;
+    std::cout << "--ignore-indels        <bool>      If true, do not count indels as polymorphism (0/1)                    [0]" << std::endl;
     std::cout << std::endl;
 }
 

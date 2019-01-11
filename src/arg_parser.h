@@ -30,6 +30,7 @@ class ArgParser {
                                                                         {"--range-hom", {"0.05", "float", "Range of frequency for a sex-linked SNP in the homogametic sex"} },
                                                                         {"--window-size", {"100000", "int", "Size of the sliding window (in bp)"} },
                                                                         {"--output-resolution", {"500", "int", "Output resolution (in bp)"} } ,
+                                                                        {"--ignore-indels", {"0", "bool", "Ignore indels"} },
 
                                                                         {"--input-file", {"", "string", "Input file (popoolation sync file)"} },
                                                                         {"--output-prefix", {"", "string", "Full prefix (including path) for output files"} },
