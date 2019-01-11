@@ -29,11 +29,11 @@ uint analysis(Parameters& parameters) {
     float pool1_total = 0, pool2_total = 0;
 
     // pool1 / pool2 frequency for adenine, thymine, guanine, cytosine and indels
-    float pool1_a_freq = 0, pool1_t_freq = 0, pool1_g_freq = 0, pool1_c_freq = 0;
-    float pool2_a_freq = 0, pool2_t_freq = 0, pool2_g_freq = 0, pool2_c_freq = 0;
+    float pool1_a_freq = 0, pool1_t_freq = 0, pool1_g_freq = 0, pool1_c_freq = 0, pool1_i_freq = 0;
+    float pool2_a_freq = 0, pool2_t_freq = 0, pool2_g_freq = 0, pool2_c_freq = 0, pool2_i_freq = 0;
 
     // Average frequency for adenine, thymine, guanine, cytosine and indels
-    float average_a_freq = 0, average_t_freq = 0, average_g_freq = 0, average_c_freq = 0;
+    float average_a_freq = 0, average_t_freq = 0, average_g_freq = 0, average_c_freq = 0, average_i_freq = 0;
 
     // Pi and Fst
     float pool1_pi = 0, pool2_pi = 0, total_pi = 0, within_pi = 0, fst = 0;
@@ -94,8 +94,8 @@ uint analysis(Parameters& parameters) {
                 snp_2 = false;
 
                 // pool1 and pool2 totals
-                pool1_total = float(pool1_bases[0] + pool1_bases[1] + pool1_bases[2] + pool1_bases[3]);
-                pool2_total = float(pool2_bases[0] + pool2_bases[1] + pool2_bases[2] + pool2_bases[3]);
+                pool1_total = float(pool1_bases[0] + pool1_bases[1] + pool1_bases[2] + pool1_bases[3] + pool1_bases[5]);
+                pool2_total = float(pool2_bases[0] + pool2_bases[1] + pool2_bases[2] + pool2_bases[3] + pool2_bases[5]);
 
                 if (pool1_total > parameters.min_depth and pool2_total > parameters.min_depth) {
 
@@ -104,23 +104,26 @@ uint analysis(Parameters& parameters) {
                     pool1_t_freq = float(pool1_bases[1] / pool1_total);
                     pool1_g_freq = float(pool1_bases[2] / pool1_total);
                     pool1_c_freq = float(pool1_bases[3] / pool1_total);
+                    pool1_i_freq = float(pool1_bases[5] / pool1_total);
                     pool2_a_freq = float(pool2_bases[0] / pool2_total);
                     pool2_t_freq = float(pool2_bases[1] / pool2_total);
                     pool2_g_freq = float(pool2_bases[2] / pool2_total);
                     pool2_c_freq = float(pool2_bases[3] / pool2_total);
+                    pool2_i_freq = float(pool2_bases[5] / pool2_total);
 
                     // Average frequencies
                     average_a_freq = float((pool1_a_freq + pool2_a_freq) / 2);
                     average_t_freq = float((pool1_t_freq + pool2_t_freq) / 2);
                     average_g_freq = float((pool1_g_freq + pool2_g_freq) / 2);
                     average_c_freq = float((pool1_c_freq + pool2_c_freq) / 2);
+                    average_i_freq = float((pool1_i_freq + pool2_i_freq) / 2);
 
                     // pool1, pool2, and total pi
-                    pool1_pi = float((1 - pool1_a_freq * pool1_a_freq - pool1_t_freq * pool1_t_freq - pool1_g_freq * pool1_g_freq - pool1_c_freq * pool1_c_freq) *
+                    pool1_pi = float((1 - pool1_a_freq * pool1_a_freq - pool1_t_freq * pool1_t_freq - pool1_g_freq * pool1_g_freq - pool1_c_freq * pool1_c_freq - pool1_i_freq * pool1_i_freq) *
                                      (pool1_total / (pool1_total - 1)));
-                    pool2_pi = float((1 - pool2_a_freq * pool2_a_freq - pool2_t_freq * pool2_t_freq - pool2_g_freq * pool2_g_freq - pool2_c_freq * pool2_c_freq) *
+                    pool2_pi = float((1 - pool2_a_freq * pool2_a_freq - pool2_t_freq * pool2_t_freq - pool2_g_freq * pool2_g_freq - pool2_c_freq * pool2_c_freq - pool2_i_freq * pool2_i_freq) *
                                        (pool2_total / (pool2_total - 1)));
-                    total_pi = float((1 - average_a_freq * average_a_freq - average_t_freq * average_t_freq - average_g_freq * average_g_freq - average_c_freq * average_c_freq) *
+                    total_pi = float((1 - average_a_freq * average_a_freq - average_t_freq * average_t_freq - average_g_freq * average_g_freq - average_c_freq * average_c_freq - average_i_freq * average_i_freq) *
                                      (std::min(pool1_total, pool2_total) / (std::min(pool1_total, pool2_total) - 1)));
 
                     // Within pi
@@ -142,7 +145,8 @@ uint analysis(Parameters& parameters) {
                         if ((pool1_a_freq > 0.5 - parameters.range_het and pool1_a_freq < 0.5 + parameters.range_het and pool2_a_freq > 1 - parameters.range_hom) or
                                 (pool1_t_freq > 0.5 - parameters.range_het and pool1_t_freq < 0.5 + parameters.range_het and pool2_t_freq > 1 - parameters.range_hom) or
                                 (pool1_g_freq > 0.5 - parameters.range_het and pool1_g_freq < 0.5 + parameters.range_het and pool2_g_freq > 1 - parameters.range_hom) or
-                                (pool1_c_freq > 0.5 - parameters.range_het and pool1_c_freq < 0.5 + parameters.range_het and pool2_c_freq > 1 - parameters.range_hom)) {
+                                (pool1_c_freq > 0.5 - parameters.range_het and pool1_c_freq < 0.5 + parameters.range_het and pool2_c_freq > 1 - parameters.range_hom) or
+                                (pool1_i_freq > 0.5 - parameters.range_het and pool1_i_freq < 0.5 + parameters.range_het and pool2_i_freq > 1 - parameters.range_hom)) {
 
                             snp_1 = true;
                         }
@@ -151,7 +155,8 @@ uint analysis(Parameters& parameters) {
                         if ((pool2_a_freq > 0.5 - parameters.range_het and pool2_a_freq < 0.5 + parameters.range_het and pool1_a_freq > 1 - parameters.range_hom) or
                                  (pool2_t_freq > 0.5 - parameters.range_het and pool2_t_freq < 0.5 + parameters.range_het and pool1_t_freq > 1 - parameters.range_hom) or
                                  (pool2_g_freq > 0.5 - parameters.range_het and pool2_g_freq < 0.5 + parameters.range_het and pool1_g_freq > 1 - parameters.range_hom) or
-                                 (pool2_c_freq > 0.5 - parameters.range_het and pool2_c_freq < 0.5 + parameters.range_het and pool1_c_freq > 1 - parameters.range_hom)) {
+                                 (pool2_c_freq > 0.5 - parameters.range_het and pool2_c_freq < 0.5 + parameters.range_het and pool1_c_freq > 1 - parameters.range_hom) or
+                                 (pool2_i_freq > 0.5 - parameters.range_het and pool2_i_freq < 0.5 + parameters.range_het and pool1_i_freq > 1 - parameters.range_hom)) {
 
                              snp_2 = true;
                          }
@@ -194,8 +199,10 @@ uint analysis(Parameters& parameters) {
                                                             << contig << "\t" << position << "\t" << "M" << "\t"
                                                             << pool1_a_freq << "\t" << pool1_t_freq << "\t"
                                                             << pool1_g_freq << "\t" << pool1_c_freq << "\t"
+                                                            << pool1_i_freq << "\t"
                                                             << pool2_a_freq << "\t" << pool2_t_freq << "\t"
-                                                            << pool2_g_freq << "\t" << pool2_c_freq << "\n";
+                                                            << pool2_g_freq << "\t" << pool2_c_freq << "\t"
+                                                            << pool2_i_freq << "\n";
 
                         } else {
 
@@ -203,8 +210,10 @@ uint analysis(Parameters& parameters) {
                                                             << contig << "\t" << position << "\t" << "F" << "\t"
                                                             << pool2_a_freq << "\t" << pool2_t_freq << "\t"
                                                             << pool2_g_freq << "\t" << pool2_c_freq << "\t"
+                                                            << pool2_i_freq << "\t"
                                                             << pool1_a_freq << "\t" << pool1_t_freq << "\t"
-                                                            << pool1_g_freq << "\t" << pool1_c_freq << "\n";
+                                                            << pool1_g_freq << "\t" << pool1_c_freq << "\t"
+                                                            << pool1_i_freq << "\n";
 
                         }
 
@@ -216,8 +225,10 @@ uint analysis(Parameters& parameters) {
                                                             << contig << "\t" << position << "\t" << "F" << "\t"
                                                             << pool1_a_freq << "\t" << pool1_t_freq << "\t"
                                                             << pool1_g_freq << "\t" << pool1_c_freq << "\t"
+                                                            << pool1_i_freq << "\t"
                                                             << pool2_a_freq << "\t" << pool2_t_freq << "\t"
-                                                            << pool2_g_freq << "\t" << pool2_c_freq << "\n";
+                                                            << pool2_g_freq << "\t" << pool2_c_freq << "\t"
+                                                            << pool2_i_freq << "\n";
 
                         } else {
 
@@ -225,8 +236,10 @@ uint analysis(Parameters& parameters) {
                                                             << contig << "\t" << position << "\t" << "M" << "\t"
                                                             << pool2_a_freq << "\t" << pool2_t_freq << "\t"
                                                             << pool2_g_freq << "\t" << pool2_c_freq << "\t"
+                                                            << pool2_i_freq << "\t"
                                                             << pool1_a_freq << "\t" << pool1_t_freq << "\t"
-                                                            << pool1_g_freq << "\t" << pool1_c_freq << "\n";
+                                                            << pool1_g_freq << "\t" << pool1_c_freq << "\t"
+                                                            << pool1_i_freq << "\n";
 
                         }
                     }
