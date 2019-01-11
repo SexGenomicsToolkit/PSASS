@@ -25,6 +25,35 @@ ArgParser::ArgParser(int &argc, char **argv) {
 
 
 
+const std::string ArgParser::get_value(const std::string& setting) const {
+
+    std::vector<std::string>::const_iterator itr = std::find(this->fields.begin(), this->fields.end(), setting);
+
+    if (itr != this->fields.end() && ++itr != this->fields.end()) {
+
+        return *itr;
+    }
+
+    return "";
+}
+
+
+
+bool ArgParser::contains(const std::string &option) const {
+
+    return std::find(this->fields.begin(), this->fields.end(), option) != this->fields.end();
+}
+
+
+
+const std::string ArgParser::set_value(const std::string& field) {
+
+    if (this->contains(field)) return this->get_value(field);
+    else  return this->options.at(std::string(field))[0];
+}
+
+
+
 void ArgParser::set_parameters(Parameters& parameters) {
 
     parameters.input_file_path = this->set_value("--input-file");
@@ -58,9 +87,15 @@ void ArgParser::set_parameters(Parameters& parameters) {
     write_log(" - Homozygous range: ", parameters.log_file, false, false);
     write_log(parameters.range_hom, parameters.log_file, false, true);
 
+    parameters.min_het = parameters.freq_het - parameters.range_het;
+    parameters.max_het = parameters.freq_het + parameters.range_het;
+    parameters.min_hom = parameters.freq_hom- parameters.range_hom;
+
     parameters.window_size = std::stoul(this->set_value("--window-size"));
     write_log(" - Window size: ", parameters.log_file, false, false);
     write_log(parameters.window_size, parameters.log_file, false, true);
+
+    parameters.window_range = parameters.window_size / 2;
 
     parameters.output_resolution = std::stoul(this->set_value("--output-resolution"));
     write_log(" - Output resolution: ", parameters.log_file, false, false);
@@ -221,35 +256,6 @@ void ArgParser::set_parameters(Parameters& parameters) {
         parameters.output_genes = true;
         write_log("OK", parameters.log_file, false, true);
     }
-}
-
-
-
-const std::string ArgParser::get_value(const std::string& setting) const {
-
-    std::vector<std::string>::const_iterator itr = std::find(this->fields.begin(), this->fields.end(), setting);
-
-    if (itr != this->fields.end() && ++itr != this->fields.end()) {
-
-        return *itr;
-    }
-
-    return "";
-}
-
-
-
-bool ArgParser::contains(const std::string &option) const {
-
-    return std::find(this->fields.begin(), this->fields.end(), option) != this->fields.end();
-}
-
-
-
-const std::string ArgParser::set_value(const std::string& field) {
-
-    if (this->contains(field)) return this->get_value(field);
-    else  return this->options.at(std::string(field))[0];
 }
 
 

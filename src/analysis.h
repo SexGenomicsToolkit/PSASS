@@ -13,6 +13,6 @@
 #include "gff_file.h"
 #include "utils.h"
 
-typedef std::map<std::string, std::map<uint, std::pair<float, float> > > table;
+typedef std::map<std::string, std::map<uint, std::pair<float, float>>> table;
 
 uint analysis(Parameters& parameters);

@@ -11,7 +11,11 @@ struct Parameters{
     float freq_hom;
     float range_het;
     float range_hom;
+    float min_het;
+    float max_het;
+    float min_hom;
     uint window_size;
+    uint window_range;
     uint output_resolution;
     bool ignore_indels;
 
