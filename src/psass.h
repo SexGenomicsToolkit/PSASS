@@ -21,8 +21,8 @@
 // Single base information for a pair of pools (sliding window calculations)
 struct WindowBaseData {
 
-    bool snps[2];  // Pair of boolean for sex-specific snps in (pool1, pool2)
-    uint16_t coverage[2];  // Pair of int for coverage in (pool1, pool2)
+    bool snps[2] {0, 0};  // Pair of boolean for sex-specific snps in (pool1, pool2)
+    uint16_t coverage[2] {0, 0};  // Pair of int for coverage in (pool1, pool2)
 };
 
 
@@ -30,8 +30,8 @@ struct WindowBaseData {
 struct Window {
 
     std::deque<WindowBaseData> data;  // Sliding window data as a deque
-    uint16_t snps_average[2];  // Pair of int for average snps in current window for (pool1, pool2)
-    uint16_t coverage_average[2];  // Pair of int for average coverage in current window for (pool1, pool2)
+    uint16_t snps_total[2] {0, 0};  // Pair of int for average snps in current window for (pool1, pool2)
+    uint16_t coverage_total[2] {0, 0};  // Pair of int for average coverage in current window for (pool1, pool2)
 };
 
 

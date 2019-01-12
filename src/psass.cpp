@@ -54,24 +54,24 @@ void Psass::update_coverage() {
 void Psass::update_window() {
 
     // Add the current base to the window (reset window if size bigger than window_size, which should not happen)
-    (this->window.data.size() <=this->parameters.window_size) ? this->window.data.push_back(this->window_base_data) : this->window.data.resize(0);
+    (this->window.data.size() <= this->parameters.window_size) ? this->window.data.push_back(this->window_base_data) : this->window.data.resize(0);
 
     // If the window has size window_size, compute sum for each metric (first time with complete window in the current contig)
-    if (this->window.data.size() ==this->parameters.window_size) {
+    if (this->window.data.size() == this->parameters.window_size) {
 
         for (auto base: this->window.data) {
-            this->window.snps_average[0] += base.snps[0];
-            this->window.snps_average[1] += base.snps[1];
-            this->window.coverage_average[0] += base.coverage[0];
-            this->window.coverage_average[1] += base.coverage[1];
+            this->window.snps_total[0] += base.snps[0];
+            this->window.snps_total[1] += base.snps[1];
+            this->window.coverage_total[0] += base.coverage[0];
+            this->window.coverage_total[1] += base.coverage[1];
         }
 
-    } else if (this->window.data.size() ==this->parameters.window_size + 1) {  // Normal case (within contig) : substract front, add new value, remove front.
+    } else if (this->window.data.size() == this->parameters.window_size + 1) {  // Normal case (within contig) : substract front, add new value, remove front.
 
-        this->window.snps_average[0] = this->window.snps_average[0] - this->window.data[0].snps[0] + this->window_base_data.snps[0];
-        this->window.snps_average[1] = this->window.snps_average[1] - this->window.data[0].snps[1] + this->window_base_data.snps[1];
-        this->window.coverage_average[0] = this->window.snps_average[0] - this->window.data[0].coverage[0] + this->window_base_data.coverage[0];
-        this->window.coverage_average[1] = this->window.snps_average[1] - this->window.data[0].coverage[1] + this->window_base_data.coverage[1];
+        this->window.snps_total[0] = this->window.snps_total[0] - this->window.data[0].snps[0] + this->window_base_data.snps[0];
+        this->window.snps_total[1] = this->window.snps_total[1] - this->window.data[0].snps[1] + this->window_base_data.snps[1];
+        this->window.coverage_total[0] = this->window.snps_total[0] - this->window.data[0].coverage[0] + this->window_base_data.coverage[0];
+        this->window.coverage_total[1] = this->window.snps_total[1] - this->window.data[0].coverage[1] + this->window_base_data.coverage[1];
         this->window.data.pop_front();
     }
 }
@@ -132,20 +132,22 @@ void Psass::run() {
 
                 }
 
+                this->update_window();
+
                 ++this->total_bases;
 
-                // Output SNPs window and save coverage for later
+                // Output window information and update coverage
                 if ((position - this->parameters.window_range) % this->parameters.output_resolution == 0 and position > this->parameters.window_range) {
 
                     if (parameters.output_snps_win) {
                         this->parameters.snps_win_output_file << contig << "\t" << position - this->parameters.window_range << "\t"
-                                                              << this->window.snps_average[this->male_index] << "\t"
-                                                              << this->window.snps_average[this->female_index] << "\n";
+                                                              << this->window.snps_total[this->male_index] << "\t"
+                                                              << this->window.snps_total[this->female_index] << "\n";
                     }
 
                     if (parameters.output_coverage) {
-                        this->coverage[contig][position][0] = this->window.coverage_average[this->male_index];
-                        this->coverage[contig][position][1] = this->window.coverage_average[this->female_index];
+                        this->coverage[contig][position][0] = this->window.coverage_total[this->male_index];
+                        this->coverage[contig][position][1] = this->window.coverage_total[this->female_index];
                     }
 
                 }
@@ -158,13 +160,13 @@ void Psass::run() {
                         std::cout << "Finished analyzing contig :  " << current_contig << std::endl;
 
                         if (parameters.output_snps_win) {
-                            this->window.snps_average[0] = 0;
-                            this->window.snps_average[1] = 0;
+                            this->window.snps_total[0] = 0;
+                            this->window.snps_total[1] = 0;
                         }
 
                         if (parameters.output_coverage) {
-                            this->window.coverage_average[0] = 0;
-                            this->window.coverage_average[1] = 0;
+                            this->window.coverage_total[0] = 0;
+                            this->window.coverage_total[1] = 0;
                         }
 
                         this->window.data.resize(0);
