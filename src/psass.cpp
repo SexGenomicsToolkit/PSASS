@@ -1,5 +1,6 @@
 #include "psass.h"
 
+// Psass class constructor
 Psass::Psass(int argc, char *argv[]) {
 
     ArgParser cmd_options(argc, argv);
@@ -20,6 +21,8 @@ Psass::Psass(int argc, char *argv[]) {
 }
 
 
+
+// Check whether current position is a sex-specific SNPs for each sex and update window_base_data.snps
 void Psass::update_snps() {
 
     this->window_base_data.snps[0] = false;
@@ -44,16 +47,20 @@ void Psass::update_snps() {
 }
 
 
-void Psass::update_coverage() {
 
-    this->window_base_data.coverage[0] = this->pair_data.pool1.depth;
-    this->window_base_data.coverage[1] = this->pair_data.pool2.depth;
+// Update window_base_data.coverage from each pool's data depth
+void Psass::update_depth() {
+
+    this->window_base_data.depth[0] = this->pair_data.pool1.depth;
+    this->window_base_data.depth[1] = this->pair_data.pool2.depth;
 }
 
 
+
+// Update sliding window data
 void Psass::update_window() {
 
-    // Add the current base to the window (reset window if size bigger than window_size, which should not happen)
+    // Add the current base data to the window (reset window if size bigger than window_size, which should not happen)
     (this->window.data.size() <= this->parameters.window_size) ? this->window.data.push_back(this->window_base_data) : this->window.data.resize(0);
 
     // If the window has size window_size, compute sum for each metric (first time with complete window in the current contig)
@@ -62,21 +69,23 @@ void Psass::update_window() {
         for (auto base: this->window.data) {
             this->window.snps_total[0] += base.snps[0];
             this->window.snps_total[1] += base.snps[1];
-            this->window.coverage_total[0] += base.coverage[0];
-            this->window.coverage_total[1] += base.coverage[1];
+            this->window.depth_total[0] += base.depth[0];
+            this->window.depth_total[1] += base.depth[1];
         }
 
     } else if (this->window.data.size() == this->parameters.window_size + 1) {  // Normal case (within contig) : substract front, add new value, remove front.
 
         this->window.snps_total[0] = this->window.snps_total[0] - this->window.data[0].snps[0] + this->window_base_data.snps[0];
         this->window.snps_total[1] = this->window.snps_total[1] - this->window.data[0].snps[1] + this->window_base_data.snps[1];
-        this->window.coverage_total[0] = this->window.snps_total[0] - this->window.data[0].coverage[0] + this->window_base_data.coverage[0];
-        this->window.coverage_total[1] = this->window.snps_total[1] - this->window.data[0].coverage[1] + this->window_base_data.coverage[1];
+        this->window.depth_total[0] = this->window.snps_total[0] - this->window.data[0].depth[0] + this->window_base_data.depth[0];
+        this->window.depth_total[1] = this->window.snps_total[1] - this->window.data[0].depth[1] + this->window_base_data.depth[1];
         this->window.data.pop_front();
     }
 }
 
 
+
+// Write SNP and nucleotide information if current base is a sex-specific SNP
 void Psass::output_snp(std::string sex, std::string& contig, uint position) {
 
     this->parameters.snps_pos_output_file << std::fixed << std::setprecision(2)
@@ -86,21 +95,17 @@ void Psass::output_snp(std::string sex, std::string& contig, uint position) {
 }
 
 
+
+// Read the input file and process each line
 void Psass::run() {
 
-    char buff[2048];
-    long k = 0;
-    uint field = 0, subfield = 0, position = 0, n_lines = 0;
-    std::string contig = "", current_contig = "";
-    std::string temp = "";
-
     do {
-        this->parameters.input_file.read(buff, sizeof(buff));
-        k = this->parameters.input_file.gcount();
+        this->parameters.input_file.read(this->input_data.buff, this->input_data.buff_size);
+        this->input_data.k = this->parameters.input_file.gcount();
 
-        for (uint i=0; i<k; ++i) {
+        for (uint i=0; i<this->input_data.k; ++i) {
 
-            switch (buff[i]) {
+            switch (this->input_data.buff[i]) {
 
             case '\r':
                 break;
@@ -108,7 +113,7 @@ void Psass::run() {
             case '\n':
 
                 // Fill last pool2 base
-                this->pair_data.pool2.nucleotides[5] = fast_stoi(temp.c_str());
+                this->pair_data.pool2.nucleotides[5] = fast_stoi(this->input_data.temp.c_str());
 
                 // Reset values
                 this->pair_data.fst = 0;
@@ -116,9 +121,9 @@ void Psass::run() {
                 this->window_base_data.snps[1] = false;
 
                 this->pair_data.update();
-                this->update_coverage();
+                this->update_depth();
 
-                if (this->window_base_data.coverage[0] > this->parameters.min_depth and this->window_base_data.coverage[1] > this->parameters.min_depth) {
+                if (this->window_base_data.depth[0] > this->parameters.min_depth and this->window_base_data.depth[1] > this->parameters.min_depth) {
 
                     this->update_snps();
 
@@ -127,8 +132,8 @@ void Psass::run() {
                 // SNPs positions
                 if (parameters.output_snps_pos) {
 
-                    if (this->window_base_data.snps[this->male_index]) this->output_snp("M", contig, position);
-                    if (this->window_base_data.snps[this->female_index]) this->output_snp("F", contig, position);
+                    if (this->window_base_data.snps[this->male_index]) this->output_snp("M", this->input_data.contig, this->input_data.position);
+                    if (this->window_base_data.snps[this->female_index]) this->output_snp("F", this->input_data.contig, this->input_data.position);
 
                 }
 
@@ -137,27 +142,27 @@ void Psass::run() {
                 ++this->total_bases;
 
                 // Output window information and update coverage
-                if ((position - this->parameters.window_range) % this->parameters.output_resolution == 0 and position > this->parameters.window_range) {
+                if ((this->input_data.position - this->parameters.window_range) % this->parameters.output_resolution == 0 and this->input_data.position > this->parameters.window_range) {
 
                     if (parameters.output_snps_win) {
-                        this->parameters.snps_win_output_file << contig << "\t" << position - this->parameters.window_range << "\t"
+                        this->parameters.snps_win_output_file << this->input_data.contig << "\t" << this->input_data.position - this->parameters.window_range << "\t"
                                                               << this->window.snps_total[this->male_index] << "\t"
                                                               << this->window.snps_total[this->female_index] << "\n";
                     }
 
                     if (parameters.output_coverage) {
-                        this->coverage[contig][position][0] = this->window.coverage_total[this->male_index];
-                        this->coverage[contig][position][1] = this->window.coverage_total[this->female_index];
+                        this->coverage[this->input_data.contig][this->input_data.position][0] = this->window.depth_total[this->male_index];
+                        this->coverage[this->input_data.contig][this->input_data.position][1] = this->window.depth_total[this->female_index];
                     }
 
                 }
 
                 // Change of contig
-                if (contig != current_contig) {
+                if (this->input_data.contig != this->input_data.current_contig) {
 
-                    if (current_contig != "") {
+                    if (this->input_data.current_contig != "") {
 
-                        std::cout << "Finished analyzing contig :  " << current_contig << std::endl;
+                        std::cout << "Finished analyzing contig :  " << this->input_data.current_contig << std::endl;
 
                         if (parameters.output_snps_win) {
                             this->window.snps_total[0] = 0;
@@ -165,67 +170,67 @@ void Psass::run() {
                         }
 
                         if (parameters.output_coverage) {
-                            this->window.coverage_total[0] = 0;
-                            this->window.coverage_total[1] = 0;
+                            this->window.depth_total[0] = 0;
+                            this->window.depth_total[1] = 0;
                         }
 
                         this->window.data.resize(0);
                     }
                 }
 
-                current_contig = contig;
-                field = 0;
-                temp = "";
+                this->input_data.current_contig = this->input_data.contig;
+                this->input_data.field = 0;
+                this->input_data.temp = "";
                 break;
 
             case '\t':
 
-                switch (field) {
+                switch (this->input_data.field) {
 
                 case 0:
-                    contig = temp;
+                    this->input_data.contig = this->input_data.temp;
                     break;
 
                 case 1:
-                    position = fast_stoi(temp.c_str());
+                    this->input_data.position = fast_stoi(this->input_data.temp.c_str());
 
                 case 2:
                     break;
 
                 case 3:
-                    this->pair_data.pool1.nucleotides[5] = fast_stoi(temp.c_str());
+                    this->pair_data.pool1.nucleotides[5] = fast_stoi(this->input_data.temp.c_str());
                     break;
 
                 default:
                     break;
                 }
 
-                temp = "";
-                subfield = 0;
-                ++field;
+                this->input_data.temp = "";
+                this->input_data.subfield = 0;
+                ++this->input_data.field;
                 break;
 
             case ':':
 
-                switch (field) {
+                switch (this->input_data.field) {
 
                 case 3:
-                    this->pair_data.pool1.nucleotides[subfield] = fast_stoi(temp.c_str());
+                    this->pair_data.pool1.nucleotides[this->input_data.subfield] = fast_stoi(this->input_data.temp.c_str());
                     break;
 
                 case 4:
-                    this->pair_data.pool2.nucleotides[subfield] = fast_stoi(temp.c_str());
+                    this->pair_data.pool2.nucleotides[this->input_data.subfield] = fast_stoi(this->input_data.temp.c_str());
                     break;
 
                 default:
                     break;
                 }
-                temp = "";
-                ++subfield;
+                this->input_data.temp = "";
+                ++this->input_data.subfield;
                 break;
 
             default:
-                temp += buff[i];
+                this->input_data.temp += this->input_data.buff[i];
                 break;
             }
         }
