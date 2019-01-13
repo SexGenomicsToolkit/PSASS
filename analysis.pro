@@ -10,7 +10,8 @@ SOURCES += \
     src/gff_file.cpp \
     src/psass.cpp \
     src/pool_data.cpp \
-    src/pair_data.cpp
+    src/pair_data.cpp \
+    src/input_data.cpp
 
 HEADERS += \
     src/arg_parser.h \
@@ -20,4 +21,5 @@ HEADERS += \
     src/gff_file.h \
     src/psass.h \
     src/pool_data.h \
-    src/pair_data.h
+    src/pair_data.h \
+    src/input_data.h
