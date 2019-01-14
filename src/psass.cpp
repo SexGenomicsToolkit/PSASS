@@ -86,11 +86,140 @@ void Psass::update_window() {
 
 
 
+// Function called on a line from the input file (i.e. when meeting a '\n')
+void Psass::process_line() {
+
+    // Fill last pool2 base
+    this->pair_data.pool2.nucleotides[5] = fast_stoi(this->input_data.temp.c_str());
+
+    // Reset values
+    this->pair_data.fst = 0;
+    this->window_base_data.snps[0] = false;
+    this->window_base_data.snps[1] = false;
+
+    // Update data (depth per pool, fst, pi ...)
+    this->pair_data.update();
+
+    // Update depth data for window
+    this->update_depth();
+
+    // Update SNPs data for window
+    if (this->window_base_data.depth[0] > this->parameters.min_depth and this->window_base_data.depth[1] > this->parameters.min_depth) {
+
+        this->update_snps();
+
+    } // Could handle other cases, they could be interesting too
+
+    // SNPs positions
+    if (parameters.output_snps_pos) {
+
+        if (this->window_base_data.snps[this->male_index]) this->output_handler.output_snp_position("M");
+        if (this->window_base_data.snps[this->female_index]) this->output_handler.output_snp_position("F");
+
+    }
+
+    this->update_window();
+
+    ++this->total_bases;
+
+    // Output window information and update coverage
+    if ((this->input_data.position - this->parameters.window_range) % this->parameters.output_resolution == 0 and this->input_data.position > this->parameters.window_range) {
+
+        if (parameters.output_snps_win) this->output_handler.output_snp_window(this->window.snps_total);
+
+        if (parameters.output_depth) {
+            this->coverage[this->input_data.contig][this->input_data.position][0] = this->window.depth_total[this->male_index];
+            this->coverage[this->input_data.contig][this->input_data.position][1] = this->window.depth_total[this->female_index];
+        }
+
+    }
+
+    // Change of contig
+    if (this->input_data.contig != this->input_data.current_contig) {
+
+        if (this->input_data.current_contig != "") {
+
+            std::cout << "Finished analyzing contig :  " << this->input_data.current_contig << std::endl;
+
+            if (parameters.output_snps_win) {
+                this->window.snps_total[0] = 0;
+                this->window.snps_total[1] = 0;
+            }
+
+            if (parameters.output_depth) {
+                this->window.depth_total[0] = 0;
+                this->window.depth_total[1] = 0;
+            }
+
+            this->window.data.resize(0);
+        }
+    }
+
+    this->input_data.current_contig = this->input_data.contig;
+    this->input_data.field = 0;
+    this->input_data.temp = "";
+}
+
+
+
+// Function called on a field from the input file (i.e. when meeting a '\t')
+void Psass::process_field() {
+
+    switch (this->input_data.field) {
+
+    case 0:
+        this->input_data.contig = this->input_data.temp;
+        break;
+
+    case 1:
+        this->input_data.position = fast_stoi(this->input_data.temp.c_str());
+        break;
+
+    case 2:
+        break;
+
+    case 3:
+        this->pair_data.pool1.nucleotides[5] = fast_stoi(this->input_data.temp.c_str());
+        break;
+
+    default:
+        break;
+    }
+
+    this->input_data.temp = "";
+    this->input_data.subfield = 0;
+    ++this->input_data.field;
+}
+
+
+
+// Function called on a subfield from the input file (i.e. when meeting a ':')
+void Psass::process_subfield() {
+
+    switch (this->input_data.field) {
+
+    case 3:
+        this->pair_data.pool1.nucleotides[this->input_data.subfield] = fast_stoi(this->input_data.temp.c_str());
+        break;
+
+    case 4:
+        this->pair_data.pool2.nucleotides[this->input_data.subfield] = fast_stoi(this->input_data.temp.c_str());
+        break;
+
+    default:
+        break;
+    }
+    this->input_data.temp = "";
+    ++this->input_data.subfield;
+}
+
+
 
 // Read the input file and process each line
 void Psass::run() {
 
     do {
+
         this->parameters.input_file.read(this->input_data.buff, this->input_data.buff_size);
         this->input_data.k = this->parameters.input_file.gcount();
 
@@ -98,128 +227,27 @@ void Psass::run() {
 
             switch (this->input_data.buff[i]) {
 
-            case '\r':
-                break;
-
-            case '\n':
-
-                // Fill last pool2 base
-                this->pair_data.pool2.nucleotides[5] = fast_stoi(this->input_data.temp.c_str());
-
-                // Reset values
-                this->pair_data.fst = 0;
-                this->window_base_data.snps[0] = false;
-                this->window_base_data.snps[1] = false;
-
-                this->pair_data.update();
-                this->update_depth();
-
-                if (this->window_base_data.depth[0] > this->parameters.min_depth and this->window_base_data.depth[1] > this->parameters.min_depth) {
-
-                    this->update_snps();
-
-                } // Could handle other cases, they could be interesting too
-
-                // SNPs positions
-                if (parameters.output_snps_pos) {
-
-                    if (this->window_base_data.snps[this->male_index]) this->output_handler.output_snp_position("M");
-                    if (this->window_base_data.snps[this->female_index]) this->output_handler.output_snp_position("F");
-
-                }
-
-                this->update_window();
-
-                ++this->total_bases;
-
-                // Output window information and update coverage
-                if ((this->input_data.position - this->parameters.window_range) % this->parameters.output_resolution == 0 and this->input_data.position > this->parameters.window_range) {
-
-                    if (parameters.output_snps_win) this->output_handler.output_snp_window(this->window.snps_total);
-
-                    if (parameters.output_coverage) {
-                        this->coverage[this->input_data.contig][this->input_data.position][0] = this->window.depth_total[this->male_index];
-                        this->coverage[this->input_data.contig][this->input_data.position][1] = this->window.depth_total[this->female_index];
-                    }
-
-                }
-
-                // Change of contig
-                if (this->input_data.contig != this->input_data.current_contig) {
-
-                    if (this->input_data.current_contig != "") {
-
-                        std::cout << "Finished analyzing contig :  " << this->input_data.current_contig << std::endl;
-
-                        if (parameters.output_snps_win) {
-                            this->window.snps_total[0] = 0;
-                            this->window.snps_total[1] = 0;
-                        }
-
-                        if (parameters.output_coverage) {
-                            this->window.depth_total[0] = 0;
-                            this->window.depth_total[1] = 0;
-                        }
-
-                        this->window.data.resize(0);
-                    }
-                }
-
-                this->input_data.current_contig = this->input_data.contig;
-                this->input_data.field = 0;
-                this->input_data.temp = "";
-                break;
-
-            case '\t':
-
-                switch (this->input_data.field) {
-
-                case 0:
-                    this->input_data.contig = this->input_data.temp;
+                case '\r':
                     break;
 
-                case 1:
-                    this->input_data.position = fast_stoi(this->input_data.temp.c_str());
-
-                case 2:
+                case '\n':
+                    this->process_line();
                     break;
 
-                case 3:
-                    this->pair_data.pool1.nucleotides[5] = fast_stoi(this->input_data.temp.c_str());
+                case '\t':
+                    this->process_field();
+                    break;
+
+                case ':':
+                    this->process_subfield();
                     break;
 
                 default:
-                    break;
-                }
-
-                this->input_data.temp = "";
-                this->input_data.subfield = 0;
-                ++this->input_data.field;
-                break;
-
-            case ':':
-
-                switch (this->input_data.field) {
-
-                case 3:
-                    this->pair_data.pool1.nucleotides[this->input_data.subfield] = fast_stoi(this->input_data.temp.c_str());
+                    this->input_data.temp += this->input_data.buff[i];
                     break;
 
-                case 4:
-                    this->pair_data.pool2.nucleotides[this->input_data.subfield] = fast_stoi(this->input_data.temp.c_str());
-                    break;
-
-                default:
-                    break;
-                }
-                this->input_data.temp = "";
-                ++this->input_data.subfield;
-                break;
-
-            default:
-                this->input_data.temp += this->input_data.buff[i];
-                break;
             }
         }
+
     } while (parameters.input_file);
 }

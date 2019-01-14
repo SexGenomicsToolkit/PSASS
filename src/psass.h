@@ -66,6 +66,9 @@ class Psass {
         void update_snps();
         void update_window();
         void update_depth();
+        void process_line();
+        void process_field();
+        void process_subfield();
         void run();
 };
 

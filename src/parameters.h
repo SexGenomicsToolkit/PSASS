@@ -24,7 +24,7 @@ struct Parameters{
     bool output_fst_win;
     bool output_snps_pos;
     bool output_snps_win;
-    bool output_coverage;
+    bool output_depth;
     bool output_genes = false;
 
     // Input options

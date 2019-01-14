@@ -19,7 +19,7 @@ class ArgParser {
                                                                         {"--output-fst-win", {"1", "bool", "Output fst sliding window"} },
                                                                         {"--output-snps-pos", {"1", "bool", "Output snps positions"} },
                                                                         {"--output-snps-win", {"1", "bool", "Output snps sliding window"} },
-                                                                        {"--output-coverage", {"1", "bool", "Output coverage"} },
+                                                                        {"--output-depth", {"1", "bool", "Output depth for each pool"} },
                                                                         {"--male-pool", {"2", "int", "Male pool (1/2)"} } ,
 
                                                                         {"--min-depth", {"10", "int", "Minimum depth to consider a site"} },

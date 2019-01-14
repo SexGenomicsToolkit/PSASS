@@ -79,7 +79,7 @@ void ArgParser::set_parameters(Parameters& parameters) {
     parameters.output_fst_win = this->set_value("--output-fst-win") != "0";
     parameters.output_snps_pos = this->set_value("--output-snps-pos") != "0";
     parameters.output_snps_win = this->set_value("--output-snps-win") != "0";
-    parameters.output_coverage = this->set_value("--output-coverage") != "0";
+    parameters.output_depth = this->set_value("--output-depth") != "0";
 
     // Open input file
     parameters.input_file.open(parameters.input_file_path);
@@ -116,7 +116,7 @@ void ArgParser::usage() {
     std::cout << "--output-fst-win       <bool>      If true, output fst sliding window (0/1)                              [1]" << std::endl;
     std::cout << "--output-snps-pos      <bool>      If true, output snps positions (0/1)                                  [1]" << std::endl;
     std::cout << "--output-snps-win      <bool>      If true, output snps sliding window (0/1)                             [1]" << std::endl;
-    std::cout << "--output-coverage      <bool>      If true, output coverage (0/1)                                        [1]" << std::endl;
+    std::cout << "--output-depth         <bool>      If true, output depth(0/1)                                        [1]" << std::endl;
     std::cout << "--male-pool            <int>       Male pool (1/2)                                                       [2]" << std::endl << std::endl;
     std::cout << "## Analysis" << std::endl;
     std::cout << "--min-depth            <int>       Minimum depth to consider a site                                      [10]" << std::endl;

@@ -19,7 +19,7 @@ OutputHandler::OutputHandler(Parameters* parameters, InputData* input_data, Pool
     if (this->parameters->output_fst_win) this->fst_window_output_file.open(this->parameters->output_prefix);
     if (this->parameters->output_snps_pos) this->snps_position_output_file.open(this->parameters->output_prefix);
     if (this->parameters->output_snps_win) this->snps_window_output_file.open(this->parameters->output_prefix);
-    if (this->parameters->output_coverage) this->coverage_output_file.open(this->parameters->output_prefix);
+    if (this->parameters->output_depth) this->depth_output_file.open(this->parameters->output_prefix);
     if (this->parameters->output_genes) this->genes_output_file.open(this->parameters->output_prefix);
 }
 

@@ -35,11 +35,11 @@ class OutputHandler {
         OutputFile fst_window_output_file {"fst_window", "Contig\tPosition\tFst\n"};
         OutputFile snps_position_output_file {"snps_position", "Contig\tPosition\tSex\tM_A\tM_T\tM_G\tM_C\tM_I\tF_A\tF_T\tF_G\tF_C\tF_I\n"};
         OutputFile snps_window_output_file {"snps_window", "Contig\tPosition\tMales\tFemales\n"};
-        OutputFile coverage_output_file {"coverage", "Contig\tPosition\tMales_rel\tFemales_rel\tMales_abs\tFemales_abs\n"};
+        OutputFile depth_output_file {"depth", "Contig\tPosition\tMales_depth_rel\tFemales_depth_rel\tMales_depth_abs\tFemales_depth_abs\n"};
         OutputFile genes_output_file {"genes", "Contig\tStart\tEnd\tName\tProduct\t"
-                                      "Cov_males\tCov_males_corr\tCov_males_coding\tCov_males_coding_corr\tCov_males_noncoding\tCov_males_noncoding_corr\t"
-                                      "Cov_females\tCov_females_corr\tCov_females_coding\tCov_females_coding_corr\tCov_females_noncoding\tCov_females_noncoding_corr\t"
-                                      "Snp_males\tSnp_males_coding\tSnp_males_noncoding\tSnp_females\tSnp_females_coding\tSnp_females_noncoding\n"};
+                                      "Males_depth\tMales_depth_corr\tMales_depth_coding\tMales_depth_coding_corr\tMales_depth_noncoding\tMales_depth_noncoding_corr\t"
+                                      "Females_depth\tFemales_depth_corr\tFemales_depth_coding\tFemales_depth_coding_corr\tFemales_depth_noncoding\tFemales_depth_noncoding_corr\t"
+                                      "Males_snps\tMales_snps_depth_coding\tMales_snps_depth_noncoding\tFemales_snps\tFemales_snps_depth_coding\tFemales_snps_depth_noncoding\n"};
 
         InputData* input_data;
         PoolBaseData* male_pool;
