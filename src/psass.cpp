@@ -119,6 +119,12 @@ void Psass::process_line() {
 
     ++this->total_bases;
 
+    // Output Fst positions
+    if (parameters.output_fst_pos) {
+
+        if (this->pair_data.fst > this->parameters.min_fst) this->output_handler.output_fst_position(this->pair_data.fst);
+    }
+
     // Output SNPs positions
     if (parameters.output_snps_pos) {
 

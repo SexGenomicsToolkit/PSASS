@@ -40,6 +40,15 @@ void OutputFile::open(const std::string& prefix) {
 
 
 // Write SNP and nucleotide information if current base is a sex-specific SNP
+void OutputHandler::output_fst_position(float fst) {
+
+    this->fst_position_output_file.file << std::fixed << std::setprecision(2)
+                                        << this->input_data->contig << "\t" << this->input_data->position << "\t" << fst <<  "\n";
+}
+
+
+
+// Write SNP and nucleotide information if current base is a sex-specific SNP
 void OutputHandler::output_snp_position(std::string sex) {
 
     this->snps_position_output_file.file << std::fixed << std::setprecision(2)
