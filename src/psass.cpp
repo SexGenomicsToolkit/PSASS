@@ -127,7 +127,7 @@ void Psass::process_line() {
     }
 
     // Output window information and update coverage
-    if ((this->input_data.position - this->parameters.window_range) % this->parameters.output_resolution == 0 and this->input_data.position > this->parameters.window_range) {
+    if ((this->input_data.position - this->parameters.window_range) % this->parameters.output_resolution == 0 and this->input_data.position >= this->parameters.window_range) {
 
         if (parameters.output_snps_win) this->output_handler.output_snp_window(this->window.snps_in_window);
 

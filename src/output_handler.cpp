@@ -68,7 +68,7 @@ void OutputHandler::output_depth(std::map<std::string, std::map<uint, float[2]>>
 
     for (auto const& contig : depth) {
         for (auto const& position: contig.second) {
-            window_size = std::min(position.first, this->parameters->window_size);
+            window_size = std::min(position.first + this->parameters->window_range, this->parameters->window_size);
             this->depth_output_file.file << contig.first << "\t" << position.first << "\t"
                                          << float(position.second[this->male_index] / window_size) << "\t"
                                          << float(position.second[this->female_index] / window_size) << "\t"
