@@ -21,10 +21,10 @@ class PairBaseData {
         PoolBaseData pool1;  // Pool 1 data
         PoolBaseData pool2;  // Pool 2 data
 
-        float average_frequencies[6];  // Average nucleotide frequencies between the two pools
-        float total_pi;  // Total pi statistic
-        float within_pi;  // Within pi statistic
-        float fst;  // Fst statistic
+        float average_frequencies[6] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};  // Average nucleotide frequencies between the two pools
+        float total_pi = 0.0;  // Total pi statistic
+        float within_pi = 0.0;  // Within pi statistic
+        float fst = 0.0;  // Fst statistic
 
         PairBaseData();
         void compute_average_freq();

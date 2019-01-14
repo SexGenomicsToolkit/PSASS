@@ -31,8 +31,8 @@ struct WindowBaseData {
 struct Window {
 
     std::deque<WindowBaseData> data;  // Sliding window data as a deque
-    uint16_t snps_total[2] {0, 0};  // Pair of int for average snps in current window for (pool1, pool2)
-    uint16_t depth_total[2] {0, 0};  // Pair of int for average coverage in current window for (pool1, pool2)
+    uint16_t snps_in_window[2] {0, 0};  // Pair of int for average snps in current window for (pool1, pool2)
+    uint16_t depth_in_window[2] {0, 0};  // Pair of int for average coverage in current window for (pool1, pool2)
 };
 
 
@@ -51,21 +51,21 @@ class Psass {
 
         PoolBaseData* male_pool;
         PoolBaseData* female_pool;
-        bool male_index;
-        bool female_index;
+        bool male_index = 0;
+        bool female_index = 1;
 
         PairBaseData pair_data;
         WindowBaseData window_base_data;
         Window window;
 
-        std::map<std::string, std::map<uint, float[2]>> coverage;  // Coverage per base for entire genome (needed for relative coverage)
-        uint64_t total_coverage;  // Total coverage (needed for relative coverage)
-        uint64_t total_bases;  // Total bases (needed for relative coverage)
+        std::map<std::string, std::map<uint, float[2]>> depth_data;  // Coverage per base for entire genome (needed for relative coverage)
+        uint64_t total_depth[2] {0, 0};  // Total coverage (needed for relative coverage)
+        uint64_t total_bases = 0;  // Total bases (needed for relative coverage)
 
         Psass(int argc, char *argv[]);
+        void update_depth();
         void update_snps();
         void update_window();
-        void update_depth();
         void process_line();
         void process_field();
         void process_subfield();

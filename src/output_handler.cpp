@@ -23,6 +23,8 @@ OutputHandler::OutputHandler(Parameters* parameters, InputData* input_data, Pool
     if (this->parameters->output_genes) this->genes_output_file.open(this->parameters->output_prefix);
 }
 
+
+
 // Write SNP and nucleotide information if current base is a sex-specific SNP
 void OutputFile::open(const std::string& prefix) {
 
@@ -56,3 +58,23 @@ void OutputHandler::output_snp_window(uint16_t snps_total[2]) {
                                        << snps_total[this->female_index] << "\n";
 }
 
+
+// Write SNP and nucleotide information if current base is a sex-specific SNP
+void OutputHandler::output_depth(std::map<std::string, std::map<uint, float[2]>>& depth, uint64_t* total_depth, uint64_t& total_bases) {
+
+    float average_depth_males = float(total_depth[this->male_index]) / float(total_bases);
+    float average_depth_females = float(total_depth[this->female_index]) / float(total_bases);
+    uint window_size = 0;
+
+    for (auto const& contig : depth) {
+        for (auto const& position: contig.second) {
+            window_size = std::min(position.first, this->parameters->window_size);
+            this->depth_output_file.file << contig.first << "\t" << position.first << "\t"
+                                         << float(position.second[this->male_index] / window_size) << "\t"
+                                         << float(position.second[this->female_index] / window_size) << "\t"
+                                         << std::fixed << std::setprecision(2)
+                                         << float((position.second[this->male_index] / window_size)/ average_depth_males) << "\t"
+                                         << float((position.second[this->female_index] / window_size)/ average_depth_females) << "\n";
+        }
+    }
+}

@@ -11,9 +11,6 @@ class InputData {
         int buff_size = sizeof(this->buff);
         long k = 0;
 
-        // Total lines in the file
-        uint n_lines = 0;
-
         // Syncfile parsing : current field and subfield in a line, and current (sub)field value is stored in temp
         uint field = 0;
         uint subfield = 0;

@@ -13,10 +13,10 @@ class PoolBaseData {
 
     public:
 
-        uint16_t nucleotides[6];  // Raw nucleotides count for a position
-        float frequencies[6];  // Nucleotides frequencies for a position
-        float pi;  // Pi-statistic
-        uint16_t depth;  // Total coverage at this position
+        uint16_t nucleotides[6] {0, 0, 0, 0, 0, 0};  // Raw nucleotides count for a position
+        float frequencies[6] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};  // Nucleotides frequencies for a position
+        float pi = 0.0;  // Pi-statistic
+        uint16_t depth = 0;  // Total coverage at this position
 
         PoolBaseData();
 

@@ -26,23 +26,26 @@ Psass::Psass(int argc, char *argv[]) {
 // Check whether current position is a sex-specific SNPs for each sex and update window_base_data.snps
 void Psass::update_snps() {
 
-    this->window_base_data.snps[0] = false;
-    this->window_base_data.snps[1] = false;
+    if (this->window_base_data.depth[0] > this->parameters.min_depth and this->window_base_data.depth[1] > this->parameters.min_depth) {
 
-    for (auto i=0; i<6; ++i) {
+        this->window_base_data.snps[0] = false;
+        this->window_base_data.snps[1] = false;
 
-        if (this->pair_data.pool1.frequencies[i] > this->parameters.min_het and
-            this->pair_data.pool1.frequencies[i] < this->parameters.max_het and
-            this->pair_data.pool2.frequencies[i] > this->parameters.min_hom) {
+        for (auto i=0; i<6; ++i) {
 
-            this->window_base_data.snps[0] = true;
-        }
+            if (this->pair_data.pool1.frequencies[i] > this->parameters.min_het and
+                this->pair_data.pool1.frequencies[i] < this->parameters.max_het and
+                this->pair_data.pool2.frequencies[i] > this->parameters.min_hom) {
 
-        if (this->pair_data.pool2.frequencies[i] > this->parameters.min_het and
-            this->pair_data.pool2.frequencies[i] < this->parameters.max_het and
-            this->pair_data.pool1.frequencies[i] > this->parameters.min_hom) {
+                this->window_base_data.snps[0] = true;
+            }
 
-            this->window_base_data.snps[1] = true;
+            if (this->pair_data.pool2.frequencies[i] > this->parameters.min_het and
+                this->pair_data.pool2.frequencies[i] < this->parameters.max_het and
+                this->pair_data.pool1.frequencies[i] > this->parameters.min_hom) {
+
+                this->window_base_data.snps[1] = true;
+            }
         }
     }
 }
@@ -52,8 +55,15 @@ void Psass::update_snps() {
 // Update window_base_data.coverage from each pool's data depth
 void Psass::update_depth() {
 
+    // Update data to push in window
     this->window_base_data.depth[0] = this->pair_data.pool1.depth;
     this->window_base_data.depth[1] = this->pair_data.pool2.depth;
+
+    // Update total depth count to compute relative coverage later
+    if (this->parameters.output_depth) {
+        this->total_depth[0] += this->window_base_data.depth[0];
+        this->total_depth[1] += this->window_base_data.depth[1];
+    }
 }
 
 
@@ -65,21 +75,19 @@ void Psass::update_window() {
     (this->window.data.size() <= this->parameters.window_size) ? this->window.data.push_back(this->window_base_data) : this->window.data.resize(0);
 
     // If the window has size window_size, compute sum for each metric (first time with complete window in the current contig)
-    if (this->window.data.size() == this->parameters.window_size) {
+    if (this->window.data.size() <= this->parameters.window_size) {
 
-        for (auto base: this->window.data) {
-            this->window.snps_total[0] += base.snps[0];
-            this->window.snps_total[1] += base.snps[1];
-            this->window.depth_total[0] += base.depth[0];
-            this->window.depth_total[1] += base.depth[1];
-        }
+        this->window.snps_in_window[0] += this->window_base_data.snps[0];
+        this->window.snps_in_window[1] += this->window_base_data.snps[1];
+        this->window.depth_in_window[0] += this->window_base_data.depth[0];
+        this->window.depth_in_window[1] += this->window_base_data.depth[1];
 
     } else if (this->window.data.size() == this->parameters.window_size + 1) {  // Normal case (within contig) : substract front, add new value, remove front.
 
-        this->window.snps_total[0] = this->window.snps_total[0] - this->window.data[0].snps[0] + this->window_base_data.snps[0];
-        this->window.snps_total[1] = this->window.snps_total[1] - this->window.data[0].snps[1] + this->window_base_data.snps[1];
-        this->window.depth_total[0] = this->window.snps_total[0] - this->window.data[0].depth[0] + this->window_base_data.depth[0];
-        this->window.depth_total[1] = this->window.snps_total[1] - this->window.data[0].depth[1] + this->window_base_data.depth[1];
+        this->window.snps_in_window[0] = this->window.snps_in_window[0] - this->window.data[0].snps[0] + this->window_base_data.snps[0];
+        this->window.snps_in_window[1] = this->window.snps_in_window[1] - this->window.data[0].snps[1] + this->window_base_data.snps[1];
+        this->window.depth_in_window[0] = this->window.depth_in_window[0] - this->window.data[0].depth[0] + this->window_base_data.depth[0];
+        this->window.depth_in_window[1] = this->window.depth_in_window[1] - this->window.data[0].depth[1] + this->window_base_data.depth[1];
         this->window.data.pop_front();
     }
 }
@@ -104,34 +112,30 @@ void Psass::process_line() {
     this->update_depth();
 
     // Update SNPs data for window
-    if (this->window_base_data.depth[0] > this->parameters.min_depth and this->window_base_data.depth[1] > this->parameters.min_depth) {
+    this->update_snps();
 
-        this->update_snps();
-
-    } // Could handle other cases, they could be interesting too
-
-    // SNPs positions
-    if (parameters.output_snps_pos) {
-
-        if (this->window_base_data.snps[this->male_index]) this->output_handler.output_snp_position("M");
-        if (this->window_base_data.snps[this->female_index]) this->output_handler.output_snp_position("F");
-
-    }
-
+    // Update window data
     this->update_window();
 
     ++this->total_bases;
 
+    // Output SNPs positions
+    if (parameters.output_snps_pos) {
+
+        if (this->window_base_data.snps[this->male_index]) this->output_handler.output_snp_position("M");
+        if (this->window_base_data.snps[this->female_index]) this->output_handler.output_snp_position("F");
+    }
+
     // Output window information and update coverage
     if ((this->input_data.position - this->parameters.window_range) % this->parameters.output_resolution == 0 and this->input_data.position > this->parameters.window_range) {
 
-        if (parameters.output_snps_win) this->output_handler.output_snp_window(this->window.snps_total);
+        if (parameters.output_snps_win) this->output_handler.output_snp_window(this->window.snps_in_window);
 
         if (parameters.output_depth) {
-            this->coverage[this->input_data.contig][this->input_data.position][0] = this->window.depth_total[this->male_index];
-            this->coverage[this->input_data.contig][this->input_data.position][1] = this->window.depth_total[this->female_index];
-        }
 
+            this->depth_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][0] = this->window.depth_in_window[this->male_index];
+            this->depth_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][1] = this->window.depth_in_window[this->female_index];
+        }
     }
 
     // Change of contig
@@ -142,13 +146,13 @@ void Psass::process_line() {
             std::cout << "Finished analyzing contig :  " << this->input_data.current_contig << std::endl;
 
             if (parameters.output_snps_win) {
-                this->window.snps_total[0] = 0;
-                this->window.snps_total[1] = 0;
+                this->window.snps_in_window[0] = 0;
+                this->window.snps_in_window[1] = 0;
             }
 
             if (parameters.output_depth) {
-                this->window.depth_total[0] = 0;
-                this->window.depth_total[1] = 0;
+                this->window.depth_in_window[0] = 0;
+                this->window.depth_in_window[1] = 0;
             }
 
             this->window.data.resize(0);
@@ -250,4 +254,7 @@ void Psass::run() {
         }
 
     } while (parameters.input_file);
+
+    if (this->parameters.output_depth) this->output_handler.output_depth(this->depth_data, this->total_depth, this->total_bases);
+
 }
