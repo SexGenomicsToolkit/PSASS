@@ -58,203 +58,46 @@ void ArgParser::set_parameters(Parameters& parameters) {
 
     parameters.input_file_path = this->set_value("--input-file");
     parameters.output_prefix = this->set_value("--output-prefix");
-    parameters.log_file.open(parameters.output_prefix + ".log");
 
-    write_log("Retrieving parameter values ... \n", parameters.log_file, true, true);
 
     // Retrieve parameter values
     parameters.min_depth = std::stoul(this->set_value("--min-depth"));
-    write_log(" - Min depth: ", parameters.log_file, false, false);
-    write_log(parameters.min_depth, parameters.log_file, false, true);
-
     parameters.min_fst = std::stof(this->set_value("--min-fst"));
-    write_log(" - Min FST: ", parameters.log_file, false, false);
-    write_log(parameters.min_fst, parameters.log_file, false, true);
-
     parameters.freq_het = std::stof(this->set_value("--freq-het"));
-    write_log(" - Heterozygous frequency: ", parameters.log_file, false, false);
-    write_log(parameters.freq_het, parameters.log_file, false, true);
-
     parameters.freq_hom = std::stof(this->set_value("--freq-hom"));
-    write_log(" - Homozygous frequency: ", parameters.log_file, false, false);
-    write_log(parameters.freq_hom, parameters.log_file, false, true);
-
     parameters.range_het = std::stof(this->set_value("--range-het"));
-    write_log(" - Heterozygous range: ", parameters.log_file, false, false);
-    write_log(parameters.range_het, parameters.log_file, false, true);
-
     parameters.range_hom = std::stof(this->set_value("--range-hom"));
-    write_log(" - Homozygous range: ", parameters.log_file, false, false);
-    write_log(parameters.range_hom, parameters.log_file, false, true);
-
     parameters.min_het = parameters.freq_het - parameters.range_het;
     parameters.max_het = parameters.freq_het + parameters.range_het;
     parameters.min_hom = parameters.freq_hom- parameters.range_hom;
-
-    parameters.window_size = std::stoul(this->set_value("--window-size"));
-    write_log(" - Window size: ", parameters.log_file, false, false);
-    write_log(parameters.window_size, parameters.log_file, false, true);
-
-    parameters.window_range = parameters.window_size / 2;
-
-    parameters.output_resolution = std::stoul(this->set_value("--output-resolution"));
-    write_log(" - Output resolution: ", parameters.log_file, false, false);
-    write_log(parameters.output_resolution, parameters.log_file, false, true);
-
     parameters.ignore_indels = this->set_value("--ignore-indels") != "0";
-    write_log(" - Ignore indels: ", parameters.log_file, false, false);
-    write_log(parameters.ignore_indels, parameters.log_file, false, true);
-
+    parameters.output_resolution = std::stoul(this->set_value("--output-resolution"));
+    parameters.window_size = std::stoul(this->set_value("--window-size"));
+    parameters.window_range = parameters.window_size / 2;
     parameters.male_pool = std::stoul(this->set_value("--male-pool"));
-    write_log(" - Male pool: ", parameters.log_file, false, false);
-    write_log(parameters.male_pool, parameters.log_file, false, true);
-
     parameters.output_fst_pos = this->set_value("--output-fst-pos") != "0";
-    write_log(" - Output Fst positions: ", parameters.log_file, false, false);
-    write_log(parameters.output_fst_pos, parameters.log_file, false, true);
-
     parameters.output_fst_win = this->set_value("--output-fst-win") != "0";
-    write_log(" - Output Fst window: ", parameters.log_file, false, false);
-    write_log(parameters.output_fst_win, parameters.log_file, false, true);
-
     parameters.output_snps_pos = this->set_value("--output-snps-pos") != "0";
-    write_log(" - Output Snps positions: ", parameters.log_file, false, false);
-    write_log(parameters.output_snps_pos, parameters.log_file, false, true);
-
     parameters.output_snps_win = this->set_value("--output-snps-win") != "0";
-    write_log(" - Output Snps window: ", parameters.log_file, false, false);
-    write_log(parameters.output_snps_win, parameters.log_file, false, true);
-
     parameters.output_coverage = this->set_value("--output-coverage") != "0";
-    write_log(" - Output coverage: ", parameters.log_file, false, false);
-    write_log(parameters.output_coverage, parameters.log_file, false, true);
 
     // Open input file
-    write_log("\n", parameters.log_file, false, false);
-    write_log("Opening input sync file: ", parameters.log_file, true, false);
     parameters.input_file.open(parameters.input_file_path);
     if (not parameters.input_file.is_open()) {
-        std::cout << "Error: cannot open input file (" << parameters.input_file_path << ")." << std::endl;
-        write_log("cannot open input file (" + parameters.input_file_path + ").", parameters.log_file, false, true);
+        std::cerr << "Error: cannot open input file (" << parameters.input_file_path << ")." << std::endl;
         exit(1);
     }
-    write_log("OK", parameters.log_file, false, true);
 
 
     // Open GFF file
     if (this->contains("--gff-file")) {
-        write_log("Opening gff file: ", parameters.log_file, true, false);
+        parameters.output_genes = true;
         parameters.gff_file_path = this->set_value("--gff-file");
         parameters.gff_file.open(parameters.gff_file_path);
         if (not parameters.gff_file.is_open()) {
-            std::cout << "Error: cannot open gff file (" << parameters.gff_file_path << ")." << std::endl;
-            write_log("cannot open input file (" + parameters.gff_file_path + ").", parameters.log_file, false, true);
+            std::cerr << "Error: cannot open gff file (" << parameters.gff_file_path << ")." << std::endl;
             exit(1);
         }
-        write_log("OK", parameters.log_file, false, true);
-    }
-
-
-    // Create base output file path
-    if (parameters.output_prefix != "") parameters.output_prefix += "_";
-
-    write_log("Creating basic output files ... \n", parameters.log_file, true, true);
-
-    // Position Fst output file
-    if (parameters.output_fst_pos) {
-        write_log(" - FST position file: ", parameters.log_file, false, false);
-        std::string fst_position_output_file_path = parameters.output_prefix + "position_fst.tsv";
-        parameters.fst_pos_output_file.open(fst_position_output_file_path);
-        if (not parameters.fst_pos_output_file.is_open()) {
-            std::cout << "Error: cannot open Fst threshold output file (" << fst_position_output_file_path << ")." << std::endl;
-            write_log("cannot open input file (" + fst_position_output_file_path + ").", parameters.log_file, false, true);
-            exit(1);
-        }
-        parameters.fst_pos_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
-        write_log("OK", parameters.log_file, false, true);
-    }
-
-    // Window Fst output file
-    if (parameters.output_fst_win) {
-        write_log(" - FST window file: ", parameters.log_file, false, false);
-        std::string fst_win_output_file_path = parameters.output_prefix + "window_fst.tsv";
-        parameters.fst_win_output_file.open(fst_win_output_file_path);
-        if (not parameters.fst_win_output_file.is_open()) {
-            std::cout << "Error: cannot open Fst window output file (" << fst_win_output_file_path << ")." << std::endl;
-            write_log("cannot open input file (" + fst_win_output_file_path + ").", parameters.log_file, false, true);
-            exit(1);
-        }
-        parameters.fst_win_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
-        write_log("OK", parameters.log_file, false, true);
-    }
-
-    // Position SNPs output file
-    if (parameters.output_snps_pos) {
-        write_log(" - SNPs position file: ", parameters.log_file, false, false);
-        std::string snps_pos_output_file_path = parameters.output_prefix + "position_snp.tsv";
-        parameters.snps_pos_output_file.open(snps_pos_output_file_path);
-        if (not parameters.snps_pos_output_file.is_open()) {
-            std::cout << "Error: cannot open snps pos output file (" << snps_pos_output_file_path << ")." << std::endl;
-            write_log("cannot open input file (" + snps_pos_output_file_path + ").", parameters.log_file, false, true);
-            exit(1);
-        }
-        parameters.snps_pos_output_file << "Contig" << "\t" << "Position" << "\t" << "Sex" << "\t" <<
-                                           "M_A" << "\t" << "M_T" << "\t" << "M_G" << "\t" << "M_C" << "\t" << "M_I" << "\t" <<
-                                           "F_A" << "\t" << "F_T" << "\t" << "F_G" << "\t" << "F_C" << "\t" << "F_I" << "\n";
-        write_log("OK", parameters.log_file, false, true);
-    }
-
-    // Window SNPs output file
-    if (parameters.output_snps_win) {
-        write_log(" - SNPs window file: ", parameters.log_file, false, false);
-        std::string snps_win_output_file_path = parameters.output_prefix + "window_snp.tsv";
-        parameters.snps_win_output_file.open(snps_win_output_file_path);
-        if (not parameters.snps_win_output_file.is_open()) {
-            std::cout << "Error: cannot open SNPs output file (" << snps_win_output_file_path << ")." << std::endl;
-            write_log("cannot open input file (" + snps_win_output_file_path + ").", parameters.log_file, false, true);
-            exit(1);
-        }
-        parameters.snps_win_output_file << "Contig" << "\t" << "Position" << "\t" << "Males" << "\t" << "Females" << "\n";
-        write_log("OK", parameters.log_file, false, true);
-    }
-
-    // Coverage output file
-    if (parameters.output_coverage) {
-        write_log(" - Coverage file: ", parameters.log_file, false, false);
-        std::string coverage_output_file_path = parameters.output_prefix + "coverage.tsv";
-        parameters.coverage_output_file.open(coverage_output_file_path);
-        if (not parameters.coverage_output_file.is_open()) {
-            std::cout << "Error: cannot open coverage output file (" << coverage_output_file_path << ")." << std::endl;
-            write_log("cannot open input file (" + coverage_output_file_path + ").", parameters.log_file, false, true);
-            exit(1);
-        }
-        parameters.coverage_output_file << "Contig" << "\t" << "Position" << "\t" << "Males_rel" << "\t" << "Females_rel" << "\t" << "Males_abs" << "\t" << "Females_abs" << "\n";
-        write_log("OK", parameters.log_file, false, true);
-    }
-
-
-    // Genes output file
-    if (this->contains("--gff-file")) {
-        write_log(" - Genes file: ", parameters.log_file, false, false);
-        std::string genes_output_file_path = parameters.output_prefix + "genes.tsv";
-        parameters.genes_output_file.open(genes_output_file_path);
-        if (not parameters.genes_output_file.is_open()) {
-            std::cout << "Error: cannot open genes output file (" << genes_output_file_path << ")." << std::endl;
-            write_log("cannot open input file (" + genes_output_file_path + ").", parameters.log_file, false, true);
-            exit(1);
-        }
-        parameters.genes_output_file << "Contig" << "\t" << "Start" << "\t" << "End" << "\t" <<
-                                        "Name" << "\t" << "Product" << "\t" <<
-                                        "Cov_males" << "\t" << "Cov_males_corr" << "\t" <<
-                                        "Cov_males_coding" << "\t" << "Cov_males_coding_corr" << "\t" <<
-                                        "Cov_males_noncoding" << "\t" << "Cov_males_noncoding_corr" << "\t" <<
-                                        "Cov_females" << "\t" << "Cov_females_corr" << "\t" <<
-                                        "Cov_females_coding" << "\t" << "Cov_females_coding_corr" << "\t" <<
-                                        "Cov_females_noncoding" << "\t" << "Cov_females_noncoding_corr" << "\t" <<
-                                        "Snp_males" << "\t" << "Snp_males_coding" << "\t" << "Snp_males_noncoding" << "\t" <<
-                                        "Snp_females" << "\t" << "Snp_females_coding" << "\t" << "Snp_females_noncoding" << "\n";
-        parameters.output_genes = true;
-        write_log("OK", parameters.log_file, false, true);
     }
 }
 

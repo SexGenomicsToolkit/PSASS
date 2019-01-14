@@ -26,13 +26,6 @@ struct Parameters{
     bool output_snps_win;
     bool output_coverage;
     bool output_genes = false;
-    std::ofstream snps_win_output_file;
-    std::ofstream snps_pos_output_file;
-    std::ofstream fst_pos_output_file;
-    std::ofstream fst_win_output_file;
-    std::ofstream coverage_output_file;
-    std::ofstream genes_output_file;
-    std::ofstream log_file;
 
     // Input options
     std::string input_file_path;
@@ -43,6 +36,5 @@ struct Parameters{
     // Input file streams
     std::ifstream input_file;
     std::ifstream gff_file;
-
 
 };

@@ -2,6 +2,7 @@
 #include "utils.h"
 
 struct Gene {
+
     std::string contig;
     std::string start;
     std::string end;

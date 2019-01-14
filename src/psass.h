@@ -16,6 +16,7 @@
 #include "arg_parser.h"
 #include "analysis.h"
 #include "input_data.h"
+#include "output_handler.h"
 
 
 // Single base information for a pair of pools (sliding window calculations)
@@ -46,6 +47,7 @@ class Psass {
         std::unordered_map<uint, std::pair<std::string, bool>> regions;
 
         InputData input_data;
+        OutputHandler output_handler;
 
         PoolBaseData* male_pool;
         PoolBaseData* female_pool;
@@ -64,7 +66,6 @@ class Psass {
         void update_snps();
         void update_window();
         void update_depth();
-        void output_snp(std::string sex, std::string& contig, uint position);
         void run();
 };
 

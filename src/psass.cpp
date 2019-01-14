@@ -18,6 +18,7 @@ Psass::Psass(int argc, char *argv[]) {
     this->male_index = (this->parameters.male_pool == 2);  // 0 if male pool is first, 1 otherwise
     this->female_index = (this->parameters.male_pool == 1);  // 0 if male pool is second, 1 otherwise
 
+    this->output_handler = OutputHandler(&this->parameters, &this->input_data, this->male_pool, this->female_pool, this->male_index, this->female_index);
 }
 
 
@@ -85,16 +86,6 @@ void Psass::update_window() {
 
 
 
-// Write SNP and nucleotide information if current base is a sex-specific SNP
-void Psass::output_snp(std::string sex, std::string& contig, uint position) {
-
-    this->parameters.snps_pos_output_file << std::fixed << std::setprecision(2)
-                                         << contig << "\t" << position << "\t" << sex << "\t"
-                                         << this->male_pool->output_frequencies() << "\t"
-                                         << this->female_pool->output_frequencies() << "\n";
-}
-
-
 
 // Read the input file and process each line
 void Psass::run() {
@@ -132,8 +123,8 @@ void Psass::run() {
                 // SNPs positions
                 if (parameters.output_snps_pos) {
 
-                    if (this->window_base_data.snps[this->male_index]) this->output_snp("M", this->input_data.contig, this->input_data.position);
-                    if (this->window_base_data.snps[this->female_index]) this->output_snp("F", this->input_data.contig, this->input_data.position);
+                    if (this->window_base_data.snps[this->male_index]) this->output_handler.output_snp_position("M");
+                    if (this->window_base_data.snps[this->female_index]) this->output_handler.output_snp_position("F");
 
                 }
 
@@ -144,11 +135,7 @@ void Psass::run() {
                 // Output window information and update coverage
                 if ((this->input_data.position - this->parameters.window_range) % this->parameters.output_resolution == 0 and this->input_data.position > this->parameters.window_range) {
 
-                    if (parameters.output_snps_win) {
-                        this->parameters.snps_win_output_file << this->input_data.contig << "\t" << this->input_data.position - this->parameters.window_range << "\t"
-                                                              << this->window.snps_total[this->male_index] << "\t"
-                                                              << this->window.snps_total[this->female_index] << "\n";
-                    }
+                    if (parameters.output_snps_win) this->output_handler.output_snp_window(this->window.snps_total);
 
                     if (parameters.output_coverage) {
                         this->coverage[this->input_data.contig][this->input_data.position][0] = this->window.depth_total[this->male_index];
