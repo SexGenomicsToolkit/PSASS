@@ -28,6 +28,7 @@ class OutputHandler {
         OutputHandler() {}
         OutputHandler(Parameters* parameters, InputData* input_data, PoolBaseData* male_pool, PoolBaseData* female_pool, bool male_index, bool female_index);
         void output_fst_position(float fst);
+        void output_fst_window(float fst);
         void output_snp_position(std::string sex);
         void output_snp_window(uint16_t snps_total[2]);
         void output_depth(std::map<std::string, std::map<uint, float[2]>>& depth, uint64_t* total_depth, uint64_t& total_bases);

@@ -11,6 +11,8 @@ int main(int argc, char *argv[]) {
     Psass psass(argc, argv);
     psass.run();
 
+    std::cout << "Done" << std::endl;
+
 
 //    std::chrono::steady_clock::time_point t_end = std::chrono::steady_clock::now();
 //    write_log("Analysis completed. Processed ", parameters.log_file, true, false);

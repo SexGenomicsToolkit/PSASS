@@ -24,6 +24,7 @@ struct WindowBaseData {
 
     bool snps[2] {0, 0};  // Pair of boolean for sex-specific snps in (pool1, pool2)
     uint16_t depth[2] {0, 0};  // Pair of int for coverage in (pool1, pool2)
+    uint16_t nucleotides[2][6] {{0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}};
 };
 
 
@@ -33,6 +34,7 @@ struct Window {
     std::deque<WindowBaseData> data;  // Sliding window data as a deque
     uint16_t snps_in_window[2] {0, 0};  // Pair of int for average snps in current window for (pool1, pool2)
     uint16_t depth_in_window[2] {0, 0};  // Pair of int for average coverage in current window for (pool1, pool2)
+    float fst_in_window = 0.0;
 };
 
 
@@ -63,6 +65,8 @@ class Psass {
         uint64_t total_bases = 0;  // Total bases (needed for relative coverage)
 
         Psass(int argc, char *argv[]);
+        void update_nucleotides();
+        void update_fst();
         void update_depth();
         void update_snps();
         void update_window();
