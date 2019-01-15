@@ -1,6 +1,7 @@
 #include "output_handler.h"
 
-OutputHandler::OutputHandler(Parameters* parameters, InputData* input_data, PoolBaseData* male_pool, PoolBaseData* female_pool, bool male_index, bool female_index) {
+OutputHandler::OutputHandler(Parameters* parameters, InputData* input_data, PoolBaseData* male_pool, PoolBaseData* female_pool, bool male_index, bool female_index,
+                             std::map<std::string, std::map<uint, float[2]>>* depth, std::unordered_map<std::string, Gene>* genes) {
 
     // Pointers to data structures from PSASS
     this->input_data = input_data;
@@ -8,6 +9,8 @@ OutputHandler::OutputHandler(Parameters* parameters, InputData* input_data, Pool
     this->female_pool = female_pool;
     this->male_index = male_index;
     this->female_index = female_index;
+    this->depth = depth;
+    this->genes = genes;
 
     this->parameters = parameters;
 
@@ -70,7 +73,7 @@ void OutputHandler::output_snp_position(std::string sex) {
 
 
 // Write SNP and nucleotide information for the current window
-void OutputHandler::output_snp_window(uint16_t snps_total[2]) {
+void OutputHandler::output_snp_window(uint32_t snps_total[2]) {
 
     this->snps_window_output_file.file << this->input_data->contig << "\t" << this->input_data->position - this->parameters->window_range << "\t"
                                        << snps_total[this->male_index] << "\t"
@@ -79,11 +82,11 @@ void OutputHandler::output_snp_window(uint16_t snps_total[2]) {
 
 
 // Write depth information at the end of the analysis
-void OutputHandler::output_depth(std::map<std::string, std::map<uint, float[2]>>& depth, float* average_depth) {
+void OutputHandler::output_depth(float* average_depth) {
 
     uint window_size = 0;
 
-    for (auto const& contig : depth) {
+    for (auto const& contig : *this->depth) {
 
         for (auto const& position: contig.second) {
 
@@ -102,14 +105,14 @@ void OutputHandler::output_depth(std::map<std::string, std::map<uint, float[2]>>
 
 
 // Write genes information at the end of the analysis
-void OutputHandler::output_genes(std::unordered_map<std::string, Gene>& genes, float* average_depth) {
+void OutputHandler::output_genes(float* average_depth) {
 
     float depth_correction_males = (average_depth[this->male_index] + average_depth[this->female_index]) / 2 / average_depth[this->male_index];
     float depth_correction_females = (average_depth[this->male_index] + average_depth[this->female_index]) / 2 / average_depth[this->female_index];
 
     uint gene_length = 0, male_depth = 0, female_depth = 0;
 
-    for (auto gene: genes) {
+    for (auto gene: *this->genes) {
 
         gene_length = uint(std::stoi(gene.second.end) -  std::stoi(gene.second.start));
         male_depth = (gene.second.depth[4 + this->male_index]) / gene_length;

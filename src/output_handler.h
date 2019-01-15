@@ -27,13 +27,14 @@ class OutputHandler {
     public:
 
         OutputHandler() {}
-        OutputHandler(Parameters* parameters, InputData* input_data, PoolBaseData* male_pool, PoolBaseData* female_pool, bool male_index, bool female_index);
+        OutputHandler(Parameters* parameters, InputData* input_data, PoolBaseData* male_pool, PoolBaseData* female_pool, bool male_index, bool female_index,
+                      std::map<std::string, std::map<uint, float[2]>>* depth, std::unordered_map<std::string, Gene>* genes);
         void output_fst_position(float fst);
         void output_fst_window(float fst);
         void output_snp_position(std::string sex);
-        void output_snp_window(uint16_t snps_total[2]);
-        void output_depth(std::map<std::string, std::map<uint, float[2]>>& depth, float* average_depth);
-        void output_genes(std::unordered_map<std::string, Gene>& genes, float* average_depth);
+        void output_snp_window(uint32_t snps_total[2]);
+        void output_depth(float* average_depth);
+        void output_genes(float* average_depth);
 
     private:
 
@@ -47,12 +48,14 @@ class OutputHandler {
                                       "Females_depth\tFemales_depth_corr\tFemales_depth_coding\tFemales_depth_coding_corr\tFemales_depth_noncoding\tFemales_depth_noncoding_corr\t"
                                       "Males_snps\tMales_snps_depth_coding\tMales_snps_depth_noncoding\tFemales_snps\tFemales_snps_depth_coding\tFemales_snps_depth_noncoding\n"};
 
+        Parameters* parameters;
         InputData* input_data;
         PoolBaseData* male_pool;
         PoolBaseData* female_pool;
         bool male_index = 1;
         bool female_index = 0;
-        Parameters* parameters;
+        std::map<std::string, std::map<uint, float[2]>>* depth;
+        std::unordered_map<std::string, Gene>* genes;
 
         void create_output_files();
         void open_output_file(OutputFile& output_file);

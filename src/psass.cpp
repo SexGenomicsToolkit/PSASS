@@ -22,7 +22,8 @@ Psass::Psass(int argc, char *argv[]) {
     this->male_index = (this->parameters.male_pool == 2);  // 0 if male pool is first, 1 otherwise
     this->female_index = (this->parameters.male_pool == 1);  // 0 if male pool is second, 1 otherwise
 
-    this->output_handler = OutputHandler(&this->parameters, &this->input_data, this->male_pool, this->female_pool, this->male_index, this->female_index);
+    this->output_handler = OutputHandler(&this->parameters, &this->input_data, this->male_pool, this->female_pool, this->male_index, this->female_index,
+                                         &this->depth_data, &this->genes);
 
     if (this->parameters.output_genes) {
 
@@ -198,11 +199,11 @@ void Psass::update_window() {
 
                 this->window.depth_in_window[this->male_index] = this->window.depth_in_window[this->male_index]
                                                                  - this->window.data[0].depth[this->male_index]
-                                                                 + this->window_base_data.depth[this->male_index];
+                                                                 + this->male_pool->depth;
 
                 this->window.depth_in_window[this->female_index] = this->window.depth_in_window[this->female_index]
                                                                    - this->window.data[0].depth[this->female_index]
-                                                                   + this->window_base_data.depth[this->female_index];
+                                                                   + this->female_pool->depth;
 
             }
 
@@ -365,7 +366,8 @@ void Psass::process_line() {
     }
 
     // Output window information and update coverage
-    if ((this->input_data.position - this->parameters.window_range) % this->parameters.output_resolution == 1 and this->input_data.position >= this->parameters.window_range) {
+    if ((this->input_data.position == 1 or (this->input_data.position - this->parameters.window_range) % this->parameters.output_resolution == 0)
+        and this->input_data.position >= this->parameters.window_range) {
 
         this->output_window_step();
 
@@ -466,6 +468,6 @@ void Psass::run() {
     this->average_depth[this->male_index] = float(this->total_depth[this->male_index]) / float(this->total_bases);
     this->average_depth[this->female_index] = float(this->total_depth[this->female_index]) / float(this->total_bases);
 
-    if (this->parameters.output_depth) this->output_handler.output_depth(this->depth_data, this->average_depth);
-    if (this->parameters.output_genes) this->output_handler.output_genes(genes, average_depth);
+    if (this->parameters.output_depth) this->output_handler.output_depth(this->average_depth);
+    if (this->parameters.output_genes) this->output_handler.output_genes(this->average_depth);
 }
