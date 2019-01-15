@@ -21,6 +21,6 @@ class InputData {
         std::string current_contig = "";
         uint position = 0;
 
-        InputData();
+        InputData() {}
 };
 

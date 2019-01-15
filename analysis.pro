@@ -11,7 +11,6 @@ SOURCES += \
     src/psass.cpp \
     src/pool_data.cpp \
     src/pair_data.cpp \
-    src/input_data.cpp \
     src/output_handler.cpp
 
 HEADERS += \
