@@ -8,34 +8,45 @@ Psass::Psass(int argc, char *argv[]) {
     cmd_options.print_parameters();
 
     if (this->parameters.male_pool == 1) {
+
         this->male_pool = &this->pair_data.pool1;
         this->female_pool = &this->pair_data.pool2;
+
     } else {
+
         this->male_pool = &this->pair_data.pool2;
         this->female_pool = &this->pair_data.pool1;
+
     }
 
     this->male_index = (this->parameters.male_pool == 2);  // 0 if male pool is first, 1 otherwise
     this->female_index = (this->parameters.male_pool == 1);  // 0 if male pool is second, 1 otherwise
 
     this->output_handler = OutputHandler(&this->parameters, &this->input_data, this->male_pool, this->female_pool, this->male_index, this->female_index);
+
+    if (this->parameters.output_genes) {
+
+        read_gff_file(this->parameters.gff_file, this->gff_data, this->genes);
+
+    }
 }
 
 
 
-// Check whether current position is a sex-specific SNPs for each sex and update window_base_data.snps
+// Update window_base_data.nucleotides
 void Psass::update_nucleotides() {
 
     for (uint i=0; i<6; ++i) {
 
         this->window_base_data.nucleotides[0][i] = this->male_pool->nucleotides[i];
         this->window_base_data.nucleotides[1][i] = this->female_pool->nucleotides[i];
+
     }
 }
 
 
 
-// Check whether current position is a sex-specific SNPs for each sex and update window_base_data.snps
+// Compute Fst from nucleotides counts window and update window_base_data.fst
 void Psass::update_fst() {
 
     // Fst computation for the window is implemented using the formula described in Karlsson et al 2007
@@ -59,13 +70,17 @@ void Psass::update_fst() {
             for (uint i=0; i<6; ++i) {
 
                 if (position.nucleotides[0][i] > 0) {
+
                     ++n_alleles[0];
                     allele_1 = position.nucleotides[0][i];
+
                 }
 
                 if (position.nucleotides[1][i] > 0) {
+
                     ++n_alleles[1];
                     allele_2 = position.nucleotides[1][i];
+
                 }
             }
 
@@ -82,6 +97,7 @@ void Psass::update_fst() {
                 D = N + h1 + h2;
                 numerator += N;
                 denominator += D;
+
             }
         }
     }
@@ -106,6 +122,7 @@ void Psass::update_snps() {
                 this->female_pool->frequencies[i] > this->parameters.min_hom) {
 
                 this->window_base_data.snps[0] = true;
+
             }
 
             if (this->female_pool->frequencies[i] > this->parameters.min_het and
@@ -113,6 +130,7 @@ void Psass::update_snps() {
                 this->male_pool->frequencies[i] > this->parameters.min_hom) {
 
                 this->window_base_data.snps[1] = true;
+
             }
         }
     }
@@ -129,8 +147,10 @@ void Psass::update_depth() {
 
     // Update total depth count to compute relative coverage later
     if (this->parameters.output_depth) {
+
         this->total_depth[0] += this->window_base_data.depth[0];
         this->total_depth[1] += this->window_base_data.depth[1];
+
     }
 }
 
@@ -157,6 +177,32 @@ void Psass::update_window() {
         this->window.depth_in_window[0] = this->window.depth_in_window[0] - this->window.data[0].depth[0] + this->window_base_data.depth[0];
         this->window.depth_in_window[1] = this->window.depth_in_window[1] - this->window.data[0].depth[1] + this->window_base_data.depth[1];
         this->window.data.pop_front();
+
+    }
+}
+
+
+
+// Update genes data
+void Psass::update_genes() {
+
+    if (regions.find(this->input_data.position) != regions.end()) {
+
+        this->current_gene = regions[this->input_data.position].first;
+        this->current_region_coding = regions[this->input_data.position].second;
+
+        // Coding or non-coding depth and snps
+        this->genes[this->current_gene].depth[this->current_region_coding] += this->male_pool->depth;
+        this->genes[this->current_gene].depth[this->current_region_coding + 2] += this->female_pool->depth;
+        this->genes[this->current_gene].snps[this->current_region_coding] += this->window_base_data.snps[0];
+        this->genes[this->current_gene].snps[this->current_region_coding + 2] += this->window_base_data.snps[1];
+
+        // Gene-level depth and snps
+        this->genes[this->current_gene].depth[4] += this->male_pool->depth;
+        this->genes[this->current_gene].depth[5] += this->female_pool->depth;
+        this->genes[this->current_gene].snps[4] += this->window_base_data.snps[0];
+        this->genes[this->current_gene].snps[5] += this->window_base_data.snps[1];
+
     }
 }
 
@@ -174,19 +220,22 @@ void Psass::process_line() {
     this->window_base_data.snps[1] = false;
 
     // Update data (depth per pool, fst, pi ...)
-    this->pair_data.update();
+    this->pair_data.update(this->parameters.output_fst_pos);
 
     // Update nucleotides data for window
-    this->update_nucleotides();
+    if (this->parameters.output_fst_win) this->update_nucleotides();
 
     // Update depth data for window
-    this->update_depth();
+    if (this->parameters.output_depth) this->update_depth();
 
     // Update SNPs data for window
-    this->update_snps();
+    if (this->parameters.output_snps_win or this->parameters.output_snps_pos) this->update_snps();
 
     // Update window data
-    this->update_window();
+    if (this->parameters.output_fst_win or this->parameters.output_snps_win or this->parameters.output_depth) this->update_window();
+
+    // Update genes data
+    if (this->parameters.output_genes) this->update_genes();
 
     ++this->total_bases;
 
@@ -201,6 +250,7 @@ void Psass::process_line() {
 
         if (this->window_base_data.snps[this->male_index]) this->output_handler.output_snp_position("M");
         if (this->window_base_data.snps[this->female_index]) this->output_handler.output_snp_position("F");
+
     }
 
     // Output window information and update coverage
@@ -210,6 +260,7 @@ void Psass::process_line() {
 
             this->update_fst();
             this->output_handler.output_fst_window(this->window.fst_in_window);
+
         }
 
         if (this->parameters.output_snps_win) this->output_handler.output_snp_window(this->window.snps_in_window);
@@ -218,6 +269,7 @@ void Psass::process_line() {
 
             this->depth_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][0] = this->window.depth_in_window[this->male_index];
             this->depth_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][1] = this->window.depth_in_window[this->female_index];
+
         }
     }
 
@@ -229,16 +281,47 @@ void Psass::process_line() {
             std::cout << "Finished analyzing contig :  " << this->input_data.current_contig << std::endl;
 
             if (parameters.output_snps_win) {
+
                 this->window.snps_in_window[0] = 0;
                 this->window.snps_in_window[1] = 0;
+
             }
 
             if (parameters.output_depth) {
+
                 this->window.depth_in_window[0] = 0;
                 this->window.depth_in_window[1] = 0;
+
             }
 
             if (parameters.output_fst_win) this->window.fst_in_window = 0;
+
+            if (parameters.output_genes) {
+
+                this->regions.clear();
+
+                for (auto line: this->gff_data[this->input_data.contig]) {
+
+                    this->current_gene = "";
+
+                    this->current_gene_info = split(line[8], ";");
+                    for (auto i: this->current_gene_info) {
+                        if (i.substr(0, 5) == "gene=") this->current_gene = split(i, "=")[1];
+                    }
+
+                    if (this->current_gene == "") {
+                        for (auto i: this->current_gene_info) {
+                            if (i.substr(0, 2) == "ID") this->current_gene= split(i, "=")[1];
+                        }
+                    }
+
+                    if (line[2] == "gene") {
+                        for (auto i=std::stoul(line[3]); i < std::stoul(line[4]) + 1; ++i) this->regions[uint(i)] = std::pair<std::string, bool>(this->current_gene, false);
+                    } else {
+                        for (auto i=std::stoi(line[3]); i < std::stoi(line[4]) + 1; ++i) this->regions[uint(i)] = std::pair<std::string, bool>(this->current_gene, true);
+                    }
+                }
+            }
 
             this->window.data.resize(0);
         }
@@ -340,5 +423,9 @@ void Psass::run() {
 
     } while (parameters.input_file);
 
-    if (this->parameters.output_depth) this->output_handler.output_depth(this->depth_data, this->total_depth, this->total_bases);
+    this->average_depth[0] = float(this->total_depth[this->male_index]) / float(this->total_bases);
+    this->average_depth[1] = float(this->total_depth[this->female_index]) / float(this->total_bases);
+
+    if (this->parameters.output_depth) this->output_handler.output_depth(this->depth_data, this->average_depth);
+    if (this->parameters.output_genes) this->output_handler.output_genes(genes, average_depth);
 }

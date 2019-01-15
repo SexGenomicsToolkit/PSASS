@@ -6,6 +6,7 @@
 #include "input_data.h"
 #include "pool_data.h"
 #include "parameters.h"
+#include "gff_file.h"
 
 
 struct OutputFile {
@@ -31,7 +32,8 @@ class OutputHandler {
         void output_fst_window(float fst);
         void output_snp_position(std::string sex);
         void output_snp_window(uint16_t snps_total[2]);
-        void output_depth(std::map<std::string, std::map<uint, float[2]>>& depth, uint64_t* total_depth, uint64_t& total_bases);
+        void output_depth(std::map<std::string, std::map<uint, float[2]>>& depth, float* average_depth);
+        void output_genes(std::unordered_map<std::string, Gene>& genes, float* average_depth);
 
     private:
 

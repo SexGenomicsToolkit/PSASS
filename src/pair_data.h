@@ -31,6 +31,6 @@ class PairBaseData {
         void compute_total_pi();
         void compute_within_pi();
         void compute_fst();
-        void update();
+        void update(bool output_fst_pos);
 };
 

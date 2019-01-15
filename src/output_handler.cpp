@@ -78,22 +78,78 @@ void OutputHandler::output_snp_window(uint16_t snps_total[2]) {
 }
 
 
-// Write SNP and nucleotide information if current base is a sex-specific SNP
-void OutputHandler::output_depth(std::map<std::string, std::map<uint, float[2]>>& depth, uint64_t* total_depth, uint64_t& total_bases) {
+// Write depth information at the end of the analysis
+void OutputHandler::output_depth(std::map<std::string, std::map<uint, float[2]>>& depth, float* average_depth) {
 
-    float average_depth_males = float(total_depth[this->male_index]) / float(total_bases);
-    float average_depth_females = float(total_depth[this->female_index]) / float(total_bases);
     uint window_size = 0;
 
     for (auto const& contig : depth) {
+
         for (auto const& position: contig.second) {
+
             window_size = std::min(position.first + this->parameters->window_range, this->parameters->window_size);
+
             this->depth_output_file.file << contig.first << "\t" << position.first << "\t"
                                          << float(position.second[this->male_index] / window_size) << "\t"
                                          << float(position.second[this->female_index] / window_size) << "\t"
                                          << std::fixed << std::setprecision(2)
-                                         << float((position.second[this->male_index] / window_size)/ average_depth_males) << "\t"
-                                         << float((position.second[this->female_index] / window_size)/ average_depth_females) << "\n";
+                                         << float((position.second[this->male_index] / window_size)/ average_depth[0]) << "\t"
+                                         << float((position.second[this->female_index] / window_size)/ average_depth[1]) << "\n";
+
         }
     }
+}
+
+
+// Write genes information at the end of the analysis
+void OutputHandler::output_genes(std::unordered_map<std::string, Gene>& genes, float* average_depth) {
+
+    float depth_correction_males = (average_depth[0] + average_depth[1]) / 2 / average_depth[0];
+    float depth_correction_females = (average_depth[0] + average_depth[1]) / 2 / average_depth[1];
+
+    uint gene_length = 0, male_depth = 0, female_depth = 0;
+
+    for (auto gene: genes) {
+
+        gene_length = uint(std::stoi(gene.second.end) -  std::stoi(gene.second.start));
+        male_depth = (gene.second.depth[4]) / gene_length;
+        female_depth = (gene.second.depth[5]) / gene_length;
+        gene.second.noncoding_length = gene_length - gene.second.coding_length;
+
+        if (gene.second.coding_length == 0) {
+
+            gene.second.depth[0] = 0;
+            gene.second.depth[2] = 0;
+
+        } else {
+
+            gene.second.depth[0] /= gene.second.coding_length;
+            gene.second.depth[2] /= gene.second.coding_length;
+
+        }
+
+        if (gene.second.noncoding_length == 0) {
+
+            gene.second.depth[1] = 0;
+            gene.second.depth[3] = 0;
+
+        } else {
+
+            gene.second.depth[1] /= gene.second.noncoding_length;
+            gene.second.depth[3] /= gene.second.noncoding_length;
+
+        }
+
+        this->genes_output_file.file << gene.second.contig << "\t" << gene.second.start << "\t" << gene.second.end << "\t"
+                                     << gene.second.name << "\t" << gene.second.product << "\t"
+                                     << male_depth << "\t" << int(male_depth * depth_correction_males) << "\t"
+                                     << gene.second.depth[0] << "\t" << int(gene.second.depth[0] * depth_correction_males) << "\t"
+                                     << gene.second.depth[1] << "\t" << int(gene.second.depth[1] * depth_correction_males) << "\t"
+                                     << female_depth << "\t" << int(female_depth * depth_correction_females) << "\t"
+                                     << gene.second.depth[2] << "\t" << int(gene.second.depth[2] * depth_correction_females) << "\t"
+                                     << gene.second.depth[3] << "\t" << int(gene.second.depth[3] * depth_correction_females) << "\t"
+                                     << gene.second.snps[4] << "\t" << gene.second.snps[0] << "\t" << gene.second.snps[1] << "\t"
+                                     << gene.second.snps[5] << "\t" << gene.second.snps[2] << "\t" << gene.second.snps[3] << "\n";
+    }
+
 }

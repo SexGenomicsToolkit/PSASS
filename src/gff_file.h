@@ -10,7 +10,7 @@ struct Gene {
     std::string product;
     uint coding_length;
     uint noncoding_length;
-    uint coverage[6]; // Coding male, Non-coding male, Coding female, Non-coding female, Total male, Total female
+    uint depth[6]; // Coding male, Non-coding male, Coding female, Non-coding female, Total male, Total female
     uint snps[6]; // Coding male, Non-coding male, Coding female, Non-coding female, Total male, Total female
 };
 

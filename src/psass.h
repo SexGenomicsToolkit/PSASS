@@ -42,27 +42,31 @@ class Psass {
 
     public:
 
-        Parameters parameters;
+        Parameters parameters;  // Parameters updated by the arguments parser
 
         std::unordered_map<std::string, std::vector<std::vector<std::string>>> gff_data;
         std::unordered_map<std::string, Gene> genes;
         std::unordered_map<uint, std::pair<std::string, bool>> regions;
+        std::string current_gene = "";
+        std::vector<std::string> current_gene_info;
+        bool current_region_coding = false;
 
-        InputData input_data;
-        OutputHandler output_handler;
+        InputData input_data;  // Data related to input file parsing
+        OutputHandler output_handler;  // Object handling all output functions
 
-        PoolBaseData* male_pool;
-        PoolBaseData* female_pool;
-        bool male_index = 0;
-        bool female_index = 1;
+        bool male_index = 0;  // Index of the male pool (0 or 1), based on value of male_pool in parameters
+        bool female_index = 1;  // Index of the female pool (0 or 1), based on value of male_pool in parameters
+        PoolBaseData* male_pool;  // Pointer to the male PoolBaseData object, based on value of male_pool in parameters
+        PoolBaseData* female_pool;  // Pointer to the female PoolBaseData object, based on value of male_pool in parameters
 
-        PairBaseData pair_data;
-        WindowBaseData window_base_data;
-        Window window;
+        PairBaseData pair_data;  // PairBaseData object containing information about each pool as well as Fst for this base
+        WindowBaseData window_base_data;  // Object containing information about a single base in the sliding window
+        Window window;  // Sliding window object
 
         std::map<std::string, std::map<uint, float[2]>> depth_data;  // Coverage per base for entire genome (needed for relative coverage)
         uint64_t total_depth[2] {0, 0};  // Total coverage (needed for relative coverage)
         uint64_t total_bases = 0;  // Total bases (needed for relative coverage)
+        float average_depth[2] = {0.0, 0.0};  // Average depth in male and female pool
 
         Psass(int argc, char *argv[]);
         void update_nucleotides();
@@ -70,6 +74,7 @@ class Psass {
         void update_depth();
         void update_snps();
         void update_window();
+        void update_genes();
         void process_line();
         void process_field();
         void process_subfield();
