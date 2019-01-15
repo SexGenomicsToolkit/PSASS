@@ -148,8 +148,8 @@ void Psass::update_depth() {
     // Update total depth count to compute relative coverage later
     if (this->parameters.output_depth) {
 
-        this->total_depth[this->male_index] += this->window_base_data.depth[this->male_index];
-        this->total_depth[this->female_index] += this->window_base_data.depth[this->female_index];
+        this->total_depth[this->male_index] += this->male_pool->depth;
+        this->total_depth[this->female_index] += this->female_pool->depth;
 
     }
 }
@@ -180,7 +180,7 @@ void Psass::update_window() {
         }
 
 
-    } else if (this->window.data.size() == this->parameters.window_size + this->female_index) {  // Normal case (within contig) : substract front, add new value, remove front.
+    } else if (this->window.data.size() == this->parameters.window_size + 1) {  // Normal case (within contig) : substract front, add new value, remove front.
 
             if (this->parameters.output_snps_win) {
 
@@ -197,7 +197,7 @@ void Psass::update_window() {
             if (this->parameters.output_depth) {
 
                 this->window.depth_in_window[this->male_index] = this->window.depth_in_window[this->male_index]
-                                                                 - this->window.data[this->male_index].depth[this->male_index]
+                                                                 - this->window.data[0].depth[this->male_index]
                                                                  + this->window_base_data.depth[this->male_index];
 
                 this->window.depth_in_window[this->female_index] = this->window.depth_in_window[this->female_index]
@@ -365,7 +365,7 @@ void Psass::process_line() {
     }
 
     // Output window information and update coverage
-    if ((this->input_data.position - this->parameters.window_range) % this->parameters.output_resolution == 0 and this->input_data.position >= this->parameters.window_range) {
+    if ((this->input_data.position - this->parameters.window_range) % this->parameters.output_resolution == 1 and this->input_data.position >= this->parameters.window_range) {
 
         this->output_window_step();
 
