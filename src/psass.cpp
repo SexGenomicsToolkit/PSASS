@@ -39,8 +39,8 @@ void Psass::update_nucleotides() {
 
     for (uint i=0; i<6; ++i) {
 
-        this->window_base_data.nucleotides[0][i] = this->male_pool->nucleotides[i];
-        this->window_base_data.nucleotides[1][i] = this->female_pool->nucleotides[i];
+        this->window_base_data.nucleotides[this->male_index][i] = this->male_pool->nucleotides[i];
+        this->window_base_data.nucleotides[this->female_index][i] = this->female_pool->nucleotides[i];
 
     }
 }
@@ -54,7 +54,7 @@ void Psass::update_fst() {
     // https://www.nature.com/articles/ng.2007.10   https://doi.org/10.1038/ng.2007.10
 
     uint8_t n_alleles[2];
-    uint16_t allele_1 = 0, allele_2 = 0;
+    uint32_t allele_m = 0, allele_f = 0;
     float a1 = 0.0, a2 = 0.0, n1 = 0.0, n2 = 0.0;
     float h1 = 0.0, h2 = 0.0, N = 0.0, D = 0.0;
     float numerator = 0.0, denominator = 0.0;
@@ -65,32 +65,39 @@ void Psass::update_fst() {
 
             n_alleles[0] = 0;
             n_alleles[1] = 0;
-            allele_1 = 0;
-            allele_2 = 0;
+            allele_m = 0;
+            allele_f = 0;
+            a1 = 0;
+            a2 = 0;
+            n1 = 0;
+            n2 = 0;
+            h1 = 0;
+            h2 = 0;
+            N = 0;
+            D = 0;
 
             for (uint i=0; i<6; ++i) {
 
-                if (position.nucleotides[0][i] > 0) {
+                if (position.nucleotides[this->male_index][i] > 0) {
 
-                    ++n_alleles[0];
-                    allele_1 = position.nucleotides[0][i];
+                    ++n_alleles[this->male_index];
+                    allele_m = position.nucleotides[this->male_index][i];
+                    allele_f = position.nucleotides[this->female_index][i];
 
                 }
 
-                if (position.nucleotides[1][i] > 0) {
+                if (position.nucleotides[this->female_index][i] > 0) {
 
-                    ++n_alleles[1];
-                    allele_2 = position.nucleotides[1][i];
-
+                    ++n_alleles[this->female_index];
                 }
             }
 
             if (n_alleles[0] == 2 and n_alleles[1] == 2) {
 
-                a1 = float(allele_1);
-                a2 = float(allele_2);
-                n1 = float(position.depth[0]);
-                n2 = float(position.depth[1]);
+                a1 = float(allele_m);
+                a2 = float(allele_f);
+                n1 = float(position.depth[this->male_index]);
+                n2 = float(position.depth[this->female_index]);
 
                 h1 = a1 * (n1 - a1) / (n1 * (n1 - 1));
                 h2 = a2 * (n2 - a2) / (n2 * (n2 - 1));
