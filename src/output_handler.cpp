@@ -126,8 +126,8 @@ void OutputHandler::output_genes(float* average_depth) {
 
         } else {
 
-            gene.second.depth[2 * this->male_index] /= gene.second.coding_length;
-            gene.second.depth[2 * this->female_index] /= gene.second.coding_length;
+            gene.second.depth[2 * this->male_index] /= gene.second.noncoding_length;
+            gene.second.depth[2 * this->female_index] /= gene.second.noncoding_length;
 
         }
 
@@ -138,21 +138,21 @@ void OutputHandler::output_genes(float* average_depth) {
 
         } else {
 
-            gene.second.depth[2 * this->male_index + 1] /= gene.second.noncoding_length;
-            gene.second.depth[2 * this->female_index + 1] /= gene.second.noncoding_length;
+            gene.second.depth[2 * this->male_index + 1] /= gene.second.coding_length;
+            gene.second.depth[2 * this->female_index + 1] /= gene.second.coding_length;
 
         }
 
         this->genes_output_file.file << gene.second.contig << "\t" << gene.second.start << "\t" << gene.second.end << "\t"
-                                     << gene.second.name << "\t" << gene.second.product << "\t"
+                                     <<gene.second.id << "\t" << gene.second.name << "\t" << gene.second.product << "\t"
                                      << male_depth << "\t" << int(male_depth * depth_correction_males) << "\t"
-                                     << gene.second.depth[2 * this->male_index] << "\t" << int(gene.second.depth[2 * this->male_index] * depth_correction_males) << "\t"
                                      << gene.second.depth[2 * this->male_index + 1] << "\t" << int(gene.second.depth[2 * this->male_index + 1] * depth_correction_males) << "\t"
+                                     << gene.second.depth[2 * this->male_index] << "\t" << int(gene.second.depth[2 * this->male_index] * depth_correction_males) << "\t"
                                      << female_depth << "\t" << int(female_depth * depth_correction_females) << "\t"
-                                     << gene.second.depth[2 * this->female_index] << "\t" << int(gene.second.depth[2 * this->female_index] * depth_correction_females) << "\t"
                                      << gene.second.depth[2 * this->female_index + 1] << "\t" << int(gene.second.depth[2 * this->female_index + 1] * depth_correction_females) << "\t"
-                                     << gene.second.snps[4 + this->male_index] << "\t" << gene.second.snps[2 * this->male_index] << "\t" << gene.second.snps[2 * this->male_index + 1] << "\t"
-                                     << gene.second.snps[4 + this->female_index] << "\t" << gene.second.snps[2 * this->female_index] << "\t" << gene.second.snps[2 * this->female_index + 1] << "\n";
+                                     << gene.second.depth[2 * this->female_index] << "\t" << int(gene.second.depth[2 * this->female_index] * depth_correction_females) << "\t"
+                                     << gene.second.snps[4 + this->male_index] << "\t" << gene.second.snps[2 * this->male_index + 1] << "\t" << gene.second.snps[2 * this->male_index] << "\t"
+                                     << gene.second.snps[4 + this->female_index] << "\t" << gene.second.snps[2 * this->female_index + 1] << "\t" << gene.second.snps[2 * this->female_index] << "\n";
     }
 
 }

@@ -23,13 +23,9 @@ Psass::Psass(int argc, char *argv[]) {
     this->female_index = (this->parameters.male_pool == 1);  // 0 if male pool is second, 1 otherwise
 
     this->output_handler = OutputHandler(&this->parameters, &this->input_data, this->male_pool, this->female_pool, this->male_index, this->female_index,
-                                         &this->depth_data, &this->genes);
+                                         &this->depth_data, &this->gff_data.genes);
 
-    if (this->parameters.output_genes) {
-
-        read_gff_file(this->parameters.gff_file, this->gff_data, this->genes);
-
-    }
+    if (this->parameters.output_genes) this->gff_data.read_gff_file(this->parameters.gff_file);
 }
 
 
@@ -224,22 +220,25 @@ void Psass::update_window() {
 // Update genes data
 void Psass::update_genes() {
 
-    if (regions.find(this->input_data.position) != regions.end()) {
+    std::string gene = "", contig = "";
+    bool coding = false;
 
-        this->current_gene = regions[this->input_data.position].first;
-        this->current_region_coding = regions[this->input_data.position].second;
+    if (this->gff_data.contig.find(this->input_data.position) != this->gff_data.contig.end()) {
+
+        gene = this->gff_data.contig[this->input_data.position].first;
+        coding = this->gff_data.contig[this->input_data.position].second;
 
         // Coding or non-coding depth and snps
-        this->genes[this->current_gene].depth[2 * this->male_index + this->current_region_coding] += this->male_pool->depth;
-        this->genes[this->current_gene].depth[2 * this->female_index + this->current_region_coding] += this->female_pool->depth;
-        this->genes[this->current_gene].snps[2 * this->male_index + this->current_region_coding] += this->window_base_data.snps[this->male_index];
-        this->genes[this->current_gene].snps[2 * this->female_index + this->current_region_coding] += this->window_base_data.snps[this->female_index];
+        this->gff_data.genes[gene].depth[2 * this->male_index + coding] += this->male_pool->depth;
+        this->gff_data.genes[gene].depth[2 * this->female_index + coding] += this->female_pool->depth;
+        this->gff_data.genes[gene].snps[2 * this->male_index + coding] += this->window_base_data.snps[this->male_index];
+        this->gff_data.genes[gene].snps[2 * this->female_index + coding] += this->window_base_data.snps[this->female_index];
 
         // Gene-level depth and snps
-        this->genes[this->current_gene].depth[4 + this->male_index] += this->male_pool->depth;
-        this->genes[this->current_gene].depth[4 + this->female_index] += this->female_pool->depth;
-        this->genes[this->current_gene].snps[4 + this->male_index] += this->window_base_data.snps[this->male_index];
-        this->genes[this->current_gene].snps[4 + this->female_index] += this->window_base_data.snps[this->female_index];
+        this->gff_data.genes[gene].depth[4 + this->male_index] += this->male_pool->depth;
+        this->gff_data.genes[gene].depth[4 + this->female_index] += this->female_pool->depth;
+        this->gff_data.genes[gene].snps[4 + this->male_index] += this->window_base_data.snps[this->male_index];
+        this->gff_data.genes[gene].snps[4 + this->female_index] += this->window_base_data.snps[this->female_index];
 
     }
 }
@@ -302,32 +301,7 @@ void Psass::process_line() {
 
             if (parameters.output_fst_win) this->window.fst_in_window = 0;
 
-            if (parameters.output_genes) {
-
-                this->regions.clear();
-
-                for (auto line: this->gff_data[this->input_data.contig]) {
-
-                    this->current_gene = "";
-
-                    this->current_gene_info = split(line[8], ";");
-                    for (auto i: this->current_gene_info) {
-                        if (i.substr(0, 5) == "gene=") this->current_gene = split(i, "=")[1];
-                    }
-
-                    if (this->current_gene == "") {
-                        for (auto i: this->current_gene_info) {
-                            if (i.substr(0, 2) == "ID") this->current_gene= split(i, "=")[1];
-                        }
-                    }
-
-                    if (line[2] == "gene") {
-                        for (auto i=std::stoul(line[3]); i < std::stoul(line[4]) + 1; ++i) this->regions[uint(i)] = std::pair<std::string, bool>(this->current_gene, false);
-                    } else {
-                        for (auto i=std::stoi(line[3]); i < std::stoi(line[4]) + 1; ++i) this->regions[uint(i)] = std::pair<std::string, bool>(this->current_gene, true);
-                    }
-                }
-            }
+            if (parameters.output_genes) this->gff_data.new_contig(this->input_data);
 
             this->window.data.resize(0);
         }

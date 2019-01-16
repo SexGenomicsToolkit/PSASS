@@ -43,10 +43,10 @@ class OutputHandler {
         OutputFile snps_position_output_file {"snps_position", "Contig\tPosition\tSex\tM_A\tM_T\tM_G\tM_C\tM_I\tF_A\tF_T\tF_G\tF_C\tF_I\n"};
         OutputFile snps_window_output_file {"snps_window", "Contig\tPosition\tMales\tFemales\n"};
         OutputFile depth_output_file {"depth", "Contig\tPosition\tMales_depth_abs\tFemales_depth_abs\tMales_depth_rel\tFemales_depth_rel\n"};
-        OutputFile genes_output_file {"genes", "Contig\tStart\tEnd\tName\tProduct\t"
-                                      "Males_depth\tMales_depth_corr\tMales_depth_coding\tMales_depth_coding_corr\tMales_depth_noncoding\tMales_depth_noncoding_corr\t"
-                                      "Females_depth\tFemales_depth_corr\tFemales_depth_coding\tFemales_depth_coding_corr\tFemales_depth_noncoding\tFemales_depth_noncoding_corr\t"
-                                      "Males_snps\tMales_snps_depth_coding\tMales_snps_depth_noncoding\tFemales_snps\tFemales_snps_depth_coding\tFemales_snps_depth_noncoding\n"};
+        OutputFile genes_output_file {"genes", "Contig\tStart\tEnd\tID\tName\tProduct\t"
+                                      "M_depth\tM_depth_corr\tM_depth_coding\tM_depth_coding_corr\tM_depth_noncoding\tM_depth_noncoding_corr\t"
+                                      "F_depth\tF_depth_corr\tF_depth_coding\tF_depth_coding_corr\tF_depth_noncoding\tF_depth_noncoding_corr\t"
+                                      "M_snps\tM_snps_coding\tM_snps_noncoding\tF_snps\tF_snps_coding\tF_snps_noncoding\n"};
 
         Parameters* parameters;
         InputData* input_data;

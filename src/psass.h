@@ -44,12 +44,7 @@ class Psass {
 
         Parameters parameters;  // Parameters updated by the arguments parser
 
-        std::unordered_map<std::string, std::vector<std::vector<std::string>>> gff_data;
-        std::unordered_map<std::string, Gene> genes;
-        std::unordered_map<uint, std::pair<std::string, bool>> regions;
-        std::string current_gene = "";
-        std::vector<std::string> current_gene_info;
-        bool current_region_coding = false;
+        GFFData gff_data;
 
         InputData input_data;  // Data related to input file parsing
         OutputHandler output_handler;  // Object handling all output functions
