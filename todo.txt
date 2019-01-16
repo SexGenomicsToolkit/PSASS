@@ -1,0 +1,6 @@
+log files
+How to handle end of contig ?
+
+Output genes : order (contig / position)
+
+Check stack instead of deque
