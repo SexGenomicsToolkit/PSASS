@@ -23,5 +23,4 @@ HEADERS += \
     src/pool_data.h \
     src/pair_data.h \
     src/input_data.h \
-    src/output_handler.h \
-    src/fast_stack.h
+    src/output_handler.h
