@@ -68,7 +68,7 @@ class Psass {
         void update_fst();
         void update_depth();
         void update_snps();
-        void update_window();
+        void update_window(bool end = false);
         void update_genes();
         void output_window_step();
         void process_contig_end();

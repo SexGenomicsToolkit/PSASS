@@ -19,7 +19,8 @@ class InputData {
         // Contig and position information
         std::string contig = "";
         std::string current_contig = "";
-        uint position = 0;
+        uint32_t position = 0;
+        uint32_t last_position = 0;
 
         InputData() {}
 };

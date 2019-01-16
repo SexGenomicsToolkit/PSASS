@@ -161,10 +161,10 @@ void Psass::update_depth() {
 
 
 // Update sliding window data
-void Psass::update_window() {
+void Psass::update_window(bool end) {
 
     // Add the current base data to the window (reset window if size bigger than window_size, which should not happen)
-    (this->window.data.size() <= this->parameters.window_size) ? this->window.data.push_back(this->window_base_data) : this->window.data.resize(0);
+    (this->window.data.size() <= this->parameters.window_size and not end) ? this->window.data.push_back(this->window_base_data) : this->window.data.resize(0);
 
     // If the window has size window_size, compute sum for each metric (first time with complete window in the current contig)
     if (this->window.data.size() <= this->parameters.window_size) {
@@ -269,7 +269,30 @@ void Psass::output_window_step() {
 
 void Psass::process_contig_end() {
 
-    uint first_spot = 0;
+    uint last_spot = uint(this->input_data.last_position / this->parameters.output_resolution) * this->parameters.output_resolution;
+    uint first_spot = last_spot - this->parameters.window_range;
+    std::deque<WindowBaseData>::iterator beginning = this->window.data.begin();
+    std::deque<WindowBaseData>::iterator ending = this->window.data.end() - 1;
+    std::deque<WindowBaseData> tmp = this->window.data;
+
+    uint32_t tmp_position = this->input_data.position;
+    std::string tmp_contig = this->input_data.contig;
+
+    this->input_data.contig = this->input_data.current_contig;
+
+    for (auto i = first_spot; i <= last_spot; i += this->parameters.output_resolution) {
+
+        this->input_data.position = i;
+        beginning = tmp.begin() + (i - first_spot);
+        std::deque<WindowBaseData> new_window(beginning, ending);
+        this->window.data = new_window;
+        this->update_window();
+        this->output_window_step();
+
+    }
+
+    this->input_data.position = tmp_position;
+    this->input_data.contig = tmp_contig;
 }
 
 
@@ -318,6 +341,7 @@ void Psass::process_line() {
 
     // Reset line parsing values
     this->input_data.current_contig = this->input_data.contig;
+    this->input_data.last_position = this->input_data.position;
     this->input_data.field = 0;
     this->input_data.temp = "";
 
