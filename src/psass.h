@@ -71,6 +71,7 @@ class Psass {
         void update_window();
         void update_genes();
         void output_window_step();
+        void process_contig_end();
         void process_line();
         void process_field();
         void process_subfield();

@@ -126,8 +126,8 @@ void OutputHandler::output_genes(float* average_depth) {
 
         } else {
 
-            gene.second.depth[2 * this->male_index] /= gene.second.noncoding_length;
-            gene.second.depth[2 * this->female_index] /= gene.second.noncoding_length;
+            (gene.second.noncoding_length > 0) ? gene.second.depth[2 * this->male_index] /= gene.second.noncoding_length : gene.second.depth[2 * this->male_index] = 0;
+            (gene.second.noncoding_length > 0) ? gene.second.depth[2 * this->female_index] /= gene.second.noncoding_length: gene.second.depth[2 * this->female_index] = 0;
 
         }
 
@@ -138,8 +138,8 @@ void OutputHandler::output_genes(float* average_depth) {
 
         } else {
 
-            gene.second.depth[2 * this->male_index + 1] /= gene.second.coding_length;
-            gene.second.depth[2 * this->female_index + 1] /= gene.second.coding_length;
+            (gene.second.coding_length > 0) ? gene.second.depth[2 * this->male_index + 1] /= gene.second.coding_length : gene.second.depth[2 * this->male_index + 1] = 0;
+            (gene.second.coding_length > 0) ? gene.second.depth[2 * this->female_index + 1] /= gene.second.coding_length: gene.second.depth[2 * this->female_index + 1] = 0;
 
         }
 

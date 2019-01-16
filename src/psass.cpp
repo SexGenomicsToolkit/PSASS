@@ -267,6 +267,13 @@ void Psass::output_window_step() {
 
 
 
+void Psass::process_contig_end() {
+
+    uint first_spot = 0;
+}
+
+
+
 // Function called on a line from the input file (i.e. when meeting a '\n')
 void Psass::process_line() {
 
@@ -281,7 +288,11 @@ void Psass::process_line() {
     // Update / reset values if change of contig
     if (this->input_data.contig != this->input_data.current_contig) {
 
+        if (parameters.output_genes) this->gff_data.new_contig(this->input_data);
+
         if (this->input_data.current_contig != "") {
+
+            this->process_contig_end();
 
             std::cout << "Finished analyzing contig :  " << this->input_data.current_contig << std::endl;
 
@@ -300,8 +311,6 @@ void Psass::process_line() {
             }
 
             if (parameters.output_fst_win) this->window.fst_in_window = 0;
-
-            if (parameters.output_genes) this->gff_data.new_contig(this->input_data);
 
             this->window.data.resize(0);
         }
@@ -379,6 +388,7 @@ void Psass::process_field() {
 
     default:
         break;
+
     }
 
     this->input_data.temp = "";
