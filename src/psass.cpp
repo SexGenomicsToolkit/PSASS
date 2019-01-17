@@ -31,20 +31,7 @@ Psass::Psass(int argc, char *argv[]) {
 
 
 // Update window_base_data.nucleotides
-void Psass::update_nucleotides() {
-
-    for (uint i=0; i<6; ++i) {
-
-        this->window_base_data.nucleotides[this->male_index][i] = this->male_pool->nucleotides[i];
-        this->window_base_data.nucleotides[this->female_index][i] = this->female_pool->nucleotides[i];
-
-    }
-}
-
-
-
-// Compute Fst from nucleotides counts window and update window_base_data.fst
-void Psass::update_fst() {
+void Psass::update_fst_parts() {
 
     // Fst computation for the window is implemented using the formula described in Karlsson et al 2007
     // https://www.nature.com/articles/ng.2007.10   https://doi.org/10.1038/ng.2007.10
@@ -53,60 +40,56 @@ void Psass::update_fst() {
     uint32_t allele_m = 0, allele_f = 0;
     float a1 = 0.0, a2 = 0.0, n1 = 0.0, n2 = 0.0;
     float h1 = 0.0, h2 = 0.0, N = 0.0, D = 0.0;
-    float numerator = 0.0, denominator = 0.0;
 
-    for (auto position: this->window.data) {
+    if (this->male_pool->depth > this->parameters.min_depth and this->female_pool->depth > this->parameters.min_depth) {
 
-        if (position.depth[0] > this->parameters.min_depth and position.depth[1] > this->parameters.min_depth) {
+        n_alleles[0] = 0;
+        n_alleles[1] = 0;
+        allele_m = 0;
+        allele_f = 0;
+        a1 = 0;
+        a2 = 0;
+        n1 = 0;
+        n2 = 0;
+        h1 = 0;
+        h2 = 0;
+        N = 0;
+        D = 0;
 
-            n_alleles[0] = 0;
-            n_alleles[1] = 0;
-            allele_m = 0;
-            allele_f = 0;
-            a1 = 0;
-            a2 = 0;
-            n1 = 0;
-            n2 = 0;
-            h1 = 0;
-            h2 = 0;
-            N = 0;
-            D = 0;
+        for (uint i=0; i<6; ++i) {
 
-            for (uint i=0; i<6; ++i) {
+            if (this->male_pool->nucleotides[i] > 0) {
 
-                if (position.nucleotides[this->male_index][i] > 0) {
-
-                    ++n_alleles[this->male_index];
-                    allele_m = position.nucleotides[this->male_index][i];
-                    allele_f = position.nucleotides[this->female_index][i];
-
-                }
-
-                if (position.nucleotides[this->female_index][i] > 0) {
-
-                    ++n_alleles[this->female_index];
-                }
-            }
-
-            if (n_alleles[0] == 2 and n_alleles[1] == 2) {
-
-                a1 = float(allele_m);
-                a2 = float(allele_f);
-                n1 = float(position.depth[this->male_index]);
-                n2 = float(position.depth[this->female_index]);
-
-                h1 = a1 * (n1 - a1) / (n1 * (n1 - 1));
-                h2 = a2 * (n2 - a2) / (n2 * (n2 - 1));
-                N = (a1 / n1 - a2 / n2) * (a1 / n1 - a2 / n2) - h1 / n1 - h2 / n2;
-                D = N + h1 + h2;
-                numerator += N;
-                denominator += D;
+                ++n_alleles[this->male_index];
+                allele_m = this->male_pool->nucleotides[i];
+                allele_f = this->female_pool->nucleotides[i];
 
             }
+
+            if (this->female_pool->nucleotides[i] > 0) {
+
+                ++n_alleles[this->female_index];
+            }
+        }
+
+        if (n_alleles[0] == 2 and n_alleles[1] == 2) {
+
+            a1 = float(allele_m);
+            a2 = float(allele_f);
+            n1 = float(this->male_pool->depth);
+            n2 = float(this->female_pool->depth);
+
+            h1 = a1 * (n1 - a1) / (n1 * (n1 - 1));
+            h2 = a2 * (n2 - a2) / (n2 * (n2 - 1));
+            N = (a1 / n1 - a2 / n2) * (a1 / n1 - a2 / n2) - h1 / n1 - h2 / n2;
+            D = N + h1 + h2;
+
         }
     }
 
-    (denominator > 0) ? this->window.fst_in_window = std::max(float(0.0), numerator / denominator) : this->window.fst_in_window = 0;
+    this->window_base_data.fst_parts[0] = N;
+    this->window_base_data.fst_parts[1] = D;
+
 }
 
 
@@ -183,32 +166,51 @@ void Psass::update_window(bool end) {
 
         }
 
+        if (this->parameters.output_fst_win) {
+
+            this->window.fst_parts[0] += this->window_base_data.fst_parts[0];
+            this->window.fst_parts[1] += this->window_base_data.fst_parts[1];
+
+        }
+
 
     } else if (this->window.data.size() == this->parameters.window_size + 1) {  // Normal case (within contig) : substract front, add new value, remove front.
 
-            if (this->parameters.output_snps_win) {
+        if (this->parameters.output_fst_win) {
 
-                this->window.snps_in_window[this->male_index] = this->window.snps_in_window[this->male_index]
-                                                                - this->window.data[this->male_index].snps[this->male_index]
-                                                                + this->window_base_data.snps[this->male_index];
+            this->window.fst_parts[0] = this->window.fst_parts[0]
+                                        - this->window.data[0].fst_parts[0]
+                                        + this->window_base_data.fst_parts[0];
 
-                this->window.snps_in_window[this->female_index] = this->window.snps_in_window[this->female_index]
-                                                                  - this->window.data[this->male_index].snps[this->female_index]
-                                                                  + this->window_base_data.snps[this->female_index];
+            this->window.fst_parts[1] = this->window.fst_parts[1]
+                                        - this->window.data[0].fst_parts[1]
+                                        + this->window_base_data.fst_parts[1];
 
-            }
+        }
 
-            if (this->parameters.output_depth) {
+        if (this->parameters.output_snps_win) {
 
-                this->window.depth_in_window[this->male_index] = this->window.depth_in_window[this->male_index]
-                                                                 - this->window.data[0].depth[this->male_index]
-                                                                 + this->male_pool->depth;
+            this->window.snps_in_window[this->male_index] = this->window.snps_in_window[this->male_index]
+                                                            - this->window.data[0].snps[this->male_index]
+                                                            + this->window_base_data.snps[this->male_index];
 
-                this->window.depth_in_window[this->female_index] = this->window.depth_in_window[this->female_index]
-                                                                   - this->window.data[0].depth[this->female_index]
-                                                                   + this->female_pool->depth;
+            this->window.snps_in_window[this->female_index] = this->window.snps_in_window[this->female_index]
+                                                              - this->window.data[0].snps[this->female_index]
+                                                              + this->window_base_data.snps[this->female_index];
 
-            }
+        }
+
+        if (this->parameters.output_depth) {
+
+            this->window.depth_in_window[this->male_index] = this->window.depth_in_window[this->male_index]
+                                                             - this->window.data[0].depth[this->male_index]
+                                                             + this->male_pool->depth;
+
+            this->window.depth_in_window[this->female_index] = this->window.depth_in_window[this->female_index]
+                                                               - this->window.data[0].depth[this->female_index]
+                                                               + this->female_pool->depth;
+
+        }
 
         this->window.data.pop_front();
 
@@ -248,12 +250,7 @@ void Psass::update_genes() {
 // Handles output of sliding window
 void Psass::output_window_step() {
 
-    if (this->parameters.output_fst_win) {
-
-        this->update_fst();
-        this->output_handler.output_fst_window(this->window.fst_in_window);
-
-    }
+    if (this->parameters.output_fst_win) this->output_handler.output_fst_window(this->window.fst_parts);
 
     if (this->parameters.output_snps_win) this->output_handler.output_snp_window(this->window.snps_in_window);
 
@@ -267,33 +264,33 @@ void Psass::output_window_step() {
 
 
 
-void Psass::process_contig_end() {
+//void Psass::process_contig_end() {
 
-    uint last_spot = uint(this->input_data.last_position / this->parameters.output_resolution) * this->parameters.output_resolution;
-    uint first_spot = last_spot - this->parameters.window_range;
-    std::deque<WindowBaseData>::iterator beginning = this->window.data.begin();
-    std::deque<WindowBaseData>::iterator ending = this->window.data.end() - 1;
-    std::deque<WindowBaseData> tmp = this->window.data;
+//    uint last_spot = uint(this->input_data.last_position / this->parameters.output_resolution) * this->parameters.output_resolution;
+//    uint first_spot = last_spot - this->parameters.window_range;
+//    std::deque<WindowBaseData>::iterator beginning = this->window.data.begin();
+//    std::deque<WindowBaseData>::iterator ending = this->window.data.end() - 1;
+//    std::deque<WindowBaseData> tmp = this->window.data;
 
-    uint32_t tmp_position = this->input_data.position;
-    std::string tmp_contig = this->input_data.contig;
+//    uint32_t tmp_position = this->input_data.position;
+//    std::string tmp_contig = this->input_data.contig;
 
-    this->input_data.contig = this->input_data.current_contig;
+//    this->input_data.contig = this->input_data.current_contig;
 
-    for (auto i = first_spot; i <= last_spot; i += this->parameters.output_resolution) {
+//    for (auto i = first_spot; i <= last_spot; i += this->parameters.output_resolution) {
 
-        this->input_data.position = i;
-        beginning = tmp.begin() + (i - first_spot);
-        std::deque<WindowBaseData> new_window(beginning, ending);
-        this->window.data = new_window;
-        this->update_window();
-        this->output_window_step();
+//        this->input_data.position = i;
+//        beginning = tmp.begin() + (i - first_spot);
+//        std::deque<WindowBaseData> new_window(beginning, ending);
+//        this->window.data = new_window;
+//        this->update_window();
+//        this->output_window_step();
 
-    }
+//    }
 
-    this->input_data.position = tmp_position;
-    this->input_data.contig = tmp_contig;
-}
+//    this->input_data.position = tmp_position;
+//    this->input_data.contig = tmp_contig;
+//}
 
 
 
@@ -315,7 +312,7 @@ void Psass::process_line() {
 
         if (this->input_data.current_contig != "") {
 
-            this->process_contig_end();
+//            this->process_contig_end();
 
             std::cout << "Finished analyzing contig :  " << this->input_data.current_contig << std::endl;
 
@@ -333,7 +330,12 @@ void Psass::process_line() {
 
             }
 
-            if (parameters.output_fst_win) this->window.fst_in_window = 0;
+            if (parameters.output_fst_win) {
+
+                this->window.fst_parts[0] = 0;
+                this->window.fst_parts[1] = 0;
+
+            }
 
             this->window.data.resize(0);
         }
@@ -349,7 +351,7 @@ void Psass::process_line() {
     this->pair_data.update(this->parameters.output_fst_pos);
 
     // Update nucleotides data for window
-    if (this->parameters.output_fst_win) this->update_nucleotides();
+    if (this->parameters.output_fst_win) this->update_fst_parts();
 
     // Update depth data for window
     if (this->parameters.output_depth) this->update_depth();

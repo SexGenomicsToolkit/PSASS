@@ -5,6 +5,7 @@
 #include <cmath>
 #include <iostream>
 #include <deque>
+#include <stack>
 #include <algorithm>
 #include <numeric>
 #include <map>
@@ -24,7 +25,7 @@ struct WindowBaseData {
 
     bool snps[2] {0, 0};  // Pair of boolean for sex-specific snps in (pool1, pool2)
     uint32_t depth[2] {0, 0};  // Pair of int for coverage in (pool1, pool2)
-    uint32_t nucleotides[2][6] {{0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}};
+    float fst_parts[2] {0, 0};
 };
 
 
@@ -34,7 +35,7 @@ struct Window {
     std::deque<WindowBaseData> data;  // Sliding window data as a deque
     uint32_t snps_in_window[2] {0, 0};  // Pair of int for average snps in current window for (pool1, pool2)
     uint64_t depth_in_window[2] {0, 0};  // Pair of int for average coverage in current window for (pool1, pool2)
-    float fst_in_window = 0.0;
+    float fst_parts[2] {0, 0};
 };
 
 
@@ -65,7 +66,7 @@ class Psass {
 
         Psass(int argc, char *argv[]);
         void update_nucleotides();
-        void update_fst();
+        void update_fst_parts();
         void update_depth();
         void update_snps();
         void update_window(bool end = false);

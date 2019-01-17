@@ -45,17 +45,21 @@ void OutputFile::open(const std::string& prefix) {
 // Write Fst information if current base has fst higher than specified threshold
 void OutputHandler::output_fst_position(float fst) {
 
-    this->fst_position_output_file.file << std::fixed << std::setprecision(2)
+    this->fst_position_output_file.file << std::fixed << std::setprecision(4)
                                         << this->input_data->contig << "\t" << this->input_data->position << "\t" << fst <<  "\n";
 }
 
 
 
 // Write Fst information for the current windows
-void OutputHandler::output_fst_window(float fst) {
+void OutputHandler::output_fst_window(float fst_parts[2]) {
+
+    float fst = 0;
+
+    (fst_parts[1] > 0) ? fst = std::max(float(0.0), fst_parts[0] / fst_parts[1]) : fst = 0.0;
 
     this->fst_window_output_file.file << this->input_data->contig << "\t" << this->input_data->position - this->parameters->window_range << "\t"
-                                      << std::fixed << std::setprecision(2)
+                                      << std::fixed << std::setprecision(4)
                                       << fst << "\n";
 }
 
@@ -64,8 +68,7 @@ void OutputHandler::output_fst_window(float fst) {
 // Write SNP and nucleotide information if current base is a sex-specific SNP
 void OutputHandler::output_snp_position(std::string sex) {
 
-    this->snps_position_output_file.file << std::fixed << std::setprecision(2)
-                                         << this->input_data->contig << "\t" << this->input_data->position << "\t" << sex << "\t"
+    this->snps_position_output_file.file << this->input_data->contig << "\t" << this->input_data->position << "\t" << sex << "\t"
                                          << this->male_pool->output_frequencies() << "\t"
                                          << this->female_pool->output_frequencies() << "\n";
 }
