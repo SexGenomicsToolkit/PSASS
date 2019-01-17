@@ -71,6 +71,8 @@ class Psass {
         uint64_t total_bases = 0;  // Total bases (needed for relative coverage)
         float average_depth[2] = {0.0, 0.0};  // Average depth in male and female pool
 
+        bool consecutive_snps[2] {false, false};
+
         Psass(int argc, char *argv[]);
         void count_lines();
         void update_nucleotides();

@@ -17,7 +17,7 @@ struct Parameters{
     uint window_size = 100000;
     uint window_range = 50000;
     uint output_resolution = 1000;
-    bool ignore_indels = false;
+    bool group_snps= false;
 
     // Output options
     bool output_fst_pos = true;

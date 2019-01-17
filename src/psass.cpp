@@ -147,7 +147,17 @@ void Psass::update_snps() {
                 this->male_pool->frequencies[i] < this->parameters.max_het and
                 this->female_pool->frequencies[i] > this->parameters.min_hom) {
 
-                this->window_base_data.snps[this->male_index] = true;
+                if (this->parameters.group_snps) {
+
+                    if (not this->consecutive_snps[this->male_index]) this->window_base_data.snps[this->male_index] = true;
+                    else this->window_base_data.snps[this->male_index] = false;
+                    this->consecutive_snps[this->male_index] = true;
+
+                } else {
+
+                    this->window_base_data.snps[this->male_index] = true;
+
+                }
 
             }
 
@@ -155,9 +165,26 @@ void Psass::update_snps() {
                 this->female_pool->frequencies[i] < this->parameters.max_het and
                 this->male_pool->frequencies[i] > this->parameters.min_hom) {
 
-                this->window_base_data.snps[this->female_index] = true;
+                if (this->parameters.group_snps) {
+
+                    if (not this->consecutive_snps[this->female_index]) this->window_base_data.snps[this->female_index] = true;
+                    else this->window_base_data.snps[this->female_index] = false;
+                    this->consecutive_snps[this->female_index] = true;
+
+                } else {
+
+                    this->window_base_data.snps[this->female_index] = true;
+
+                }
 
             }
+        }
+
+        if (not this->window_base_data.snps[this->male_index] and not this->window_base_data.snps[this->female_index]) {
+
+            this->consecutive_snps[this->male_index] = false;
+            this->consecutive_snps[this->female_index] = false;
+
         }
     }
 }
@@ -402,6 +429,13 @@ void Psass::process_line() {
         }
 
         if (parameters.output_genes) this->gff_data.new_contig(this->input_data, this->logs);
+
+        if (parameters.group_snps) {
+
+            this->consecutive_snps[0] = false;
+            this->consecutive_snps[1] = false;
+
+        }
     }
 
     // Reset line parsing values

@@ -29,8 +29,8 @@ class ArgParser {
                                                                   {"--range-het", {"0.1", "float", "Range of frequency for a sex-linked SNP in the heterogametic sex"} },
                                                                   {"--range-hom", {"0.05", "float", "Range of frequency for a sex-linked SNP in the homogametic sex"} },
                                                                   {"--window-size", {"100000", "int", "Size of the sliding window (in bp)"} },
-                                                                  {"--output-resolution", {"500", "int", "Output resolution (in bp)"} } ,
-                                                                  {"--ignore-indels", {"0", "bool", "Ignore indels"} },
+                                                                  {"--output-resolution", {"10000", "int", "Output resolution (in bp)"} } ,
+                                                                  {"--group-snps", {"1", "bool", "Group consecutive snps to count them as a single polymorphism"} },
 
                                                                   {"--input-file", {"", "string", "Input file (popoolation sync file)"} },
                                                                   {"--output-prefix", {"", "string", "Full prefix (including path) for output files"} },
