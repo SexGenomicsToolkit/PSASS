@@ -1,7 +1,7 @@
 #include "output_handler.h"
 
 OutputHandler::OutputHandler(Parameters* parameters, InputData* input_data, PoolBaseData* male_pool, PoolBaseData* female_pool, bool male_index, bool female_index,
-                             std::map<std::string, std::map<uint, float[2]>>* depth, std::unordered_map<std::string, Gene>* genes) {
+                             std::map<std::string, std::map<uint, float[3]>>* depth, std::unordered_map<std::string, Gene>* genes) {
 
     // Pointers to data structures from PSASS
     this->input_data = input_data;
@@ -87,13 +87,13 @@ void OutputHandler::output_snp_window(uint32_t snps_total[2]) {
 // Write depth information at the end of the analysis
 void OutputHandler::output_depth(float* average_depth) {
 
-    uint window_size = 0;
+    float window_size = 0;
 
     for (auto const& contig : *this->depth) {
 
         for (auto const& position: contig.second) {
 
-            window_size = std::min(position.first + this->parameters->window_range, this->parameters->window_size);
+            window_size = position.second[2];
 
             this->depth_output_file.file << contig.first << "\t" << position.first << "\t"
                                          << float(position.second[this->male_index] / window_size) << "\t"

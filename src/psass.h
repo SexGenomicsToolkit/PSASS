@@ -10,6 +10,7 @@
 #include <numeric>
 #include <map>
 #include <iomanip>
+#include <iterator>
 #include "parameters.h"
 #include "gff_file.h"
 #include "utils.h"
@@ -59,7 +60,7 @@ class Psass {
         WindowBaseData window_base_data;  // Object containing information about a single base in the sliding window
         Window window;  // Sliding window object
 
-        std::map<std::string, std::map<uint, float[2]>> depth_data;  // Coverage per base for entire genome (needed for relative coverage)
+        std::map<std::string, std::map<uint, float[3]>> depth_data;  // Coverage per base for entire genome (needed for relative coverage)
         uint64_t total_depth[2] {0, 0};  // Total coverage (needed for relative coverage)
         uint64_t total_bases = 0;  // Total bases (needed for relative coverage)
         float average_depth[2] = {0.0, 0.0};  // Average depth in male and female pool

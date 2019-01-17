@@ -258,39 +258,57 @@ void Psass::output_window_step() {
 
         this->depth_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][this->male_index] = this->window.depth_in_window[this->male_index];
         this->depth_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][this->female_index] = this->window.depth_in_window[this->female_index];
+        this->depth_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][2] = float(this->window.data.size());
 
     }
 }
 
 
 
-//void Psass::process_contig_end() {
+// End of contig needs special processing. Progressively remove the beginning of the window until last position.
+void Psass::process_contig_end() {
 
-//    uint last_spot = uint(this->input_data.last_position / this->parameters.output_resolution) * this->parameters.output_resolution;
-//    uint first_spot = last_spot - this->parameters.window_range;
-//    std::deque<WindowBaseData>::iterator beginning = this->window.data.begin();
-//    std::deque<WindowBaseData>::iterator ending = this->window.data.end() - 1;
-//    std::deque<WindowBaseData> tmp = this->window.data;
+    uint last_spot = uint(this->input_data.last_position / this->parameters.output_resolution) * this->parameters.output_resolution + this->parameters.window_range;
+    uint first_spot = last_spot - this->parameters.window_range;
+    auto tmp = this->window.data;
 
-//    uint32_t tmp_position = this->input_data.position;
-//    std::string tmp_contig = this->input_data.contig;
+    uint32_t tmp_position = this->input_data.position;
+    std::string tmp_contig = this->input_data.contig;
 
-//    this->input_data.contig = this->input_data.current_contig;
+    this->input_data.contig = this->input_data.current_contig;
 
-//    for (auto i = first_spot; i <= last_spot; i += this->parameters.output_resolution) {
+    for (auto i = first_spot; i <= last_spot; i += this->parameters.output_resolution) {
 
-//        this->input_data.position = i;
-//        beginning = tmp.begin() + (i - first_spot);
-//        std::deque<WindowBaseData> new_window(beginning, ending);
-//        this->window.data = new_window;
-//        this->update_window();
-//        this->output_window_step();
+        this->window.fst_parts[0] = 0;
+        this->window.fst_parts[1] = 0;
+        this->window.snps_in_window[0] = 0;
+        this->window.snps_in_window[1] = 0;
+        this->window.depth_in_window[0] = 0;
+        this->window.depth_in_window[1] = 0;
 
-//    }
+        this->input_data.position = i;
 
-//    this->input_data.position = tmp_position;
-//    this->input_data.contig = tmp_contig;
-//}
+        for (uint j = 0; j < this->parameters.output_resolution; ++j) tmp.pop_front();
+
+        for (auto base: tmp) {
+
+            this->window.snps_in_window[0] += base.snps[0];
+            this->window.snps_in_window[1] += base.snps[1];
+            this->window.depth_in_window[0] += base.depth[0];
+            this->window.depth_in_window[1] += base.depth[1];
+            this->window.fst_parts[0] += base.fst_parts[0];
+            this->window.fst_parts[1] += base.fst_parts[1];
+        }
+
+        this->window.data = tmp;
+
+        this->output_window_step();
+
+    }
+
+    this->input_data.position = tmp_position;
+    this->input_data.contig = tmp_contig;
+}
 
 
 
@@ -312,7 +330,7 @@ void Psass::process_line() {
 
         if (this->input_data.current_contig != "") {
 
-//            this->process_contig_end();
+            this->process_contig_end();
 
             std::cout << "Finished analyzing contig :  " << this->input_data.current_contig << std::endl;
 

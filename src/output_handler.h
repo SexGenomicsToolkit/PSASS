@@ -28,7 +28,7 @@ class OutputHandler {
 
         OutputHandler() {}
         OutputHandler(Parameters* parameters, InputData* input_data, PoolBaseData* male_pool, PoolBaseData* female_pool, bool male_index, bool female_index,
-                      std::map<std::string, std::map<uint, float[2]>>* depth, std::unordered_map<std::string, Gene>* genes);
+                      std::map<std::string, std::map<uint, float[3]>>* depth, std::unordered_map<std::string, Gene>* genes);
         void output_fst_position(float fst);
         void output_fst_window(float fst_parts[2]);
         void output_snp_position(std::string sex);
@@ -54,7 +54,7 @@ class OutputHandler {
         PoolBaseData* female_pool;
         bool male_index = 1;
         bool female_index = 0;
-        std::map<std::string, std::map<uint, float[2]>>* depth;
+        std::map<std::string, std::map<uint, float[3]>>* depth;
         std::unordered_map<std::string, Gene>* genes;
 
         void create_output_files();
