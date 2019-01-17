@@ -394,7 +394,7 @@ void Psass::process_line() {
 
         if (this->input_data.current_contig != "") {
 
-            this->process_contig_end();
+           if(this->window.data.size() > this->parameters.window_size) this->process_contig_end();
 
            this->logs.write("Processing of contig <" + this->input_data.current_contig + "> ended without errors.");
            this->logs.write("Processing of contig <" + this->input_data.contig + "> started.");
