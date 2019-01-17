@@ -1,14 +1,10 @@
 #pragma once
 
-#include <vector>
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <time.h>
-#include <cmath>
 #include <algorithm>
-#include <unordered_map>
-#include <map>
+#include <cmath>
+#include <string>
+#include <time.h>
+#include <vector>
 
 #define DTTMFMT "%Y-%m-%d %H:%M:%S"
 #define DTTMSZ 21
@@ -21,10 +17,6 @@ inline char* print_time (char *buff) {
     strftime(buff, DTTMSZ, DTTMFMT, localtime (&t));
     return buff;
 }
-
-
-
-
 
 
 

@@ -1,12 +1,10 @@
 #pragma once
-#include <stdint.h>
-#include <numeric>
-#include <vector>
 #include <iomanip>
 #include <iostream>
+#include <numeric>
+#include <stdint.h>
 #include <sstream>
-#include <deque>
-#include <map>
+#include <vector>
 
 
 class PoolBaseData {
@@ -18,7 +16,7 @@ class PoolBaseData {
         float pi = 0.0;  // Pi-statistic
         uint16_t depth = 0;  // Total coverage at this position
 
-        PoolBaseData();
+        PoolBaseData() = default;
 
         void compute_total();
         void compute_frequencies();

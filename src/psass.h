@@ -1,26 +1,20 @@
 #pragma once
-#include <vector>
-#include <string>
-#include <fstream>
+#include <algorithm>
 #include <chrono>
 #include <cmath>
-#include <iostream>
 #include <deque>
-#include <stack>
-#include <algorithm>
-#include <numeric>
-#include <map>
-#include <iomanip>
 #include <iterator>
-#include "parameters.h"
-#include "gff_file.h"
-#include "utils.h"
-#include "pair_data.h"
+#include <map>
+#include <numeric>
+#include <string>
+#include <vector>
 #include "arg_parser.h"
-#include "analysis.h"
+#include "gff_file.h"
 #include "input_data.h"
-#include "output_handler.h"
 #include "logs.h"
+#include "pair_data.h"
+#include "parameters.h"
+#include "output_handler.h"
 
 
 // Single base information for a pair of pools (sliding window calculations)
