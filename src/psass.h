@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <chrono>
 #include <cmath>
 #include <iostream>
 #include <deque>
@@ -19,6 +20,7 @@
 #include "analysis.h"
 #include "input_data.h"
 #include "output_handler.h"
+#include "logs.h"
 
 
 // Single base information for a pair of pools (sliding window calculations)
@@ -44,7 +46,11 @@ class Psass {
 
     public:
 
+        std::chrono::steady_clock::time_point t_begin; // Starting time to compute total runtime
+
         Parameters parameters;  // Parameters updated by the arguments parser
+
+        Logs logs;
 
         GFFData gff_data;
 
@@ -66,6 +72,7 @@ class Psass {
         float average_depth[2] = {0.0, 0.0};  // Average depth in male and female pool
 
         Psass(int argc, char *argv[]);
+        void count_lines();
         void update_nucleotides();
         void update_fst_parts();
         void update_depth();

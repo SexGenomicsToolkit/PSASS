@@ -61,7 +61,7 @@ void ArgParser::set_parameters(Parameters& parameters) {
 
 
     // Retrieve parameter values
-    parameters.min_depth = std::stoul(this->set_value("--min-depth"));
+    parameters.min_depth = uint(std::stoul(this->set_value("--min-depth")));
     parameters.min_fst = std::stof(this->set_value("--min-fst"));
     parameters.freq_het = std::stof(this->set_value("--freq-het"));
     parameters.freq_hom = std::stof(this->set_value("--freq-hom"));
@@ -71,10 +71,10 @@ void ArgParser::set_parameters(Parameters& parameters) {
     parameters.max_het = parameters.freq_het + parameters.range_het;
     parameters.min_hom = parameters.freq_hom- parameters.range_hom;
     parameters.ignore_indels = this->set_value("--ignore-indels") != "0";
-    parameters.output_resolution = std::stoul(this->set_value("--output-resolution"));
-    parameters.window_size = std::stoul(this->set_value("--window-size"));
+    parameters.output_resolution = uint(std::stoul(this->set_value("--output-resolution")));
+    parameters.window_size = uint(std::stoul(this->set_value("--window-size")));
     parameters.window_range = parameters.window_size / 2;
-    parameters.male_pool = std::stoul(this->set_value("--male-pool"));
+    parameters.male_pool = uint(std::stoul(this->set_value("--male-pool")));
     parameters.output_fst_pos = this->set_value("--output-fst-pos") != "0";
     parameters.output_fst_win = this->set_value("--output-fst-win") != "0";
     parameters.output_snps_pos = this->set_value("--output-snps-pos") != "0";
@@ -141,4 +141,18 @@ void ArgParser::print_parameters() {
     }
 
     std::cout << "\n";
+}
+
+
+
+void ArgParser::output_parameters(std::ofstream& output_file) {
+
+    output_file << "\nPSASS parameters:\n";
+
+    for (std::string o: this->print_order) {
+        if (o.substr(0,1) == "#") output_file << o << "\n";
+        else if (o != "--help") output_file << " - " << this->options[o][2] << " : " << this->set_value(o) << "\n";
+    }
+
+    output_file << std::endl;
 }

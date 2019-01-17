@@ -3,9 +3,14 @@
 // Psass class constructor
 Psass::Psass(int argc, char *argv[]) {
 
+    this->t_begin = std::chrono::steady_clock::now();
+
     ArgParser cmd_options(argc, argv);
     cmd_options.set_parameters(this->parameters);
-    cmd_options.print_parameters();
+
+    this->logs = Logs(this->parameters.output_prefix);
+    this->logs.write("PSASS started.");
+    cmd_options.output_parameters(logs.file);
 
     if (this->parameters.male_pool == 1) {
 
@@ -23,9 +28,43 @@ Psass::Psass(int argc, char *argv[]) {
     this->female_index = (this->parameters.male_pool == 1);  // 0 if male pool is second, 1 otherwise
 
     this->output_handler = OutputHandler(&this->parameters, &this->input_data, this->male_pool, this->female_pool, this->male_index, this->female_index,
-                                         &this->depth_data, &this->gff_data.genes);
+                                         &this->depth_data, &this->gff_data.genes, &this->logs);
 
-    if (this->parameters.output_genes) this->gff_data.read_gff_file(this->parameters.gff_file);
+    std::cout << "Preprocessing data ..." << std::endl;
+    if (this->parameters.output_genes) this->gff_data.read_gff_file(this->parameters.gff_file, this->logs);
+    this->count_lines();
+}
+
+
+
+void Psass::count_lines() {
+
+    do {
+
+        this->parameters.input_file.read(this->input_data.buff, this->input_data.buff_size);
+        this->input_data.k = this->parameters.input_file.gcount();
+
+        for (uint i=0; i<this->input_data.k; ++i) {
+
+            switch (this->input_data.buff[i]) {
+
+                case '\n':
+                    ++this->input_data.total_lines;
+                    break;
+
+                default:
+                    break;
+
+            }
+        }
+
+    } while (parameters.input_file);
+
+    this->input_data.lines_percent = this->input_data.total_lines / 100;
+
+    this->parameters.input_file.clear();
+    this->parameters.input_file.seekg(0);
+
 }
 
 
@@ -326,13 +365,12 @@ void Psass::process_line() {
     // Update / reset values if change of contig
     if (this->input_data.contig != this->input_data.current_contig) {
 
-        if (parameters.output_genes) this->gff_data.new_contig(this->input_data);
-
         if (this->input_data.current_contig != "") {
 
             this->process_contig_end();
 
-            std::cout << "Finished analyzing contig :  " << this->input_data.current_contig << std::endl;
+           this->logs.write("Processing of contig <" + this->input_data.current_contig + "> ended without errors.");
+           this->logs.write("Processing of contig <" + this->input_data.contig + "> started.");
 
             if (parameters.output_snps_win) {
 
@@ -356,7 +394,14 @@ void Psass::process_line() {
             }
 
             this->window.data.resize(0);
+
+        } else {
+
+            this->logs.write("Processing of contig <" + this->input_data.contig + "> started.");
+
         }
+
+        if (parameters.output_genes) this->gff_data.new_contig(this->input_data, this->logs);
     }
 
     // Reset line parsing values
@@ -384,6 +429,16 @@ void Psass::process_line() {
     if (this->parameters.output_genes) this->update_genes();
 
     ++this->total_bases;
+
+    if (this->total_bases % this->input_data.lines_percent == 0) {
+
+        this->input_data.completion_line = "\rProcessing file : ";
+        for (ulong i = 0; i <= this->total_bases / this->input_data.lines_percent; ++i) this->input_data.completion_line += "\u2588";
+        for (ulong i = this->total_bases / this->input_data.lines_percent + 1; i < 101; ++i) this->input_data.completion_line += "\u00B7";
+        this->input_data.completion_line += " [" + std::to_string(this->total_bases / this->input_data.lines_percent) + "%]";
+        std::cout << this->input_data.completion_line << std::flush;
+
+    }
 
     // Output Fst positions
     if (parameters.output_fst_pos) {
@@ -467,6 +522,8 @@ void Psass::process_subfield() {
 // Read the input file and process each line
 void Psass::run() {
 
+    this->logs.write("Processing of <" + this->parameters.input_file_path + "> started.");
+
     do {
 
         this->parameters.input_file.read(this->input_data.buff, this->input_data.buff_size);
@@ -500,9 +557,20 @@ void Psass::run() {
 
     } while (parameters.input_file);
 
+    this->logs.write("Processing of <" + this->parameters.input_file_path + "> ended without errors.");
+    this->logs.write("Processed <" + std::to_string(this->total_bases) + "> lines.");
+
     this->average_depth[this->male_index] = float(this->total_depth[this->male_index]) / float(this->total_bases);
     this->average_depth[this->female_index] = float(this->total_depth[this->female_index]) / float(this->total_bases);
 
     if (this->parameters.output_depth) this->output_handler.output_depth(this->average_depth);
     if (this->parameters.output_genes) this->output_handler.output_genes(this->average_depth);
+
+    std::chrono::steady_clock::time_point t_end = std::chrono::steady_clock::now();
+    long seconds = std::chrono::duration_cast<std::chrono::seconds>(t_end - t_begin).count();
+    long minutes = seconds / 60;
+    long hours = minutes / 60;
+    this->logs.write("Total runtime : " + std::to_string(hours) + "h " + std::to_string(minutes%60) + "m " + std::to_string(seconds%60) + "s.");
+    this->logs.write("PSASS ended without errors.");
+
 }

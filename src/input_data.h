@@ -6,6 +6,10 @@ class InputData {
 
     public:
 
+        uint total_lines = 0;
+        uint lines_percent = 0;
+        std::string completion_line = "";
+
         // Efficient file reading parameters
         char buff[2048];
         int buff_size = sizeof(this->buff);

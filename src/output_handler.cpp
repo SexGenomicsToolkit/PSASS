@@ -1,7 +1,7 @@
 #include "output_handler.h"
 
 OutputHandler::OutputHandler(Parameters* parameters, InputData* input_data, PoolBaseData* male_pool, PoolBaseData* female_pool, bool male_index, bool female_index,
-                             std::map<std::string, std::map<uint, float[3]>>* depth, std::unordered_map<std::string, Gene>* genes) {
+                             std::map<std::string, std::map<uint, float[3]>>* depth, std::unordered_map<std::string, Gene>* genes, Logs* logs) {
 
     // Pointers to data structures from PSASS
     this->input_data = input_data;
@@ -11,6 +11,7 @@ OutputHandler::OutputHandler(Parameters* parameters, InputData* input_data, Pool
     this->female_index = female_index;
     this->depth = depth;
     this->genes = genes;
+    this->logs = logs;
 
     this->parameters = parameters;
 
@@ -18,25 +19,31 @@ OutputHandler::OutputHandler(Parameters* parameters, InputData* input_data, Pool
     if (this->parameters->output_prefix != "") this->parameters->output_prefix += "_";
 
     // Open output file objects
-    if (this->parameters->output_fst_pos) this->fst_position_output_file.open(this->parameters->output_prefix);
-    if (this->parameters->output_fst_win) this->fst_window_output_file.open(this->parameters->output_prefix);
-    if (this->parameters->output_snps_pos) this->snps_position_output_file.open(this->parameters->output_prefix);
-    if (this->parameters->output_snps_win) this->snps_window_output_file.open(this->parameters->output_prefix);
-    if (this->parameters->output_depth) this->depth_output_file.open(this->parameters->output_prefix);
-    if (this->parameters->output_genes) this->genes_output_file.open(this->parameters->output_prefix);
+    if (this->parameters->output_fst_pos) this->fst_position_output_file.open(this->parameters->output_prefix, this->logs);
+    if (this->parameters->output_fst_win) this->fst_window_output_file.open(this->parameters->output_prefix, this->logs);
+    if (this->parameters->output_snps_pos) this->snps_position_output_file.open(this->parameters->output_prefix, this->logs);
+    if (this->parameters->output_snps_win) this->snps_window_output_file.open(this->parameters->output_prefix, this->logs);
+    if (this->parameters->output_depth) this->depth_output_file.open(this->parameters->output_prefix, this->logs);
+    if (this->parameters->output_genes) this->genes_output_file.open(this->parameters->output_prefix, this->logs);
 }
 
 
 
 // Write SNP and nucleotide information if current base is a sex-specific SNP
-void OutputFile::open(const std::string& prefix) {
+void OutputFile::open(const std::string& prefix, Logs* logs) {
 
     this->path = prefix + this->suffix + ".tsv";
     this->file.open(this->path);
+
     if (not this->file.is_open()) {
-        std::cerr << "Error: cannot open output file (" <<this->path << ")." << std::endl;
+
+        std::cerr << "Error: cannot open output file <" << this->path << ">." << std::endl;
+        logs->write("Error: cannot open output file <" + this->path + ">.");
         exit(1);
+
     }
+
+    logs->write("Created output file <" + this->path + ">.");
     this->file << this->header;
 }
 
@@ -87,6 +94,8 @@ void OutputHandler::output_snp_window(uint32_t snps_total[2]) {
 // Write depth information at the end of the analysis
 void OutputHandler::output_depth(float* average_depth) {
 
+    logs->write("Depth data output started.");
+
     float window_size = 0;
 
     for (auto const& contig : *this->depth) {
@@ -104,11 +113,15 @@ void OutputHandler::output_depth(float* average_depth) {
 
         }
     }
+
+    logs->write("Depth data output ended without errors.");
 }
 
 
 // Write genes information at the end of the analysis
 void OutputHandler::output_genes(float* average_depth) {
+
+    logs->write("Genes data output started.");
 
     float depth_correction_males = (average_depth[this->male_index] + average_depth[this->female_index]) / 2 / average_depth[this->male_index];
     float depth_correction_females = (average_depth[this->male_index] + average_depth[this->female_index]) / 2 / average_depth[this->female_index];
@@ -157,5 +170,7 @@ void OutputHandler::output_genes(float* average_depth) {
                                      << gene.second.snps[4 + this->male_index] << "\t" << gene.second.snps[2 * this->male_index + 1] << "\t" << gene.second.snps[2 * this->male_index] << "\t"
                                      << gene.second.snps[4 + this->female_index] << "\t" << gene.second.snps[2 * this->female_index + 1] << "\t" << gene.second.snps[2 * this->female_index] << "\n";
     }
+
+    logs->write("Genes data output ended without errors.");
 
 }

@@ -7,6 +7,7 @@
 #include "pool_data.h"
 #include "parameters.h"
 #include "gff_file.h"
+#include "logs.h"
 
 
 struct OutputFile {
@@ -18,7 +19,7 @@ struct OutputFile {
 
     OutputFile() {}
     OutputFile(const std::string& suffix, const std::string& header) {this->suffix = suffix; this->header = header;}
-    void open(const std::string& prefix);
+    void open(const std::string& prefix, Logs* logs);
 };
 
 
@@ -28,7 +29,7 @@ class OutputHandler {
 
         OutputHandler() {}
         OutputHandler(Parameters* parameters, InputData* input_data, PoolBaseData* male_pool, PoolBaseData* female_pool, bool male_index, bool female_index,
-                      std::map<std::string, std::map<uint, float[3]>>* depth, std::unordered_map<std::string, Gene>* genes);
+                      std::map<std::string, std::map<uint, float[3]>>* depth, std::unordered_map<std::string, Gene>* genes, Logs* logs);
         void output_fst_position(float fst);
         void output_fst_window(float fst_parts[2]);
         void output_snp_position(std::string sex);
@@ -48,6 +49,7 @@ class OutputHandler {
                                       "F_depth\tF_depth_corr\tF_depth_coding\tF_depth_coding_corr\tF_depth_noncoding\tF_depth_noncoding_corr\t"
                                       "M_snps\tM_snps_coding\tM_snps_noncoding\tF_snps\tF_snps_coding\tF_snps_noncoding\n"};
 
+        Logs* logs;
         Parameters* parameters;
         InputData* input_data;
         PoolBaseData* male_pool;
