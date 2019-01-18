@@ -108,8 +108,8 @@ void OutputHandler::output_depth(float* average_depth) {
                                          << float(position.second[this->male_index] / window_size) << "\t"
                                          << float(position.second[this->female_index] / window_size) << "\t"
                                          << std::fixed << std::setprecision(2)
-                                         << float((position.second[this->male_index] / window_size)/ average_depth[0]) << "\t"
-                                         << float((position.second[this->female_index] / window_size)/ average_depth[1]) << "\n";
+                                         << float((position.second[this->male_index] / window_size)/ average_depth[this->male_index]) << "\t"
+                                         << float((position.second[this->female_index] / window_size)/ average_depth[this->female_index]) << "\n";
 
         }
     }
