@@ -42,7 +42,7 @@ class OutputHandler {
 
         OutputFile fst_position_output_file {"fst_position", "Contig\tPosition\tFst\n"};
         OutputFile fst_window_output_file {"fst_window", "Contig\tPosition\tFst\n"};
-        OutputFile snps_position_output_file {"snps_position", "Contig\tPosition\tSex\tM_A\tM_T\tM_G\tM_C\tM_I\tF_A\tF_T\tF_G\tF_C\tF_I\n"};
+        OutputFile snps_position_output_file {"snps_position", "Contig\tPosition\tSex\tM_A\tM_T\tM_G\tM_C\tM_N\tM_I\tF_A\tF_T\tF_G\tF_C\tF_N\tF_I\n"};
         OutputFile snps_window_output_file {"snps_window", "Contig\tPosition\tMales\tFemales\n"};
         OutputFile depth_output_file {"depth", "Contig\tPosition\tMales_depth_abs\tFemales_depth_abs\tMales_depth_rel\tFemales_depth_rel\n"};
         OutputFile genes_output_file {"genes", "Contig\tStart\tEnd\tID\tName\tProduct\t"
