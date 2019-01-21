@@ -16,7 +16,7 @@ struct Parameters{
     float min_hom = float(0.95);
     uint window_size = 100000;
     uint window_range = 50000;
-    uint output_resolution = 1000;
+    uint output_resolution = 10000;
     bool group_snps= false;
 
     // Output options
