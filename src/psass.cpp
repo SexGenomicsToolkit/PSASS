@@ -31,7 +31,13 @@ Psass::Psass(int argc, char *argv[]) {
                                          &this->depth_data, &this->gff_data.genes, &this->logs);
 
     std::cout << "Preprocessing data ..." << std::endl;
-    if (this->parameters.output_genes) this->gff_data.read_gff_file(this->parameters.gff_file, this->logs);
+    if (this->parameters.output_genes) {
+
+        this->gff_data.read_gff_file(this->parameters.gff_file, this->logs);
+        this->parameters.output_genes = true;
+
+    }
+
     this->count_lines();
 }
 
@@ -139,7 +145,7 @@ void Psass::update_snps() {
     this->window_base_data.snps[this->male_index] = false;
     this->window_base_data.snps[this->female_index] = false;
 
-    if (this->window_base_data.depth[this->male_index] > this->parameters.min_depth and this->window_base_data.depth[this->female_index] > this->parameters.min_depth) {
+    if (this->male_pool->depth > this->parameters.min_depth and this->female_pool->depth > this->parameters.min_depth) {
 
         for (auto i=0; i<6; ++i) {
 
@@ -195,11 +201,15 @@ void Psass::update_snps() {
 void Psass::update_depth() {
 
     // Update data to push in window
-    this->window_base_data.depth[this->male_index] = this->male_pool->depth;
-    this->window_base_data.depth[this->female_index] = this->female_pool->depth;
+    if (this->parameters.output_depth) {
+
+        this->window_base_data.depth[this->male_index] = this->male_pool->depth;
+        this->window_base_data.depth[this->female_index] = this->female_pool->depth;
+
+    }
 
     // Update total depth count to compute relative coverage later
-    if (this->parameters.output_depth) {
+    if (this->parameters.output_depth or this->parameters.output_genes) {
 
         this->total_depth[this->male_index] += this->male_pool->depth;
         this->total_depth[this->female_index] += this->female_pool->depth;
@@ -451,7 +461,7 @@ void Psass::process_line() {
     if (this->parameters.output_fst_win) this->update_fst_parts();
 
     // Update depth data for window
-    if (this->parameters.output_depth) this->update_depth();
+    if (this->parameters.output_depth or this->parameters.output_genes) this->update_depth();
 
     // Update SNPs data for window
     if (this->parameters.output_snps_win or this->parameters.output_snps_pos or this->parameters.output_genes) this->update_snps();

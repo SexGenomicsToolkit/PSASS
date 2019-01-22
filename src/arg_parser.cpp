@@ -126,7 +126,7 @@ void ArgParser::usage() {
     std::cout << "--range-het            <float>     Range of frequency for a sex-linked SNP in the heterogametic sex      [0.1]" << std::endl;
     std::cout << "--range-hom            <float>     Range of frequency for a sex-linked SNP in the homogametic sex        [0.05]" << std::endl;
     std::cout << "--window-size          <int>       Size of the sliding window (in bp)                                    [100000]" << std::endl;
-    std::cout << "--output-resolution    <int>       Output resolution (in bp)                                             [500]" << std::endl;
+    std::cout << "--output-resolution    <int>       Output resolution (in bp)                                             [10000]" << std::endl;
     std::cout << "--group-snps           <bool>      Group consecutive snps to count them as a single polymorphism (0/1)   [0]" << std::endl;
     std::cout << std::endl;
 }
