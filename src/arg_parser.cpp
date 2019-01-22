@@ -105,7 +105,7 @@ void ArgParser::set_parameters(Parameters& parameters) {
 
 void ArgParser::usage() {
 
-    std::cout << std::endl << "Usage: poolsex [options] --input-file input_file.sync --output-prefix output_prefix" << std::endl;
+    std::cout << std::endl << "Usage: psass analyze [options] --input-file input_file.sync --output-prefix output_prefix" << std::endl;
     std::cout << std::endl << "Options:" << std::endl << std::endl;
 
     std::cout << "## Input / output " << std::endl;
