@@ -1,14 +1,10 @@
 #pragma once
 
-#include <vector>
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <time.h>
-#include <cmath>
 #include <algorithm>
-#include <unordered_map>
-#include <map>
+#include <cmath>
+#include <string>
+#include <time.h>
+#include <vector>
 
 #define DTTMFMT "%Y-%m-%d %H:%M:%S"
 #define DTTMSZ 21
@@ -20,18 +16,6 @@ inline char* print_time (char *buff) {
     time_t t = time(nullptr);
     strftime(buff, DTTMSZ, DTTMFMT, localtime (&t));
     return buff;
-}
-
-
-
-// Output a message in log file
-template<typename T>
-inline void write_log(T line, std::ofstream& log_file, bool timestamp, bool newline) {
-
-    char logtime[DTTMSZ];
-    if (timestamp) log_file << "[" << print_time(logtime) << "]" << "    ";
-    log_file << std::boolalpha << line;
-    if (newline) log_file << std::endl;
 }
 
 

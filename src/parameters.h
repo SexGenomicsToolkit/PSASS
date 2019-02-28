@@ -4,35 +4,36 @@
 
 struct Parameters{
 
-    uint min_depth;
-    float min_fst;
-    float freq_het;
-    float freq_hom;
-    float range_het;
-    float range_hom;
-    uint window_size;
-    uint output_resolution;
+    // Analysis parameters
+    uint min_depth = 10;
+    float min_fst = float(0.1);
+    float freq_het = float(0.5);
+    float freq_hom = float(1.0);
+    float range_het = float(0.15);
+    float range_hom = float(0.05);
+    float min_het = float(0.35);
+    float max_het = float(0.65);
+    float min_hom = float(0.95);
+    uint window_size = 100000;
+    uint window_range = 50000;
+    uint output_resolution = 10000;
+    bool group_snps= false;
 
-    uint male_pool;
-    bool output_fst_pos;
-    bool output_fst_win;
-    bool output_snps_pos;
-    bool output_snps_win;
-    bool output_coverage;
+    // Output options
+    bool output_fst_pos = true;
+    bool output_fst_win = true;
+    bool output_snps_pos = true;
+    bool output_snps_win = true;
+    bool output_depth = true;
     bool output_genes = false;
 
-    std::string input_file_path;
-    std::string gff_file_path;
-    std::string output_prefix;
+    // Input options
+    std::string input_file_path = "";
+    std::string gff_file_path = "";
+    std::string output_prefix = "";
+    uint male_pool = 1;
 
+    // Input file streams
     std::ifstream input_file;
     std::ifstream gff_file;
-
-    std::ofstream snps_win_output_file;
-    std::ofstream snps_pos_output_file;
-    std::ofstream fst_pos_output_file;
-    std::ofstream fst_win_output_file;
-    std::ofstream coverage_output_file;
-    std::ofstream genes_output_file;
-    std::ofstream log_file;
 };

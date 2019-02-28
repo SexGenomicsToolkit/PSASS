@@ -12,7 +12,7 @@ BUILD = $(BASEDIR)/build
 CPP = $(wildcard $(SRC)/*.cpp)
 
 # Target
-TARGET = poolsex
+TARGET = psass
 
 # Variables
 OBJS = $(addprefix $(BUILD)/, $(notdir $(CPP:.cpp=.o)))

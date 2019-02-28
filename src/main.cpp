@@ -1,29 +1,32 @@
-#include "arg_parser.h"
-#include "analysis.h"
-#include <chrono>
+#include "psass.h"
+#include "pileup_converter.h"
 
 
 int main(int argc, char *argv[]) {
 
-    std::chrono::steady_clock::time_point t_begin = std::chrono::steady_clock::now();
+    if (std::string(argv[1]) == "analyze") {
 
-    ArgParser cmd_options(argc, argv);
+        std::cout << "PSASS started." << std::endl;
 
-    Parameters parameters;
+        Psass psass(argc, argv);
+        psass.run();
 
-    cmd_options.set_parameters(parameters);
+        std::cout << "\nPSASS ended successfully." << std::endl;
 
-    cmd_options.print_parameters();
+    } else if (std::string(argv[1]) == "convert") {
 
-    std::cout << "Analyzing" << std::endl;
-    uint n_lines = analysis(parameters);
+        PileupConverter pileup_converter(argc, argv);
+        pileup_converter.run();
 
-    std::chrono::steady_clock::time_point t_end = std::chrono::steady_clock::now();
-    write_log("Analysis completed. Processed ", parameters.log_file, true, false);
-    write_log(n_lines, parameters.log_file, false, false);
-    write_log(" lines in ", parameters.log_file, false, false);
-    write_log(std::chrono::duration_cast<std::chrono::seconds>(t_end - t_begin).count(), parameters.log_file, false, false);
-    write_log(" seconds.", parameters.log_file, false, false);
+    } else {
+
+        std::cout << std::endl << "Usage: poolsex <command> [options]" << std::endl << std::endl;
+        std::cout << "Commands:" << std::endl;
+        std::cout << "        analyze    Compute metrics from either the resulting file from \"convert\" or a sync file from popoolation2" << std::endl;
+        std::cout << "        convert    Convert a pileup file to a synchronized pool file. Accepts input from stdin with \"-\"" << std::endl;
+        std::cout << std::endl;
+    }
+
 
     return 0;
 }
