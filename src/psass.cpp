@@ -567,6 +567,7 @@ void Psass::process_subfield() {
 void Psass::run() {
 
     this->logs.write("Processing of <" + this->parameters.input_file_path + "> started.");
+    std::cout << "PSASS started." << std::endl;
 
     do {
 
