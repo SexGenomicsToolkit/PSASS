@@ -225,7 +225,7 @@ void Psass::update_window(bool end) {
     // Add the current base data to the window (reset window if size bigger than window_size, which should not happen)
     (this->window.data.size() <= this->parameters.window_size and not end) ? this->window.data.push_back(this->window_base_data) : this->window.data.resize(0);
 
-    // If the window has size window_size, compute sum for each metric (first time with complete window in the current contig)
+    // If the window is smaller than window_size, only add to total (beginning of the contig)
     if (this->window.data.size() <= this->parameters.window_size) {
 
         if (this->parameters.output_snps_win) {
