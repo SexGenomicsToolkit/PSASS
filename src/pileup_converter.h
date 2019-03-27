@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -15,18 +16,19 @@ class PileupConverter {
 
     private:
 
-        std::unordered_map<char, uint> bases {{'A', 0}, {'T', 1}, {'G', 2}, {'C', 3}, {'N', 4}, {'I', 5},
-                                              {'a', 0}, {'t', 1}, {'g', 2}, {'c', 3}, {'n', 4}};
-
         // Efficient file reading parameters
-        char buff[2048];
+        char buff[8192];
         int buff_size = sizeof(this->buff);
         long k = 0;
 
         // I/O parameters
         bool from_stdin = false;
+        bool to_stdout = false;
         std::ifstream input_file;
-        std::ofstream output_file;
+        std::ofstream ofile;
+        char obuff[300];
+        uint j = 0;
+        uint line_count = 0;
 
         // Syncfile parsing : current field and subfield in a line, and current (sub)field value is stored in temp
         uint field = 0;
@@ -38,7 +40,7 @@ class PileupConverter {
         uint position = 0;
         char ref_allele = 'N';
         uint depth[2] = {0, 0};
-        uint pool[2][6] {{0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}};
+        unsigned int pool[2][6] {{0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}};
 
         // Base processing
         bool read_begin = false;
@@ -46,6 +48,10 @@ class PileupConverter {
         std::string tmp_indel_size = "";
         uint remaining_indel = 0;
 
+        // Output
+        std::string output_line = "";
+
+        void add_counts_to_buffer(uint8_t pool_number);
         void process_line();
         void process_field();
         void process_base(char base, bool pool);
