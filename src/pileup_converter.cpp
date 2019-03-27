@@ -79,14 +79,18 @@ void PileupConverter::add_counts_to_buffer(uint8_t pool_number) {
         if (this->pool[pool_number][i] > 9999) {  // Max int value is 65535
 
             this->obuff[this->j] = '0' + this->pool[pool_number][i] / 10000;
+            this->pool[pool_number][i] = this->pool[pool_number][i] % 10000;
             ++this->j;
             this->obuff[this->j] = '0' + this->pool[pool_number][i] / 1000;
+            this->pool[pool_number][i] = this->pool[pool_number][i] % 1000;
             ++this->j;
             this->obuff[this->j] = '0' + this->pool[pool_number][i] / 100;
+            this->pool[pool_number][i] = this->pool[pool_number][i] % 100;
             ++this->j;
             this->obuff[this->j] = '0' + this->pool[pool_number][i] / 10;
+            this->pool[pool_number][i] = this->pool[pool_number][i] % 10;
             ++this->j;
-            this->obuff[this->j] = '0' + this->pool[pool_number][i] % 10;
+            this->obuff[this->j] = '0' + this->pool[pool_number][i];
             ++this->j;
             this->obuff[this->j] = '\t';
             ++this->j;
@@ -94,12 +98,15 @@ void PileupConverter::add_counts_to_buffer(uint8_t pool_number) {
         } else if (this->pool[pool_number][i] > 999) {
 
             this->obuff[this->j] = '0' + this->pool[pool_number][i] / 1000;
+            this->pool[pool_number][i] = this->pool[pool_number][i] % 1000;
             ++this->j;
             this->obuff[this->j] = '0' + this->pool[pool_number][i] / 100;
+            this->pool[pool_number][i] = this->pool[pool_number][i] % 100;
             ++this->j;
             this->obuff[this->j] = '0' + this->pool[pool_number][i] / 10;
+            this->pool[pool_number][i] = this->pool[pool_number][i] % 10;
             ++this->j;
-            this->obuff[this->j] = '0' + this->pool[pool_number][i] % 10;
+            this->obuff[this->j] = '0' + this->pool[pool_number][i];
             ++this->j;
             this->obuff[this->j] = '\t';
             ++this->j;
@@ -107,10 +114,12 @@ void PileupConverter::add_counts_to_buffer(uint8_t pool_number) {
         } else if (this->pool[pool_number][i] > 99) {
 
             this->obuff[this->j] = '0' + this->pool[pool_number][i] / 100;
+            this->pool[pool_number][i] = this->pool[pool_number][i] % 100;
             ++this->j;
             this->obuff[this->j] = '0' + this->pool[pool_number][i] / 10;
+            this->pool[pool_number][i] = this->pool[pool_number][i] % 10;
             ++this->j;
-            this->obuff[this->j] = '0' + this->pool[pool_number][i] % 10;
+            this->obuff[this->j] = '0' + this->pool[pool_number][i];
             ++this->j;
             this->obuff[this->j] = '\t';
             ++this->j;
@@ -118,8 +127,9 @@ void PileupConverter::add_counts_to_buffer(uint8_t pool_number) {
         } else if (this->pool[pool_number][i] > 9) {
 
             this->obuff[this->j] = '0' + this->pool[pool_number][i] / 10;
+            this->pool[pool_number][i] = this->pool[pool_number][i] % 10;
             ++this->j;
-            this->obuff[this->j] = '0' + this->pool[pool_number][i] % 10;
+            this->obuff[this->j] = '0' + this->pool[pool_number][i];
             ++this->j;
             this->obuff[this->j] = '\t';
             ++this->j;
@@ -146,6 +156,7 @@ void PileupConverter::process_line() {
     this->add_counts_to_buffer(0);  // Add nucleotide counts to output buffer for first pool
     this->add_counts_to_buffer(1);  // Add nucleotide counts to output buffer for second pool
 
+    --j;
     this->obuff[this->j] = '\n';  // Add return character at the end of the line
     ++this->j;
 
@@ -244,19 +255,19 @@ void PileupConverter::process_base(char base, bool pool) {
                 ++this->pool[pool][1];
                 break;
 
-            case 'G':
-                ++this->pool[pool][2];
-                break;
-
-            case 'g':
-                ++this->pool[pool][2];
-                break;
-
             case 'C':
-                ++this->pool[pool][3];
+                ++this->pool[pool][2];
                 break;
 
             case 'c':
+                ++this->pool[pool][2];
+                break;
+
+            case 'G':
+                ++this->pool[pool][3];
+                break;
+
+            case 'g':
                 ++this->pool[pool][3];
                 break;
 
