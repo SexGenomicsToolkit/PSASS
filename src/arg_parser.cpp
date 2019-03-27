@@ -80,6 +80,7 @@ void ArgParser::set_parameters(Parameters& parameters) {
     parameters.output_snps_pos = this->set_value("--output-snps-pos") != "0";
     parameters.output_snps_win = this->set_value("--output-snps-win") != "0";
     parameters.output_depth = this->set_value("--output-depth") != "0";
+    parameters.popoolation_format = this->set_value("--input-format") == "popoolation";
 
     // Open input file
     parameters.input_file.open(parameters.input_file_path);
@@ -111,6 +112,7 @@ void ArgParser::usage() {
     std::cout << "## Input / output " << std::endl;
     std::cout << "--input-file           <string>    Input file (popoolation sync file)                                    [\"\"]" << std::endl;
     std::cout << "--output-prefix        <string>    Full prefix (including path) for output files                         [\"\"]" << std::endl;
+    std::cout << "--input-format         <string>    Input format (psass/popoolation)                                      [\"psass\"]" << std::endl;
     std::cout << "--gff-file             <string>    GFF file for gene-specific output                                     [\"\"]" << std::endl;
     std::cout << "--output-fst-pos       <bool>      If true, output fst positions (0/1)                                   [1]" << std::endl;
     std::cout << "--output-fst-win       <bool>      If true, output fst sliding window (0/1)                              [1]" << std::endl;

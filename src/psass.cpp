@@ -37,40 +37,6 @@ Psass::Psass(int argc, char *argv[]) {
         this->parameters.output_genes = true;
 
     }
-
-    this->count_lines();
-}
-
-
-
-void Psass::count_lines() {
-
-    do {
-
-        this->parameters.input_file.read(this->input_data.buff, this->input_data.buff_size);
-        this->input_data.k = this->parameters.input_file.gcount();
-
-        for (uint i=0; i<this->input_data.k; ++i) {
-
-            switch (this->input_data.buff[i]) {
-
-                case '\n':
-                    ++this->input_data.total_lines;
-                    break;
-
-                default:
-                    break;
-
-            }
-        }
-
-    } while (parameters.input_file);
-
-    this->input_data.lines_percent = this->input_data.total_lines / 100;
-
-    this->parameters.input_file.clear();
-    this->parameters.input_file.seekg(0);
-
 }
 
 
@@ -474,15 +440,6 @@ void Psass::process_line() {
 
     ++this->total_bases;
 
-    if (this->total_bases % this->input_data.lines_percent == 0) {
-
-        this->input_data.completion_line = "\rProcessing file : ";
-        for (ulong i = 0; i <= this->total_bases / this->input_data.lines_percent; ++i) this->input_data.completion_line += "\u2588";
-        for (ulong i = this->total_bases / this->input_data.lines_percent + 1; i < 101; ++i) this->input_data.completion_line += "\u00B7";
-        this->input_data.completion_line += " [" + std::to_string(this->total_bases / this->input_data.lines_percent) + "%]";
-        std::cout << this->input_data.completion_line << std::flush;
-
-    }
 
     // Output Fst positions
     if (parameters.output_fst_pos) {
@@ -510,22 +467,22 @@ void Psass::process_line() {
 
 
 // Function called on a field from the input file (i.e. when meeting a '\t')
-void Psass::process_field() {
+void Psass::process_popoolation_field() {
 
     switch (this->input_data.field) {
 
-    case 0:
+    case 0:  // Scaffold field
         this->input_data.contig = this->input_data.temp;
         break;
 
-    case 1:
+    case 1:  // Position field
         this->input_data.position = fast_stoi(this->input_data.temp.c_str());
         break;
 
-    case 2:
+    case 2:  // Reference base
         break;
 
-    case 3:
+    case 3:  // Frequencies in first pool (last subfield is indels)
         this->pair_data.pool1.nucleotides[5] = fast_stoi(this->input_data.temp.c_str());
         break;
 
@@ -542,7 +499,7 @@ void Psass::process_field() {
 
 
 // Function called on a subfield from the input file (i.e. when meeting a ':')
-void Psass::process_subfield() {
+void Psass::process_popoolation_subfield() {
 
     switch (this->input_data.field) {
 
@@ -563,6 +520,81 @@ void Psass::process_subfield() {
 
 
 
+// Function called on a field from the input file (i.e. when meeting a '\t')
+void Psass::process_psass_field() {
+
+    switch (this->input_data.field) {
+
+        case 0:
+            this->input_data.contig = this->input_data.temp;
+            break;
+
+        case 1:
+            this->input_data.position = fast_stoi(this->input_data.temp.c_str());
+            break;
+
+        case 2:
+            break;
+
+        case 3:
+            this->pair_data.pool1.nucleotides[0] = fast_stoi(this->input_data.temp.c_str());
+            break;
+
+        case 4:
+            this->pair_data.pool1.nucleotides[1] = fast_stoi(this->input_data.temp.c_str());
+            break;
+
+        case 5:
+            this->pair_data.pool1.nucleotides[2] = fast_stoi(this->input_data.temp.c_str());
+            break;
+
+        case 6:
+            this->pair_data.pool1.nucleotides[3] = fast_stoi(this->input_data.temp.c_str());
+            break;
+
+        case 7:
+            this->pair_data.pool1.nucleotides[4] = fast_stoi(this->input_data.temp.c_str());
+            break;
+
+        case 8:
+            this->pair_data.pool1.nucleotides[5] = fast_stoi(this->input_data.temp.c_str());
+            break;
+
+        case 9:
+            this->pair_data.pool2.nucleotides[0] = fast_stoi(this->input_data.temp.c_str());
+            break;
+
+        case 10:
+            this->pair_data.pool2.nucleotides[1] = fast_stoi(this->input_data.temp.c_str());
+            break;
+
+        case 11:
+            this->pair_data.pool2.nucleotides[2] = fast_stoi(this->input_data.temp.c_str());
+            break;
+
+        case 12:
+            this->pair_data.pool2.nucleotides[3] = fast_stoi(this->input_data.temp.c_str());
+            break;
+
+        case 13:
+            this->pair_data.pool2.nucleotides[4] = fast_stoi(this->input_data.temp.c_str());
+            break;
+
+        case 14:
+            this->pair_data.pool2.nucleotides[5] = fast_stoi(this->input_data.temp.c_str());
+            break;
+
+        default:
+            break;
+
+    }
+
+    this->input_data.temp = "";
+    ++this->input_data.field;
+}
+
+
+
 // Read the input file and process each line
 void Psass::run() {
 
@@ -574,36 +606,58 @@ void Psass::run() {
         this->parameters.input_file.read(this->input_data.buff, this->input_data.buff_size);
         this->input_data.k = this->parameters.input_file.gcount();
 
-        for (uint i=0; i<this->input_data.k; ++i) {
+        if (this->parameters.popoolation_format) {
 
-            switch (this->input_data.buff[i]) {
+            for (uint i=0; i<this->input_data.k; ++i) {
 
-                case '\r':
-                    break;
+                switch (this->input_data.buff[i]) {
 
-                case '\n':
-                    this->process_line();
-                    break;
+                    case ':':
+                        this->process_popoolation_subfield();
+                        break;
 
-                case '\t':
-                    this->process_field();
-                    break;
+                    case '\t':
+                        this->process_popoolation_field();
+                        break;
 
-                case ':':
-                    this->process_subfield();
-                    break;
+                    case '\n':
+                        this->process_line();
+                        break;
 
-                default:
-                    this->input_data.temp += this->input_data.buff[i];
-                    break;
+                    default:
+                        this->input_data.temp += this->input_data.buff[i];
+                        break;
 
+                }
             }
+
+        } else {
+
+            for (uint i=0; i<this->input_data.k; ++i) {
+
+                switch (this->input_data.buff[i]) {
+
+                    case '\t':
+                        this->process_psass_field();
+                        break;
+
+                    case '\n':
+                        this->process_line();
+                        break;
+
+                    default:
+                        this->input_data.temp += this->input_data.buff[i];
+                        break;
+
+                }
+            }
+
         }
 
     } while (parameters.input_file);
 
     this->logs.write("Processing of <" + this->parameters.input_file_path + "> ended without errors.");
-    this->logs.write("Processed <" + std::to_string(this->total_bases) + "> lines.");
+    this->logs.write("Processed <" + std::to_string(this->total_bases) + "> lines.");  // One base per line
 
     this->average_depth[this->male_index] = float(this->total_depth[this->male_index]) / float(this->total_bases);
     this->average_depth[this->female_index] = float(this->total_depth[this->female_index]) / float(this->total_bases);

@@ -78,8 +78,9 @@ class Psass {
         void output_window_step();
         void process_contig_end();
         void process_line();
-        void process_field();
-        void process_subfield();
+        void process_popoolation_field();
+        void process_popoolation_subfield();
+        void process_psass_field();
         void run();
 };
 

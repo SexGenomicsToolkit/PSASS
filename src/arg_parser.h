@@ -32,14 +32,15 @@ class ArgParser {
                                                                   {"--output-resolution", {"10000", "int", "Output resolution (in bp)"} } ,
                                                                   {"--group-snps", {"1", "bool", "Group consecutive snps to count them as a single polymorphism"} },
 
-                                                                  {"--input-file", {"", "string", "Input file (popoolation sync file)"} },
+                                                                  {"--input-file", {"", "string", "Input file (psass convert output or popoolation sync file)"} },
+                                                                  {"--input-format", {"", "string", "Input format (psass/popoolation)"} },
                                                                   {"--output-prefix", {"", "string", "Full prefix (including path) for output files"} },
                                                                   {"--gff-file", {"", "string", "GFF file for gene-specific output"} }
                                                                 };
 
-        std::vector<std::string> print_order {"#Input", "--input-file", "--gff-file", "--male-pool", "#Output", "--output-prefix", "--output-fst-pos", "--output-fst-win", "--output-snps-pos",
-                                              "--output-snps-win", "--output-depth", "#Computations", "--min-depth", "--min-fst", "--freq-het", "--range-het", "--freq-hom", "--range-hom",
-                                              "--window-size", "--output-resolution"};
+        std::vector<std::string> print_order {"#Input", "--input-file", "--input-format", "--gff-file", "--male-pool", "#Output", "--output-prefix", "--output-fst-pos",
+                                              "--output-fst-win", "--output-snps-pos", "--output-snps-win", "--output-depth", "#Computations", "--min-depth", "--min-fst",
+                                              "--freq-het", "--range-het", "--freq-hom", "--range-hom", "--window-size", "--output-resolution"};
 
         ArgParser(int &argc, char **argv);
         void set_parameters(Parameters& parameters);

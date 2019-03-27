@@ -32,6 +32,7 @@ struct Parameters{
     std::string gff_file_path = "";
     std::string output_prefix = "";
     uint male_pool = 1;
+    bool popoolation_format = false;
 
     // Input file streams
     std::ifstream input_file;
