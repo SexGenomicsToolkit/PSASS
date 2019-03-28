@@ -78,65 +78,65 @@ void PileupConverter::add_counts_to_buffer(uint8_t pool_number) {
         // Code is a bit repetitive but this way only necessary calculations are performed.
         if (this->pool[pool_number][i] > 9999) {  // Max int value is 65535
 
-            this->obuff[this->j] = '0' + this->pool[pool_number][i] / 10000;
+            this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i] / 10000);
             this->pool[pool_number][i] = this->pool[pool_number][i] % 10000;
             ++this->j;
-            this->obuff[this->j] = '0' + this->pool[pool_number][i] / 1000;
+            this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i] / 1000);
             this->pool[pool_number][i] = this->pool[pool_number][i] % 1000;
             ++this->j;
-            this->obuff[this->j] = '0' + this->pool[pool_number][i] / 100;
+            this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i] / 100);
             this->pool[pool_number][i] = this->pool[pool_number][i] % 100;
             ++this->j;
-            this->obuff[this->j] = '0' + this->pool[pool_number][i] / 10;
+            this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i] / 10);
             this->pool[pool_number][i] = this->pool[pool_number][i] % 10;
             ++this->j;
-            this->obuff[this->j] = '0' + this->pool[pool_number][i];
+            this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i]);
             ++this->j;
             this->obuff[this->j] = '\t';
             ++this->j;
 
         } else if (this->pool[pool_number][i] > 999) {
 
-            this->obuff[this->j] = '0' + this->pool[pool_number][i] / 1000;
+            this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i] / 1000);
             this->pool[pool_number][i] = this->pool[pool_number][i] % 1000;
             ++this->j;
-            this->obuff[this->j] = '0' + this->pool[pool_number][i] / 100;
+            this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i] / 100);
             this->pool[pool_number][i] = this->pool[pool_number][i] % 100;
             ++this->j;
-            this->obuff[this->j] = '0' + this->pool[pool_number][i] / 10;
+            this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i] / 10);
             this->pool[pool_number][i] = this->pool[pool_number][i] % 10;
             ++this->j;
-            this->obuff[this->j] = '0' + this->pool[pool_number][i];
+            this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i]);
             ++this->j;
             this->obuff[this->j] = '\t';
             ++this->j;
 
         } else if (this->pool[pool_number][i] > 99) {
 
-            this->obuff[this->j] = '0' + this->pool[pool_number][i] / 100;
+            this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i] / 100);
             this->pool[pool_number][i] = this->pool[pool_number][i] % 100;
             ++this->j;
-            this->obuff[this->j] = '0' + this->pool[pool_number][i] / 10;
+            this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i] / 10);
             this->pool[pool_number][i] = this->pool[pool_number][i] % 10;
             ++this->j;
-            this->obuff[this->j] = '0' + this->pool[pool_number][i];
+            this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i]);
             ++this->j;
             this->obuff[this->j] = '\t';
             ++this->j;
 
         } else if (this->pool[pool_number][i] > 9) {
 
-            this->obuff[this->j] = '0' + this->pool[pool_number][i] / 10;
+            this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i] / 10);
             this->pool[pool_number][i] = this->pool[pool_number][i] % 10;
             ++this->j;
-            this->obuff[this->j] = '0' + this->pool[pool_number][i];
+            this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i]);
             ++this->j;
             this->obuff[this->j] = '\t';
             ++this->j;
 
         } else {
 
-            this->obuff[this->j] = '0' + this->pool[pool_number][i];
+            this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i]);
             ++this->j;
             this->obuff[this->j] = '\t';
             ++this->j;
@@ -312,7 +312,7 @@ void PileupConverter::process_base(char base, bool pool) {
         } else {
 
             this->next_indel = false;  // If not a digit, character is the start of indel sequence string.
-            this->remaining_indel = std::stoi(this->tmp_indel_size) - 1;  // Initialize indel remaining bases variable based on size string buffer
+            this->remaining_indel = static_cast<uint>(std::stoi(this->tmp_indel_size) - 1);  // Initialize indel remaining bases variable based on size string buffer
 
         }
 

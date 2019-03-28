@@ -358,7 +358,7 @@ void Psass::process_contig_end() {
 void Psass::process_line() {
 
     // Fill last pool2 base
-    this->pair_data.pool2.nucleotides[5] = fast_stoi(this->input_data.temp.c_str());
+    this->pair_data.pool2.nucleotides[5] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
 
     // Reset values
     this->pair_data.fst = this->male_index;
@@ -476,14 +476,14 @@ void Psass::process_popoolation_field() {
         break;
 
     case 1:  // Position field
-        this->input_data.position = fast_stoi(this->input_data.temp.c_str());
+        this->input_data.position = static_cast<uint32_t>(fast_stoi(this->input_data.temp.c_str()));
         break;
 
     case 2:  // Reference base
         break;
 
     case 3:  // Frequencies in first pool (last subfield is indels)
-        this->pair_data.pool1.nucleotides[5] = fast_stoi(this->input_data.temp.c_str());
+        this->pair_data.pool1.nucleotides[5] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
         break;
 
     default:
@@ -504,11 +504,11 @@ void Psass::process_popoolation_subfield() {
     switch (this->input_data.field) {
 
     case 3:
-        this->pair_data.pool1.nucleotides[this->input_data.subfield] = fast_stoi(this->input_data.temp.c_str());
+        this->pair_data.pool1.nucleotides[this->input_data.subfield] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
         break;
 
     case 4:
-        this->pair_data.pool2.nucleotides[this->input_data.subfield] = fast_stoi(this->input_data.temp.c_str());
+        this->pair_data.pool2.nucleotides[this->input_data.subfield] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
         break;
 
     default:
@@ -530,58 +530,58 @@ void Psass::process_psass_field() {
             break;
 
         case 1:
-            this->input_data.position = fast_stoi(this->input_data.temp.c_str());
+            this->input_data.position = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
         case 2:
             break;
 
         case 3:
-            this->pair_data.pool1.nucleotides[0] = fast_stoi(this->input_data.temp.c_str());
+            this->pair_data.pool1.nucleotides[0] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
         case 4:
-            this->pair_data.pool1.nucleotides[1] = fast_stoi(this->input_data.temp.c_str());
+            this->pair_data.pool1.nucleotides[1] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
         case 5:
-            this->pair_data.pool1.nucleotides[2] = fast_stoi(this->input_data.temp.c_str());
+            this->pair_data.pool1.nucleotides[2] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
         case 6:
-            this->pair_data.pool1.nucleotides[3] = fast_stoi(this->input_data.temp.c_str());
+            this->pair_data.pool1.nucleotides[3] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
         case 7:
-            this->pair_data.pool1.nucleotides[4] = fast_stoi(this->input_data.temp.c_str());
+            this->pair_data.pool1.nucleotides[4] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
         case 8:
-            this->pair_data.pool1.nucleotides[5] = fast_stoi(this->input_data.temp.c_str());
+            this->pair_data.pool1.nucleotides[5] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
         case 9:
-            this->pair_data.pool2.nucleotides[0] = fast_stoi(this->input_data.temp.c_str());
+            this->pair_data.pool2.nucleotides[0] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
         case 10:
-            this->pair_data.pool2.nucleotides[1] = fast_stoi(this->input_data.temp.c_str());
+            this->pair_data.pool2.nucleotides[1] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
         case 11:
-            this->pair_data.pool2.nucleotides[2] = fast_stoi(this->input_data.temp.c_str());
+            this->pair_data.pool2.nucleotides[2] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
         case 12:
-            this->pair_data.pool2.nucleotides[3] = fast_stoi(this->input_data.temp.c_str());
+            this->pair_data.pool2.nucleotides[3] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
         case 13:
-            this->pair_data.pool2.nucleotides[4] = fast_stoi(this->input_data.temp.c_str());
+            this->pair_data.pool2.nucleotides[4] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
         case 14:
-            this->pair_data.pool2.nucleotides[5] = fast_stoi(this->input_data.temp.c_str());
+            this->pair_data.pool2.nucleotides[5] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
         default:
