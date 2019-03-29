@@ -77,7 +77,6 @@ void GFFData::read_gff_file(std::ifstream& input_file, Logs& logs) {
 
                 }
 
-
                 else if (find_value("CDS", fields[2])) {
 
                     for (auto i: infos) {
@@ -90,7 +89,7 @@ void GFFData::read_gff_file(std::ifstream& input_file, Logs& logs) {
                     if (this->transcripts.find(parent) != this->transcripts.end()) {
 
                         this->genes[this->transcripts[parent]].product = product;
-                        this->genes[this->transcripts[parent]].coding_length += std::stoul(fields[4]) - std::stoul(fields[3]);
+                        this->genes[this->transcripts[parent]].coding_length += std::stoul(fields[4]) - std::stoul(fields[3]) + 1;
 
                         this->data[fields[0]].push_back(fields);
 
@@ -101,7 +100,7 @@ void GFFData::read_gff_file(std::ifstream& input_file, Logs& logs) {
     }
 
     // Compute non-coding length for all genes
-    for (auto& gene: this->genes) gene.second.noncoding_length = uint(std::stoul(gene.second.end) - std::stoul(gene.second.start) - gene.second.coding_length);
+    for (auto& gene: this->genes) gene.second.noncoding_length = uint(std::stoul(gene.second.end) - std::stoul(gene.second.start) + 1 - gene.second.coding_length);
 
     logs.write("Reading GFF file ended without errors.");
     logs.write("Loaded <" + std::to_string(this->genes.size()) + "> genes from GFF.");
