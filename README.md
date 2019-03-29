@@ -1,6 +1,8 @@
-[![DOI](https://zenodo.org/badge/111808510.svg)](https://zenodo.org/badge/latestdoi/111808510)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2615936.svg)](https://doi.org/10.5281/zenodo.2615936)
 
 # PSASS
+
+Current release: 2.0.0
 
 ## Overview
 
