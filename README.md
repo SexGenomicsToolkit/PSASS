@@ -77,3 +77,15 @@ Flag | Type | Description | Default |
 - **<prefix\>_genes.tsv** : a tabulated file with fields Contig, Start (gene starting position), End (gene ending position), ID (gene ID), Name (gene name), Product (gene product), and absolute and relative coverage for each sex as well as number of male- and female- specific SNPs in the entire gene, in coding regions, and in noncoding regions.
 
 
+### How does PSASS work ?
+
+In this section, we will briefly describe the process implemented in PSASS to compute FST and sex-specific SNPs.
+
+The input of PSASS `analyze` is a file that contains nucleotide counts for each pool and each position in the reference genome. PSASS parses this input and computes:
+
+* FST between the two pools for each position, using the formula implemented in [Popoolation2](https://academic.oup.com/bioinformatics/article/27/24/3435/306737).
+* FST between pools in a sliding window, using the estimate defined in [Karlsson *et al.*, 2007](https://www.nature.com/articles/ng.2007.10) (in Supplementary information).
+* The position of sex-specific SNPs. A sex-specific SNP is called at a given genomic position if, for any possible nucleotide, the frequency of this nucleotide is 1 in one pool and 0.5 in the other pool. Values for these thresholds can be adjusted with command-line arguments, and a range can be given; by default these values are: 1 - [0-0.05] in the homozygous pool, and 0.5 +/- 0.1 in the heterozygous pool).
+* Number of sex-specific SNPs in a sliding window, using the definition from above.
+
+Therefore, the definition of FST and sex-specific SNPs used in PSASS is only base on comparing the pools themselves; the reference used for the alignments is not used to call SNPs.
