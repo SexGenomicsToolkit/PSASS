@@ -598,7 +598,7 @@ void Psass::process_psass_field() {
 void Psass::run() {
 
     this->logs.write("Processing of <" + this->parameters.input_file_path + "> started.");
-    std::cout << "PSASS started." << std::endl;
+    std::cerr << "PSASS started." << std::endl;
 
     do {
 
@@ -673,5 +673,6 @@ void Psass::run() {
     long hours = minutes / 60;
     this->logs.write("Total runtime : " + std::to_string(hours) + "h " + std::to_string(minutes%60) + "m " + std::to_string(seconds%60) + "s.");
     this->logs.write("PSASS ended without errors.");
+    std::cerr << "PSASS ended successfully." << std::endl;
 
 }

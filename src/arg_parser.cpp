@@ -135,18 +135,6 @@ void ArgParser::usage() {
 
 
 
-void ArgParser::print_parameters() {
-
-    std::cout << "\n- Parameters:\n";
-    for (auto o: this->options) {
-        if (o.first != "--help") std::cout << "\t" << "- " << o.second[2] << " : " << this->set_value(o.first) << "\n";
-    }
-
-    std::cout << "\n";
-}
-
-
-
 void ArgParser::output_parameters(std::ofstream& output_file) {
 
     output_file << "\nPSASS parameters:\n";
