@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
         Psass psass(argc, argv);
         psass.run();
 
-        std::cout << "\nPSASS ended successfully." << std::endl;
+        std::cout << "PSASS ended successfully." << std::endl;
 
     } else if (std::string(argv[1]) == "convert") {
 

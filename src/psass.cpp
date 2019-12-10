@@ -330,7 +330,7 @@ void Psass::process_contig_end() {
 
         this->input_data.position = i;
 
-        for (uint j = 0; j < this->parameters.output_resolution; ++j) tmp.pop_front();
+        for (uint j = 0; j < this->parameters.output_resolution / 2; ++j) tmp.pop_front();
 
         for (auto base: tmp) {
 
@@ -370,10 +370,10 @@ void Psass::process_line() {
 
         if (this->input_data.current_contig != "") {
 
-           if(this->window.data.size() > this->parameters.window_size) this->process_contig_end();
+            if(this->window.data.size() >= this->parameters.window_size) this->process_contig_end();
 
-           this->logs.write("Processing of contig <" + this->input_data.current_contig + "> ended without errors.");
-           this->logs.write("Processing of contig <" + this->input_data.contig + "> started.");
+            this->logs.write("Processing of contig <" + this->input_data.current_contig + "> ended without errors.");
+            this->logs.write("Processing of contig <" + this->input_data.contig + "> started.");
 
             if (parameters.output_snps_win) {
 
@@ -398,15 +398,15 @@ void Psass::process_line() {
 
             this->window.data.resize(0);
 
-        } else {
+            } else {
 
             this->logs.write("Processing of contig <" + this->input_data.contig + "> started.");
 
-        }
+            }
 
-        if (parameters.output_genes) this->gff_data.new_contig(this->input_data, this->logs);
+            if (parameters.output_genes) this->gff_data.new_contig(this->input_data, this->logs);
 
-        if (parameters.group_snps) {
+            if (parameters.group_snps) {
 
             this->consecutive_snps[0] = false;
             this->consecutive_snps[1] = false;
@@ -439,7 +439,6 @@ void Psass::process_line() {
     if (this->parameters.output_genes) this->update_genes();
 
     ++this->total_bases;
-
 
     // Output Fst positions
     if (parameters.output_fst_pos) {
@@ -530,7 +529,7 @@ void Psass::process_psass_field() {
             break;
 
         case 1:
-            this->input_data.position = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
+            this->input_data.position = static_cast<uint32_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
         case 2:
@@ -655,6 +654,9 @@ void Psass::run() {
         }
 
     } while (parameters.input_file);
+
+    this->input_data.contig = "";
+    this->process_line();
 
     this->logs.write("Processing of <" + this->parameters.input_file_path + "> ended without errors.");
     this->logs.write("Processed <" + std::to_string(this->total_bases) + "> lines.");  // One base per line
