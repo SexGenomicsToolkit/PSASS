@@ -57,11 +57,11 @@ void PileupConverter::usage() {
     /* Simple usage output function for PileupConverter.
      */
 
-    std::cout << std::endl << "Usage: psass convert <input_file> [ -o <output_file> ]" << std::endl << std::endl ;
-    std::cout << "Options:" << std::endl << std::endl;
-    std::cout << "input-file            <string>    Either a samtools pileup output file or \"-\" for stdin" << std::endl;
-    std::cout << "-o <output_file>      <string>    Write output to <output_file> instead of stdout" << std::endl;
-    std::cout << std::endl;
+    std::cerr << std::endl << "Usage: psass convert <input_file> [ -o <output_file> ]" << std::endl << std::endl ;
+    std::cerr << "Options:" << std::endl << std::endl;
+    std::cerr << "input-file            <string>    Either a samtools pileup output file or \"-\" for stdin" << std::endl;
+    std::cerr << "-o <output_file>      <string>    Write output to <output_file> instead of stdout" << std::endl;
+    std::cerr << std::endl;
 
 }
 

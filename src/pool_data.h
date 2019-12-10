@@ -18,7 +18,7 @@ class PoolBaseData {
 
         PoolBaseData() = default;
 
-        void compute_total();
+        void compute_depth();
         void compute_frequencies();
         void compute_pi();
         void update();

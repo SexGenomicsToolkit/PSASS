@@ -1,8 +1,9 @@
 #include "pool_data.h"
 
-void PoolBaseData::compute_total(){
+void PoolBaseData::compute_depth(){
 
     this->depth = std::accumulate(std::begin(this->nucleotides), std::end(this->nucleotides), uint16_t(0));
+    this->depth -= this->nucleotides[5];
 };
 
 
@@ -39,7 +40,7 @@ void PoolBaseData::compute_pi(){
 
 void PoolBaseData::update(){
 
-    this->compute_total();
+    this->compute_depth();
     this->compute_frequencies();
     this->compute_pi();
 };
