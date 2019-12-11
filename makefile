@@ -2,7 +2,7 @@
 CC = g++
 OPTCFLAGS = -Ofast
 CFLAGS = -Wall -std=c++11 $(OPTCFLAGS)
-LDFLAGS = -pthread -static-libstdc++ -lz
+LDFLAGS = -lstdc++ -lm
 
 # Directory organisation
 BASEDIR = .
@@ -38,3 +38,4 @@ init:
 	mkdir -p $(BIN) $(BIN)
 
 rebuild: clean $(TARGET)
+: clean $(TARGET)
