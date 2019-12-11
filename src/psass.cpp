@@ -52,7 +52,7 @@ void Psass::update_fst_parts() {
     float a1 = 0.0, a2 = 0.0, n1 = 0.0, n2 = 0.0;
     float h1 = 0.0, h2 = 0.0, N = 0.0, D = 0.0;
 
-    if (this->male_pool->depth > this->parameters.min_depth and this->female_pool->depth > this->parameters.min_depth) {
+    if (this->male_pool->depth > this->parameters.min_depth and this->female_pool->depth > this->parameters.min_depth) {  // Only compute FST when each pool has depth higher than min depth threshold
 
         n_alleles[0] = 0;
         n_alleles[1] = 0;
@@ -67,7 +67,7 @@ void Psass::update_fst_parts() {
         N = 0;
         D = 0;
 
-        for (uint i=0; i<6; ++i) {
+        for (uint i=0; i<5; ++i) {  // Count the number of alleles in each pool (do not include indels)
 
             if (this->male_pool->nucleotides[i] > 0) {
 
@@ -83,7 +83,7 @@ void Psass::update_fst_parts() {
             }
         }
 
-        if (n_alleles[0] == 2 and n_alleles[1] == 2) {
+        if (n_alleles[0] == 2 and n_alleles[1] == 2) {  // Only compute FST for biallelic positions
 
             a1 = float(allele_m);
             a2 = float(allele_f);
@@ -361,7 +361,7 @@ void Psass::process_line() {
     this->pair_data.pool2.nucleotides[5] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
 
     // Reset values
-    this->pair_data.fst = this->male_index;
+    this->pair_data.fst = 0;
     this->window_base_data.snps[this->male_index] = false;
     this->window_base_data.snps[this->female_index] = false;
 
@@ -398,15 +398,15 @@ void Psass::process_line() {
 
             this->window.data.resize(0);
 
-            } else {
+        } else {
 
             this->logs.write("Processing of contig <" + this->input_data.contig + "> started.");
 
-            }
+        }
 
-            if (parameters.output_genes) this->gff_data.new_contig(this->input_data, this->logs);
+        if (parameters.output_genes) this->gff_data.new_contig(this->input_data, this->logs);
 
-            if (parameters.group_snps) {
+        if (parameters.group_snps) {
 
             this->consecutive_snps[0] = false;
             this->consecutive_snps[1] = false;
