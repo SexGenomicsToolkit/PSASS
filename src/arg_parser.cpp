@@ -58,7 +58,8 @@ void ArgParser::set_parameters(Parameters& parameters) {
 
     parameters.input_file_path = this->set_value("--input-file");
     parameters.output_prefix = this->set_value("--output-prefix");
-
+    parameters.pool1_id = this->set_value("--pool1");
+    parameters.pool2_id = this->set_value("--pool2");
 
     // Retrieve parameter values
     parameters.min_depth = uint(std::stoul(this->set_value("--min-depth")));
@@ -74,7 +75,6 @@ void ArgParser::set_parameters(Parameters& parameters) {
     parameters.output_resolution = uint(std::stoul(this->set_value("--output-resolution")));
     parameters.window_size = uint(std::stoul(this->set_value("--window-size")));
     parameters.window_range = parameters.window_size / 2;
-    parameters.male_pool = uint(std::stoul(this->set_value("--male-pool")));
     parameters.output_fst_pos = this->set_value("--output-fst-pos") != "0";
     parameters.output_fst_win = this->set_value("--output-fst-win") != "0";
     parameters.output_snps_pos = this->set_value("--output-snps-pos") != "0";
@@ -88,7 +88,6 @@ void ArgParser::set_parameters(Parameters& parameters) {
         std::cerr << "Error: cannot open input file (" << parameters.input_file_path << ")." << std::endl;
         exit(1);
     }
-
 
     // Open GFF file
     if (this->contains("--gff-file")) {
@@ -112,14 +111,15 @@ void ArgParser::usage() {
     std::cout << "## Input / output " << std::endl;
     std::cout << "--input-file           <string>    Input file (popoolation sync file)                                    [\"\"]" << std::endl;
     std::cout << "--output-prefix        <string>    Full prefix (including path) for output files                         [\"\"]" << std::endl;
+    std::cout << "--pool1                <string>    ID of the first pool in the pileup file                               [\"females\"]" << std::endl;
+    std::cout << "--pool2                <string>    ID of the second pool in the pileup file                              [\"males\"]" << std::endl;
     std::cout << "--input-format         <string>    Input format (psass/popoolation)                                      [\"psass\"]" << std::endl;
     std::cout << "--gff-file             <string>    GFF file for gene-specific output                                     [\"\"]" << std::endl;
     std::cout << "--output-fst-pos       <bool>      If true, output fst positions (0/1)                                   [1]" << std::endl;
     std::cout << "--output-fst-win       <bool>      If true, output fst sliding window (0/1)                              [1]" << std::endl;
     std::cout << "--output-snps-pos      <bool>      If true, output snps positions (0/1)                                  [1]" << std::endl;
     std::cout << "--output-snps-win      <bool>      If true, output snps sliding window (0/1)                             [1]" << std::endl;
-    std::cout << "--output-depth         <bool>      If true, output depth(0/1)                                            [1]" << std::endl;
-    std::cout << "--male-pool            <int>       Male pool (1/2)                                                       [2]" << std::endl << std::endl;
+    std::cout << "--output-depth         <bool>      If true, output depth(0/1)                                            [1]" << std::endl << std::endl;
     std::cout << "## Analysis" << std::endl;
     std::cout << "--min-depth            <int>       Minimum depth to consider a site                                      [10]" << std::endl;
     std::cout << "--min-fst              <float>     FST threshold                                                         [0.25]" << std::endl;
@@ -140,8 +140,8 @@ void ArgParser::output_parameters(std::ofstream& output_file) {
     output_file << "\nPSASS parameters:\n";
 
     for (std::string o: this->print_order) {
-        if (o.substr(0,1) == "#") output_file << o << "\n";
-        else if (o != "--help") output_file << " - " << this->options[o][2] << " : " << this->set_value(o) << "\n";
+        if (o.substr(0,1) == "#") output_file << o << std::endl;
+        else if (o != "--help") output_file << " - " << this->options[o][2] << " : " << this->set_value(o) << std::endl;
     }
 
     output_file << std::endl;

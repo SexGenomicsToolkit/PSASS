@@ -51,11 +51,6 @@ class Psass {
         InputData input_data;  // Data related to input file parsing
         OutputHandler output_handler;  // Object handling all output functions
 
-        bool male_index = 0;  // Index of the male pool (0 or 1), based on value of male_pool in parameters
-        bool female_index = 1;  // Index of the female pool (0 or 1), based on value of male_pool in parameters
-        PoolBaseData* male_pool;  // Pointer to the male PoolBaseData object, based on value of male_pool in parameters
-        PoolBaseData* female_pool;  // Pointer to the female PoolBaseData object, based on value of male_pool in parameters
-
         PairBaseData pair_data;  // PairBaseData object containing information about each pool as well as Fst for this base
         WindowBaseData window_base_data;  // Object containing information about a single base in the sliding window
         Window window;  // Sliding window object
