@@ -5,6 +5,7 @@ Psass::Psass(int argc, char *argv[]) {
 
     this->t_begin = std::chrono::steady_clock::now();
 
+
     ArgParser cmd_options(argc, argv);
     cmd_options.set_parameters(this->parameters);
 
@@ -12,23 +13,7 @@ Psass::Psass(int argc, char *argv[]) {
     this->logs.write("PSASS started.");
     cmd_options.output_parameters(logs.file);
 
-    if (this->parameters.male_pool == 1) {
-
-        this->male_pool = &this->pair_data.pool1;
-        this->female_pool = &this->pair_data.pool2;
-
-    } else {
-
-        this->male_pool = &this->pair_data.pool2;
-        this->female_pool = &this->pair_data.pool1;
-
-    }
-
-    this->male_index = (this->parameters.male_pool == 2);  // 0 if male pool is first, 1 otherwise
-    this->female_index = (this->parameters.male_pool == 1);  // 0 if male pool is second, 1 otherwise
-
-    this->output_handler = OutputHandler(&this->parameters, &this->input_data, this->male_pool, this->female_pool, this->male_index, this->female_index,
-                                         &this->depth_data, &this->gff_data.genes, &this->logs);
+    this->output_handler = OutputHandler(&this->parameters, &this->input_data, &this->pair_data, &this->depth_data, &this->gff_data.genes, &this->logs);
 
     std::cout << "Preprocessing data ..." << std::endl;
     if (this->parameters.output_genes) {
@@ -48,16 +33,16 @@ void Psass::update_fst_parts() {
     // https://www.nature.com/articles/ng.2007.10   https://doi.org/10.1038/ng.2007.10
 
     uint8_t n_alleles[2];
-    uint32_t allele_m = 0, allele_f = 0;
+    uint32_t allele_p1 = 0, allele_p2 = 0;
     float a1 = 0.0, a2 = 0.0, n1 = 0.0, n2 = 0.0;
     float h1 = 0.0, h2 = 0.0, N = 0.0, D = 0.0;
 
-    if (this->male_pool->depth > this->parameters.min_depth and this->female_pool->depth > this->parameters.min_depth) {  // Only compute FST when each pool has depth higher than min depth threshold
+    if (this->pair_data.pool1.depth > this->parameters.min_depth and this->pair_data.pool2.depth > this->parameters.min_depth) {  // Only compute FST when each pool has depth higher than min depth threshold
 
         n_alleles[0] = 0;
         n_alleles[1] = 0;
-        allele_m = 0;
-        allele_f = 0;
+        allele_p1 = 0;
+        allele_p2 = 0;
         a1 = 0;
         a2 = 0;
         n1 = 0;
@@ -69,26 +54,26 @@ void Psass::update_fst_parts() {
 
         for (uint i=0; i<5; ++i) {  // Count the number of alleles in each pool (do not include indels)
 
-            if (this->male_pool->nucleotides[i] > 0) {
+            if (this->pair_data.pool1.nucleotides[i] > 0) {
 
-                ++n_alleles[this->male_index];
-                allele_m = this->male_pool->nucleotides[i];
-                allele_f = this->female_pool->nucleotides[i];
+                ++n_alleles[0];
+                allele_p1 = this->pair_data.pool1.nucleotides[i];
+                allele_p2 = this->pair_data.pool2.nucleotides[i];
 
             }
 
-            if (this->female_pool->nucleotides[i] > 0) {
+            if (this->pair_data.pool2.nucleotides[i] > 0) {
 
-                ++n_alleles[this->female_index];
+                ++n_alleles[1];
             }
         }
 
         if (n_alleles[0] == 2 and n_alleles[1] == 2) {  // Only compute FST for biallelic positions
 
-            a1 = float(allele_m);
-            a2 = float(allele_f);
-            n1 = float(this->male_pool->depth);
-            n2 = float(this->female_pool->depth);
+            a1 = float(allele_p1);
+            a2 = float(allele_p2);
+            n1 = float(this->pair_data.pool1.depth);
+            n2 = float(this->pair_data.pool2.depth);
 
             h1 = a1 * (n1 - a1) / (n1 * (n1 - 1));
             h2 = a2 * (n2 - a2) / (n2 * (n2 - 1));
@@ -108,54 +93,54 @@ void Psass::update_fst_parts() {
 // Check whether current position is a sex-specific SNPs for each sex and update window_base_data.snps
 void Psass::update_snps() {
 
-    this->window_base_data.snps[this->male_index] = false;
-    this->window_base_data.snps[this->female_index] = false;
+    this->window_base_data.snps[0] = false;
+    this->window_base_data.snps[1] = false;
 
-    if (this->male_pool->depth > this->parameters.min_depth and this->female_pool->depth > this->parameters.min_depth) {
+    if (this->pair_data.pool1.depth > this->parameters.min_depth and this->pair_data.pool2.depth > this->parameters.min_depth) {
 
         for (auto i=0; i<6; ++i) {
 
-            if (this->male_pool->frequencies[i] > this->parameters.min_het and
-                this->male_pool->frequencies[i] < this->parameters.max_het and
-                this->female_pool->frequencies[i] > this->parameters.min_hom) {
+            if (this->pair_data.pool1.frequencies[i] > this->parameters.min_het and
+                this->pair_data.pool1.frequencies[i] < this->parameters.max_het and
+                this->pair_data.pool2.frequencies[i] > this->parameters.min_hom) {
 
                 if (this->parameters.group_snps) {
 
-                    if (not this->consecutive_snps[this->male_index]) this->window_base_data.snps[this->male_index] = true;
-                    else this->window_base_data.snps[this->male_index] = false;
-                    this->consecutive_snps[this->male_index] = true;
+                    if (not this->consecutive_snps[0]) this->window_base_data.snps[0] = true;
+                    else this->window_base_data.snps[0] = false;
+                    this->consecutive_snps[0] = true;
 
                 } else {
 
-                    this->window_base_data.snps[this->male_index] = true;
+                    this->window_base_data.snps[0] = true;
 
                 }
 
             }
 
-            if (this->female_pool->frequencies[i] > this->parameters.min_het and
-                this->female_pool->frequencies[i] < this->parameters.max_het and
-                this->male_pool->frequencies[i] > this->parameters.min_hom) {
+            if (this->pair_data.pool2.frequencies[i] > this->parameters.min_het and
+                this->pair_data.pool2.frequencies[i] < this->parameters.max_het and
+                this->pair_data.pool1.frequencies[i] > this->parameters.min_hom) {
 
                 if (this->parameters.group_snps) {
 
-                    if (not this->consecutive_snps[this->female_index]) this->window_base_data.snps[this->female_index] = true;
-                    else this->window_base_data.snps[this->female_index] = false;
-                    this->consecutive_snps[this->female_index] = true;
+                    if (not this->consecutive_snps[1]) this->window_base_data.snps[1] = true;
+                    else this->window_base_data.snps[1] = false;
+                    this->consecutive_snps[1] = true;
 
                 } else {
 
-                    this->window_base_data.snps[this->female_index] = true;
+                    this->window_base_data.snps[1] = true;
 
                 }
 
             }
         }
 
-        if (not this->window_base_data.snps[this->male_index] and not this->window_base_data.snps[this->female_index]) {
+        if (not this->window_base_data.snps[0] and not this->window_base_data.snps[1]) {
 
-            this->consecutive_snps[this->male_index] = false;
-            this->consecutive_snps[this->female_index] = false;
+            this->consecutive_snps[0] = false;
+            this->consecutive_snps[1] = false;
 
         }
     }
@@ -169,16 +154,16 @@ void Psass::update_depth() {
     // Update data to push in window
     if (this->parameters.output_depth) {
 
-        this->window_base_data.depth[this->male_index] = this->male_pool->depth;
-        this->window_base_data.depth[this->female_index] = this->female_pool->depth;
+        this->window_base_data.depth[0] = this->pair_data.pool1.depth;
+        this->window_base_data.depth[1] = this->pair_data.pool2.depth;
 
     }
 
     // Update total depth count to compute relative coverage later
     if (this->parameters.output_depth or this->parameters.output_genes) {
 
-        this->total_depth[this->male_index] += this->male_pool->depth;
-        this->total_depth[this->female_index] += this->female_pool->depth;
+        this->total_depth[0] += this->pair_data.pool1.depth;
+        this->total_depth[1] += this->pair_data.pool2.depth;
 
     }
 }
@@ -196,15 +181,15 @@ void Psass::update_window(bool end) {
 
         if (this->parameters.output_snps_win) {
 
-            this->window.snps_in_window[this->male_index] += this->window_base_data.snps[this->male_index];
-            this->window.snps_in_window[this->female_index] += this->window_base_data.snps[this->female_index];
+            this->window.snps_in_window[0] += this->window_base_data.snps[0];
+            this->window.snps_in_window[1] += this->window_base_data.snps[1];
 
         }
 
         if (this->parameters.output_depth) {
 
-            this->window.depth_in_window[this->male_index] += this->window_base_data.depth[this->male_index];
-            this->window.depth_in_window[this->female_index] += this->window_base_data.depth[this->female_index];
+            this->window.depth_in_window[0] += this->window_base_data.depth[0];
+            this->window.depth_in_window[1] += this->window_base_data.depth[1];
 
         }
 
@@ -232,25 +217,25 @@ void Psass::update_window(bool end) {
 
         if (this->parameters.output_snps_win) {
 
-            this->window.snps_in_window[this->male_index] = this->window.snps_in_window[this->male_index]
-                                                            - this->window.data[0].snps[this->male_index]
-                                                            + this->window_base_data.snps[this->male_index];
+            this->window.snps_in_window[0] = this->window.snps_in_window[0]
+                                                            - this->window.data[0].snps[0]
+                                                            + this->window_base_data.snps[0];
 
-            this->window.snps_in_window[this->female_index] = this->window.snps_in_window[this->female_index]
-                                                              - this->window.data[0].snps[this->female_index]
-                                                              + this->window_base_data.snps[this->female_index];
+            this->window.snps_in_window[1] = this->window.snps_in_window[1]
+                                                              - this->window.data[0].snps[1]
+                                                              + this->window_base_data.snps[1];
 
         }
 
         if (this->parameters.output_depth) {
 
-            this->window.depth_in_window[this->male_index] = this->window.depth_in_window[this->male_index]
-                                                             - this->window.data[0].depth[this->male_index]
-                                                             + this->male_pool->depth;
+            this->window.depth_in_window[0] = this->window.depth_in_window[0]
+                                                             - this->window.data[0].depth[0]
+                                                             + this->pair_data.pool1.depth;
 
-            this->window.depth_in_window[this->female_index] = this->window.depth_in_window[this->female_index]
-                                                               - this->window.data[0].depth[this->female_index]
-                                                               + this->female_pool->depth;
+            this->window.depth_in_window[1] = this->window.depth_in_window[1]
+                                                               - this->window.data[0].depth[1]
+                                                               + this->pair_data.pool2.depth;
 
         }
 
@@ -273,16 +258,16 @@ void Psass::update_genes() {
         coding = this->gff_data.contig[this->input_data.position].second;
 
         // Coding or non-coding depth and snps
-        this->gff_data.genes[gene].depth[2 * this->male_index + coding] += this->male_pool->depth;
-        this->gff_data.genes[gene].depth[2 * this->female_index + coding] += this->female_pool->depth;
-        this->gff_data.genes[gene].snps[2 * this->male_index + coding] += this->window_base_data.snps[this->male_index];
-        this->gff_data.genes[gene].snps[2 * this->female_index + coding] += this->window_base_data.snps[this->female_index];
+        this->gff_data.genes[gene].depth[2 * 0 + coding] += this->pair_data.pool1.depth;
+        this->gff_data.genes[gene].depth[2 * 1 + coding] += this->pair_data.pool2.depth;
+        this->gff_data.genes[gene].snps[2 * 0 + coding] += this->window_base_data.snps[0];
+        this->gff_data.genes[gene].snps[2 * 1 + coding] += this->window_base_data.snps[1];
 
         // Gene-level depth and snps
-        this->gff_data.genes[gene].depth[4 + this->male_index] += this->male_pool->depth;
-        this->gff_data.genes[gene].depth[4 + this->female_index] += this->female_pool->depth;
-        this->gff_data.genes[gene].snps[4 + this->male_index] += this->window_base_data.snps[this->male_index];
-        this->gff_data.genes[gene].snps[4 + this->female_index] += this->window_base_data.snps[this->female_index];
+        this->gff_data.genes[gene].depth[4 + 0] += this->pair_data.pool1.depth;
+        this->gff_data.genes[gene].depth[4 + 1] += this->pair_data.pool2.depth;
+        this->gff_data.genes[gene].snps[4 + 0] += this->window_base_data.snps[0];
+        this->gff_data.genes[gene].snps[4 + 1] += this->window_base_data.snps[1];
 
     }
 }
@@ -298,8 +283,8 @@ void Psass::output_window_step() {
 
     if (this->parameters.output_depth) {
 
-        this->depth_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][this->male_index] = this->window.depth_in_window[this->male_index];
-        this->depth_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][this->female_index] = this->window.depth_in_window[this->female_index];
+        this->depth_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][0] = this->window.depth_in_window[0];
+        this->depth_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][1] = this->window.depth_in_window[1];
         this->depth_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][2] = float(this->window.data.size());
 
     }
@@ -362,8 +347,8 @@ void Psass::process_line() {
 
     // Reset values
     this->pair_data.fst = 0;
-    this->window_base_data.snps[this->male_index] = false;
-    this->window_base_data.snps[this->female_index] = false;
+    this->window_base_data.snps[0] = false;
+    this->window_base_data.snps[1] = false;
 
     // Update / reset values if change of contig
     if (this->input_data.contig != this->input_data.current_contig) {
@@ -377,15 +362,15 @@ void Psass::process_line() {
 
             if (parameters.output_snps_win) {
 
-                this->window.snps_in_window[this->male_index] = 0;
-                this->window.snps_in_window[this->female_index] = 0;
+                this->window.snps_in_window[0] = 0;
+                this->window.snps_in_window[1] = 0;
 
             }
 
             if (parameters.output_depth) {
 
-                this->window.depth_in_window[this->male_index] = 0;
-                this->window.depth_in_window[this->female_index] = 0;
+                this->window.depth_in_window[0] = 0;
+                this->window.depth_in_window[1] = 0;
 
             }
 
@@ -449,8 +434,8 @@ void Psass::process_line() {
     // Output SNPs positions
     if (parameters.output_snps_pos) {
 
-        if (this->window_base_data.snps[this->male_index]) this->output_handler.output_snp_position("M");
-        if (this->window_base_data.snps[this->female_index]) this->output_handler.output_snp_position("F");
+        if (this->window_base_data.snps[0]) this->output_handler.output_snp_position(parameters.pool1_id);
+        if (this->window_base_data.snps[1]) this->output_handler.output_snp_position(parameters.pool2_id);
 
     }
 
@@ -661,8 +646,8 @@ void Psass::run() {
     this->logs.write("Processing of <" + this->parameters.input_file_path + "> ended without errors.");
     this->logs.write("Processed <" + std::to_string(this->total_bases) + "> lines.");  // One base per line
 
-    this->average_depth[this->male_index] = float(this->total_depth[this->male_index]) / float(this->total_bases);
-    this->average_depth[this->female_index] = float(this->total_depth[this->female_index]) / float(this->total_bases);
+    this->average_depth[0] = float(this->total_depth[0]) / float(this->total_bases);
+    this->average_depth[1] = float(this->total_depth[1]) / float(this->total_bases);
 
     if (this->parameters.output_depth) this->output_handler.output_depth(this->average_depth);
     if (this->parameters.output_genes) this->output_handler.output_genes(this->average_depth);

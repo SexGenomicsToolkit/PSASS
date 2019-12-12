@@ -31,7 +31,8 @@ struct Parameters{
     std::string input_file_path = "";
     std::string gff_file_path = "";
     std::string output_prefix = "";
-    uint male_pool = 1;
+    std::string pool1_id = "females";
+    std::string pool2_id = "males";
     bool popoolation_format = false;
 
     // Input file streams

@@ -20,7 +20,8 @@ class ArgParser {
                                                                   {"--output-snps-pos", {"1", "bool", "Output snps positions"} },
                                                                   {"--output-snps-win", {"1", "bool", "Output snps sliding window"} },
                                                                   {"--output-depth", {"1", "bool", "Output depth for each pool"} },
-                                                                  {"--male-pool", {"2", "int", "Male pool (1/2)"} } ,
+                                                                  {"--pool1", {"females", "string", "ID of the first pool in the pileup file"} },
+                                                                  {"--pool2", {"males", "string", "ID of the second pool in the pileup file"} },
 
                                                                   {"--min-depth", {"10", "int", "Minimum depth to consider a site"} },
                                                                   {"--min-fst", {"0.25", "float", "FST threshold"} },
@@ -38,7 +39,7 @@ class ArgParser {
                                                                   {"--gff-file", {"", "string", "GFF file for gene-specific output"} }
                                                                 };
 
-        std::vector<std::string> print_order {"#Input", "--input-file", "--input-format", "--gff-file", "--male-pool", "#Output", "--output-prefix", "--output-fst-pos",
+        std::vector<std::string> print_order {"#Input", "--input-file", "--input-format", "--pool1", "--pool2", "--gff-file", "#Output", "--output-prefix", "--output-fst-pos",
                                               "--output-fst-win", "--output-snps-pos", "--output-snps-win", "--output-depth", "#Computations", "--min-depth", "--min-fst",
                                               "--freq-het", "--range-het", "--freq-hom", "--range-hom", "--window-size", "--output-resolution"};
 
