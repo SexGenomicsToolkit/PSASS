@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 #include <string>
 #include <time.h>
 #include <vector>
@@ -47,4 +48,14 @@ inline int fast_stoi(const char* str) {
         val = val*10 + (*str++ - '0');
     }
     return val;
+}
+
+
+template<typename T>
+inline void log(T line) {
+
+    char logtime[DTTMSZ];
+    std::cerr << "[" << print_time(logtime) << "]" << "  ";
+    std::cerr << std::boolalpha << line << std::endl;
+
 }

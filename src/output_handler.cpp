@@ -1,13 +1,12 @@
 #include "output_handler.h"
 
-OutputHandler::OutputHandler(Parameters* parameters, InputData* input_data, PairBaseData* pair_data, std::map<std::string, std::map<uint, float[3]>>* depth, std::unordered_map<std::string, Gene>* genes, Logs* logs) {
+OutputHandler::OutputHandler(Parameters* parameters, InputData* input_data, PairBaseData* pair_data, std::map<std::string, std::map<uint, float[3]>>* depth, std::unordered_map<std::string, Gene>* genes) {
 
     // Pointers to data structures from PSASS
     this->input_data = input_data;
     this->pair_data = pair_data;
     this->depth = depth;
     this->genes = genes;
-    this->logs = logs;
 
     this->parameters = parameters;
 
@@ -16,17 +15,17 @@ OutputHandler::OutputHandler(Parameters* parameters, InputData* input_data, Pair
 
     // Open output file objects
     if (this->parameters->output_fst_pos) {
-        this->fst_position_output_file.open(this->parameters->output_prefix, this->logs);
+        this->fst_position_output_file.open(this->parameters->output_prefix);
         this->fst_position_output_file.file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
     }
 
     if (this->parameters->output_fst_win) {
-        this->fst_window_output_file.open(this->parameters->output_prefix, this->logs);
+        this->fst_window_output_file.open(this->parameters->output_prefix);
         this->fst_window_output_file.file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
     }
 
     if (this->parameters->output_snps_pos) {
-        this->snps_position_output_file.open(this->parameters->output_prefix, this->logs);
+        this->snps_position_output_file.open(this->parameters->output_prefix);
         this->snps_position_output_file.file << "Contig" << "\t" << "Position" << "\t" << "Pool" << "\t" <<
                                              this->parameters->pool1_id << "_A" << "\t" << this->parameters->pool1_id << "_T" << "\t" <<
                                              this->parameters->pool1_id << "_C" << "\t" << this->parameters->pool1_id << "_G" << "\t" <<
@@ -37,18 +36,18 @@ OutputHandler::OutputHandler(Parameters* parameters, InputData* input_data, Pair
     }
 
     if (this->parameters->output_snps_win) {
-        this->snps_window_output_file.open(this->parameters->output_prefix, this->logs);
+        this->snps_window_output_file.open(this->parameters->output_prefix);
         this->snps_window_output_file.file << "Contig" << "\t" << "Position" << "\t" << this->parameters->pool1_id << "\t" << this->parameters->pool2_id << "\n";
     }
 
     if (this->parameters->output_depth) {
-        this->depth_output_file.open(this->parameters->output_prefix, this->logs);
+        this->depth_output_file.open(this->parameters->output_prefix);
         this->depth_output_file.file << "Contig" << "\t" << "Position" << "\t" << this->parameters->pool1_id << "_abs" << "\t" << this->parameters->pool2_id << "_abs" << "\t"
                                      << this->parameters->pool1_id << "_rel" << "\t" << this->parameters->pool2_id << "_rel" <<"\n";
     }
 
     if (this->parameters->output_genes) {
-        this->genes_output_file.open(this->parameters->output_prefix, this->logs);
+        this->genes_output_file.open(this->parameters->output_prefix);
         this->genes_output_file.file << "Contig" << "\t" << "Start" << "\t" << "End" << "\t" << "ID" << "\t" << "Name" << "\t" << "Product" << "\t" <<
                                         this->parameters->pool1_id << "_depth" << "\t" << this->parameters->pool1_id << "_depth_corr" << "\t" <<
                                         this->parameters->pool1_id << "_depth_coding" << "\t" << this->parameters->pool1_id << "_depth_coding_corr" << "\t" <<
@@ -65,7 +64,7 @@ OutputHandler::OutputHandler(Parameters* parameters, InputData* input_data, Pair
 
 
 // Write SNP and nucleotide information if current base is a sex-specific SNP
-void OutputFile::open(const std::string& prefix, Logs* logs) {
+void OutputFile::open(const std::string& prefix) {
 
     this->path = prefix + this->suffix + ".tsv";
     this->file.open(this->path);
@@ -73,12 +72,12 @@ void OutputFile::open(const std::string& prefix, Logs* logs) {
     if (not this->file.is_open()) {
 
         std::cerr << "Error: cannot open output file <" << this->path << ">." << std::endl;
-        logs->write("Error: cannot open output file <" + this->path + ">.");
+        log("Error: cannot open output file <" + this->path + ">.");
         exit(1);
 
     }
 
-    logs->write("Created output file <" + this->path + ">.");
+    log("Created output file <" + this->path + ">.");
 }
 
 
@@ -127,7 +126,7 @@ void OutputHandler::output_snp_window(uint32_t snps_total[2]) {
 // Write depth information at the end of the analysis
 void OutputHandler::output_depth(float* average_depth) {
 
-    logs->write("Depth data output started.");
+    log("Depth data output started.");
 
     float window_size = 0;
 
@@ -147,14 +146,14 @@ void OutputHandler::output_depth(float* average_depth) {
         }
     }
 
-    logs->write("Depth data output ended without errors.");
+    log("Depth data output ended without errors.");
 }
 
 
 // Write genes information at the end of the analysis
 void OutputHandler::output_genes(float* average_depth) {
 
-    logs->write("Genes data output started.");
+    log("Genes data output started.");
 
     float depth_correction_males = (average_depth[0] + average_depth[1]) / 2 / average_depth[0];
     float depth_correction_females = (average_depth[0] + average_depth[1]) / 2 / average_depth[1];
@@ -204,6 +203,6 @@ void OutputHandler::output_genes(float* average_depth) {
                                      << gene.second.snps[4 + 1] << "\t" << gene.second.snps[2 * 1 + 1] << "\t" << gene.second.snps[2 * 1] << "\n";
     }
 
-    logs->write("Genes data output ended without errors.");
+    log("Genes data output ended without errors.");
 
 }

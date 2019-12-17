@@ -4,7 +4,6 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
-#include "logs.h"
 #include "utils.h"
 
 class PileupConverter {

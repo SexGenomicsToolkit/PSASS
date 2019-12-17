@@ -11,7 +11,6 @@
 #include "arg_parser.h"
 #include "gff_file.h"
 #include "input_data.h"
-#include "logs.h"
 #include "pair_data.h"
 #include "parameters.h"
 #include "output_handler.h"
@@ -43,8 +42,6 @@ class Psass {
         std::chrono::steady_clock::time_point t_begin; // Starting time to compute total runtime
 
         Parameters parameters;  // Parameters updated by the arguments parser
-
-        Logs logs;
 
         GFFData gff_data;
 

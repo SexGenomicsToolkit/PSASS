@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include "input_data.h"
 #include "gff_file.h"
-#include "logs.h"
 #include "pair_data.h"
 #include "parameters.h"
 #include "pool_data.h"
@@ -21,7 +20,7 @@ struct OutputFile {
 
     OutputFile() {}
     OutputFile(const std::string& suffix) {this->suffix = suffix;}
-    void open(const std::string& prefix, Logs* logs);
+    void open(const std::string& prefix);
 };
 
 
@@ -30,7 +29,7 @@ class OutputHandler {
     public:
 
         OutputHandler() {}
-        OutputHandler(Parameters* parameters, InputData* input_data, PairBaseData* pair_data, std::map<std::string, std::map<uint, float[3]>>* depth, std::unordered_map<std::string, Gene>* genes, Logs* logs);
+        OutputHandler(Parameters* parameters, InputData* input_data, PairBaseData* pair_data, std::map<std::string, std::map<uint, float[3]>>* depth, std::unordered_map<std::string, Gene>* genes);
         void output_fst_position(float fst);
         void output_fst_window(float fst_parts[2]);
         void output_snp_position(std::string& pool_id);
@@ -47,7 +46,6 @@ class OutputHandler {
         OutputFile depth_output_file {"depth"};
         OutputFile genes_output_file {"genes"};
 
-        Logs* logs;
         Parameters* parameters;
         InputData* input_data;
         PairBaseData* pair_data;

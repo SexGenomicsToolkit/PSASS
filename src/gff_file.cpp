@@ -16,9 +16,9 @@ bool GFFData::find_value(const std::string& field, const std::string& value) {
 
 
 
-void GFFData::read_gff_file(std::ifstream& input_file, Logs& logs) {
+void GFFData::read_gff_file(std::istream& input_file) {
 
-    logs.write("Reading GFF file started.");
+    log("Reading GFF file started.");
 
     std::string line = "", name = "", id = "", product = "", parent = "";
     std::vector<std::string> fields, infos;
@@ -102,14 +102,14 @@ void GFFData::read_gff_file(std::ifstream& input_file, Logs& logs) {
     // Compute non-coding length for all genes
     for (auto& gene: this->genes) gene.second.noncoding_length = uint(std::stoul(gene.second.end) - std::stoul(gene.second.start) + 1 - gene.second.coding_length);
 
-    logs.write("Reading GFF file ended without errors.");
-    logs.write("Loaded <" + std::to_string(this->genes.size()) + "> genes from GFF.");
+    log("Reading GFF file ended without errors.");
+    log("Loaded <" + std::to_string(this->genes.size()) + "> genes from GFF.");
 }
 
 
 
 // Update the current contig per-base features. This is done for each contig to reduce memory overall.
-void GFFData::new_contig(InputData& input_data, Logs& logs) {
+void GFFData::new_contig(InputData& input_data) {
 
     std::string feature = "", gene = "", parent = "";
     bool coding = false;
@@ -146,5 +146,5 @@ void GFFData::new_contig(InputData& input_data, Logs& logs) {
         for (auto i=std::stoul(fields[3]); i < std::stoul(fields[4]) + 1; ++i) this->contig[uint(i)] = std::pair<std::string, bool>(gene, coding);
     }
 
-    logs.write("Loaded <" + std::to_string(this->contig.size()) + "> genic bases from GFF file for contig <" + input_data.contig + ">.");
+    log("Loaded <" + std::to_string(this->contig.size()) + "> genic bases from GFF file for contig <" + input_data.contig + ">.");
 }

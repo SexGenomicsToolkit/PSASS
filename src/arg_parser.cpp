@@ -135,14 +135,14 @@ void ArgParser::usage() {
 
 
 
-void ArgParser::output_parameters(std::ofstream& output_file) {
+void ArgParser::output_parameters() {
 
-    output_file << "\nPSASS parameters:\n";
+    std::cerr << "\nPSASS parameters:\n";
 
     for (std::string o: this->print_order) {
-        if (o.substr(0,1) == "#") output_file << o << std::endl;
-        else if (o != "--help") output_file << " - " << this->options[o][2] << " : " << this->set_value(o) << std::endl;
+        if (o.substr(0,1) == "#") std::cerr << o << std::endl;
+        else if (o != "--help") std::cerr << " - " << this->options[o][2] << " : " << this->set_value(o) << std::endl;
     }
 
-    output_file << std::endl;
+    std::cerr << std::endl;
 }

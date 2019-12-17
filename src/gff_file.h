@@ -1,8 +1,9 @@
 #pragma once
 #include <set>
+#include <string>
 #include <unordered_map>
 #include "input_data.h"
-#include "logs.h"
+#include "utils.h"
 
 
 struct Gene {
@@ -38,8 +39,8 @@ class GFFData {
         std::unordered_map<std::string, std::string> transcripts;
 
         GFFData();
-        void read_gff_file(std::ifstream& input_file, Logs& logs);
-        void new_contig(InputData& input_data, Logs& logs);
+        void read_gff_file(std::istream& input_file);
+        void new_contig(InputData& input_data);
 
     private:
 

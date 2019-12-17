@@ -50,7 +50,7 @@ class ArgParser {
         const std::string set_value(const std::string& field);
         void usage();
         void print_parameters();
-        void output_parameters(std::ofstream& output_file);
+        void output_parameters();
 
     private:
 

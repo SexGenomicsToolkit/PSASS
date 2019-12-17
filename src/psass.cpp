@@ -9,16 +9,15 @@ Psass::Psass(int argc, char *argv[]) {
     ArgParser cmd_options(argc, argv);
     cmd_options.set_parameters(this->parameters);
 
-    this->logs = Logs(this->parameters.output_prefix);
-    this->logs.write("PSASS started.");
-    cmd_options.output_parameters(logs.file);
+    log("PSASS started.");
+    cmd_options.output_parameters();
 
-    this->output_handler = OutputHandler(&this->parameters, &this->input_data, &this->pair_data, &this->depth_data, &this->gff_data.genes, &this->logs);
+    this->output_handler = OutputHandler(&this->parameters, &this->input_data, &this->pair_data, &this->depth_data, &this->gff_data.genes);
 
     std::cout << "Preprocessing data ..." << std::endl;
     if (this->parameters.output_genes) {
 
-        this->gff_data.read_gff_file(this->parameters.gff_file, this->logs);
+        this->gff_data.read_gff_file(this->parameters.gff_file);
         this->parameters.output_genes = true;
 
     }
@@ -357,8 +356,8 @@ void Psass::process_line() {
 
             if(this->window.data.size() >= this->parameters.window_size) this->process_contig_end();
 
-            this->logs.write("Processing of contig <" + this->input_data.current_contig + "> ended without errors.");
-            this->logs.write("Processing of contig <" + this->input_data.contig + "> started.");
+            log("Processing of contig <" + this->input_data.current_contig + "> ended without errors.");
+            log("Processing of contig <" + this->input_data.contig + "> started.");
 
             if (parameters.output_snps_win) {
 
@@ -385,11 +384,11 @@ void Psass::process_line() {
 
         } else {
 
-            this->logs.write("Processing of contig <" + this->input_data.contig + "> started.");
+            log("Processing of contig <" + this->input_data.contig + "> started.");
 
         }
 
-        if (parameters.output_genes) this->gff_data.new_contig(this->input_data, this->logs);
+        if (parameters.output_genes) this->gff_data.new_contig(this->input_data);
 
         if (parameters.group_snps) {
 
@@ -582,7 +581,7 @@ void Psass::process_psass_field() {
 // Read the input file and process each line
 void Psass::run() {
 
-    this->logs.write("Processing of <" + this->parameters.input_file_path + "> started.");
+    log("Processing of <" + this->parameters.input_file_path + "> started.");
     std::cerr << "PSASS started." << std::endl;
 
     do {
@@ -643,8 +642,8 @@ void Psass::run() {
     this->input_data.contig = "";
     this->process_line();
 
-    this->logs.write("Processing of <" + this->parameters.input_file_path + "> ended without errors.");
-    this->logs.write("Processed <" + std::to_string(this->total_bases) + "> lines.");  // One base per line
+    log("Processing of <" + this->parameters.input_file_path + "> ended without errors.");
+    log("Processed <" + std::to_string(this->total_bases) + "> lines.");  // One base per line
 
     this->average_depth[0] = float(this->total_depth[0]) / float(this->total_bases);
     this->average_depth[1] = float(this->total_depth[1]) / float(this->total_bases);
@@ -656,8 +655,8 @@ void Psass::run() {
     long seconds = std::chrono::duration_cast<std::chrono::seconds>(t_end - t_begin).count();
     long minutes = seconds / 60;
     long hours = minutes / 60;
-    this->logs.write("Total runtime : " + std::to_string(hours) + "h " + std::to_string(minutes%60) + "m " + std::to_string(seconds%60) + "s.");
-    this->logs.write("PSASS ended without errors.");
+    log("Total runtime : " + std::to_string(hours) + "h " + std::to_string(minutes%60) + "m " + std::to_string(seconds%60) + "s.");
+    log("PSASS ended without errors.");
     std::cerr << "PSASS ended successfully." << std::endl;
 
 }
