@@ -23,5 +23,4 @@ HEADERS += \
     src/pair_data.h \
     src/input_data.h \
     src/output_handler.h \
-    src/logs.h \
     src/pileup_converter.h
