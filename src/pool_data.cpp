@@ -26,7 +26,7 @@ void PoolBaseData::compute_pi(){
     if (this->depth > 1) {
 
         this->pi = 1;
-        for (auto i=0; i<6; ++i) this->pi -= this->frequencies[i] * this->frequencies[i];
+        for (auto i=0; i<5; ++i) this->pi -= this->frequencies[i] * this->frequencies[i];
         this->pi *= this->depth / (this->depth - 1);
 
     } else {
