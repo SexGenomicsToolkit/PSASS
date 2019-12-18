@@ -4,7 +4,7 @@ Current release: **2.1.0**.
 
 To cite PSASS, please use the DOI below:
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3583019.svg)](https://doi.org/10.5281/zenodo.3583019)
+[![DOI](https://zenodo.org/badge/111808510.svg)](https://zenodo.org/badge/latestdoi/111808510)
 
 ## Overview
 
