@@ -1,14 +1,16 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2615936.svg)](https://doi.org/10.5281/zenodo.2615936)
-
 # PSASS
 
-Current release: 2.0.0
+Current release: **2.1.0**.
+
+To cite PSASS, please use the DOI below:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2615936.svg)](https://doi.org/10.5281/zenodo.2615936)
 
 ## Overview
 
 PSASS (Pooled Sequencing Analysis for Sex Signal) is a software to analyze Pooled-Sequencing data to look for sex signal. It is part of a general pipeline handling data processing ([PSASS-process](https://github.com/RomainFeron/PSASS-process)), analysis (PSASS), and visualisation ([PSASS-vis](https://github.com/RomainFeron/PSASS-vis)). PSASS was developed as part of a project by the [LPGP](https://www6.rennes.inra.fr/lpgp/) lab from INRA, Rennes, France.
 
-Currently, PSASS uses as input a "*.sync*" file from the [Popoolation2](https://sourceforge.net/projects/popoolation2/) software. PSASS can be used to compute the following metrics:
+Currently, PSASS uses as input a `.sync` file generated from a pileup file (`samtools mpileup`) with either `psass convert` or with the [Popoolation2](https://sourceforge.net/projects/popoolation2/) software. PSASS `analyze` computes the following metrics:
 
 - The position of all bases with high male/female Fst
 - The position of all sex-specific SNPs, defined as SNPs heterozygous in one sex and homozygous in the other
@@ -16,8 +18,6 @@ Currently, PSASS uses as input a "*.sync*" file from the [Popoolation2](https://
 - Number of male- and female-specific SNPs in a sliding window
 - Absolute and relative coverage in the male and female pools in a sliding window
 - Number of male- and female-specific SNPs, and absolute and relative coverage in the male and female pools for all genes in a provided GFF, with separate metrics for coding and noncoding elements (may not work with some GFFs as this format has no true standard)
-
-A more detailed README will be available soon.
 
 ## Installation
 
@@ -34,8 +34,8 @@ make
 
 Currently, PSASS has two commands:
 
+- `convert` : convert output from samtools mpileup to a compact sync file
 - `analyze` : analyze a popoolation2 sync file and output metrics
-- `convert` : convert output from samtools mpileup to a compact sync file (not yet implemented)
 
 ### Analyze
 
