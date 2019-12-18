@@ -14,7 +14,7 @@ void PairBaseData::compute_average_freq() {
 void PairBaseData::compute_total_pi() {
 
     this->total_pi = 1;
-    for (auto i=0; i<6; ++i) this->total_pi -= this->average_frequencies[i] * this->average_frequencies[i];
+    for (auto i=0; i<5; ++i) this->total_pi -= this->average_frequencies[i] * this->average_frequencies[i];  // Indels are not included
     float min_total = std::min(this->pool1.depth, this->pool2.depth);
     this->total_pi *= min_total / (min_total - 1);
 };
