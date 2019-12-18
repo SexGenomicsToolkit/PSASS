@@ -14,17 +14,17 @@ OutputHandler::OutputHandler(Parameters* parameters, InputData* input_data, Pair
     if (this->parameters->output_prefix != "") this->parameters->output_prefix += "_";
 
     // Open output file objects
-    if (this->parameters->output_fst_pos) {
+    if (!this->parameters->no_output_fst_pos) {
         this->fst_position_output_file.open(this->parameters->output_prefix);
         this->fst_position_output_file.file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
     }
 
-    if (this->parameters->output_fst_win) {
+    if (!this->parameters->no_output_fst_win) {
         this->fst_window_output_file.open(this->parameters->output_prefix);
         this->fst_window_output_file.file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
     }
 
-    if (this->parameters->output_snps_pos) {
+    if (!this->parameters->no_output_snps_pos) {
         this->snps_position_output_file.open(this->parameters->output_prefix);
         this->snps_position_output_file.file << "Contig" << "\t" << "Position" << "\t" << "Pool" << "\t" <<
                                              this->parameters->pool1_id << "_A" << "\t" << this->parameters->pool1_id << "_T" << "\t" <<
@@ -35,12 +35,12 @@ OutputHandler::OutputHandler(Parameters* parameters, InputData* input_data, Pair
                                              this->parameters->pool2_id << "_N" << "\t" << this->parameters->pool2_id << "_I" << "\n";
     }
 
-    if (this->parameters->output_snps_win) {
+    if (!this->parameters->no_output_snps_win) {
         this->snps_window_output_file.open(this->parameters->output_prefix);
         this->snps_window_output_file.file << "Contig" << "\t" << "Position" << "\t" << this->parameters->pool1_id << "\t" << this->parameters->pool2_id << "\n";
     }
 
-    if (this->parameters->output_depth) {
+    if (!this->parameters->no_output_depth) {
         this->depth_output_file.open(this->parameters->output_prefix);
         this->depth_output_file.file << "Contig" << "\t" << "Position" << "\t" << this->parameters->pool1_id << "_abs" << "\t" << this->parameters->pool2_id << "_abs" << "\t"
                                      << this->parameters->pool1_id << "_rel" << "\t" << this->parameters->pool2_id << "_rel" <<"\n";

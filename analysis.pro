@@ -3,9 +3,10 @@ CONFIG += console c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 
+INCLUDEPATH += include/
+
 SOURCES += \
     src/main.cpp \
-    src/arg_parser.cpp \
     src/gff_file.cpp \
     src/psass.cpp \
     src/pool_data.cpp \
@@ -14,6 +15,7 @@ SOURCES += \
     src/pileup_converter.cpp
 
 HEADERS += \
+    include/CLI11/CLI11.hpp \
     src/arg_parser.h \
     src/parameters.h \
     src/utils.h \
@@ -24,3 +26,6 @@ HEADERS += \
     src/input_data.h \
     src/output_handler.h \
     src/pileup_converter.h
+
+DISTFILES += \
+    include/CLI11/LICENSE

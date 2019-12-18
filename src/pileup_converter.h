@@ -4,13 +4,14 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include "parameters.h"
 #include "utils.h"
 
 class PileupConverter {
 
     public:
 
-        PileupConverter(int argc, char *argv[]);
+        PileupConverter(Parameters& parameters);
         void run();
 
     private:
@@ -22,7 +23,7 @@ class PileupConverter {
 
         // I/O parameters
         bool from_stdin = false;
-        bool to_stdout = false;
+        bool to_stdout = true;
         std::ifstream input_file;
         std::ofstream ofile;
         char obuff[300];

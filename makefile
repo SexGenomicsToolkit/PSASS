@@ -8,6 +8,7 @@ LDFLAGS = -lstdc++ -lm
 BASEDIR = .
 BIN = $(BASEDIR)/bin
 SRC = $(BASEDIR)/src
+INCLUDE = $(BASEDIR)/include
 BUILD = $(BASEDIR)/build
 CPP = $(wildcard $(SRC)/*.cpp)
 
@@ -24,10 +25,10 @@ all: init print-OBJS $(TARGET)
 print-%  : ; @echo $* = $($*)
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $(BIN)/$(TARGET) $^ $(LDFLAGS)
+	$(CC) $(CFLAGS) -I $(INCLUDE) -o $(BIN)/$(TARGET) $^ $(LDFLAGS)
 
 $(BUILD)/%.o: $(SRC)/%.cpp
-	$(CC) $(CFLAGS) -c -o $@ $^
+	$(CC) $(CFLAGS) -I $(INCLUDE) -c -o $@ $^
 
 clean:
 	rm -rf $(BUILD)/*.o

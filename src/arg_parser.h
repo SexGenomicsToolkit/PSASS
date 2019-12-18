@@ -1,58 +1,158 @@
 #pragma once
-#include <algorithm>
 #include <iostream>
-#include <map>
-#include <string>
-#include <vector>
+#include <stdio.h>
+#include "CLI11/CLI11.hpp"
 #include "parameters.h"
-#include "utils.h"
+
+// Failure message function for CLI parser
+inline std::string failure_message(const CLI::App* parser, const CLI::Error& error) {
+
+    std::string message = "";
+
+    if (error.what() == std::string("A subcommand is required")) {
+        message = "\nSubcommand error: missing or invalid subcommand\n\n" + parser->help();
+    } else if (error.get_exit_code() == 106) {  // 106 corresponds to wrong argument type
+        message = "\nArgument error: " + std::string(error.what()) + "\n\n" + parser->help();
+    } else {
+        message = "\nError: " + std::string(error.what()) + "\n\n" + parser->help();
+    }
+
+    return message;
+}
 
 
-class ArgParser {
+// Formatter for CLI
+class CustomFormatter : public CLI::Formatter {
 
     public:
 
-        // Options: flag -> [default, type, help message]
-        std::map<std::string, std::vector<std::string>> options { {"--help", {"0", "bool", "Prints this message"} },
+        uint column_widths[3] {0, 0, 0};  // Will be used to store the maximum width of each column : flags, type, description
+        uint border_width = 4;  // Space between two columns
 
-                                                                  {"--output-fst-pos", {"1", "bool", "Output fst positions"} },
-                                                                  {"--output-fst-win", {"1", "bool", "Output fst sliding window"} },
-                                                                  {"--output-snps-pos", {"1", "bool", "Output snps positions"} },
-                                                                  {"--output-snps-win", {"1", "bool", "Output snps sliding window"} },
-                                                                  {"--output-depth", {"1", "bool", "Output depth for each pool"} },
-                                                                  {"--pool1", {"females", "string", "ID of the first pool in the pileup file"} },
-                                                                  {"--pool2", {"males", "string", "ID of the second pool in the pileup file"} },
+        // Formatter for an Option line, overrides the same function from CLI::Formatter
+        virtual std::string make_option(const CLI::Option* opt, bool is_positional) const {
 
-                                                                  {"--min-depth", {"10", "int", "Minimum depth to consider a site"} },
-                                                                  {"--min-fst", {"0.25", "float", "FST threshold"} },
-                                                                  {"--freq-het", {"0.5", "float", "Frequency of a sex-linked SNP in the heterogametic sex"} },
-                                                                  {"--freq-hom", {"1", "float", "Frequency of a sex-linked SNP in the homogametic sex"} },
-                                                                  {"--range-het", {"0.1", "float", "Range of frequency for a sex-linked SNP in the heterogametic sex"} },
-                                                                  {"--range-hom", {"0.05", "float", "Range of frequency for a sex-linked SNP in the homogametic sex"} },
-                                                                  {"--window-size", {"100000", "int", "Size of the sliding window (in bp)"} },
-                                                                  {"--output-resolution", {"10000", "int", "Output resolution (in bp)"} } ,
-                                                                  {"--group-snps", {"1", "bool", "Group consecutive snps to count them as a single polymorphism"} },
+            std::string option = "", name = "", type = "", description = "", default_value = "", required = "REQUIRED";
 
-                                                                  {"--input-file", {"", "string", "Input file (psass convert output or popoolation sync file)"} },
-                                                                  {"--input-format", {"", "string", "Input format (psass/popoolation)"} },
-                                                                  {"--output-prefix", {"", "string", "Full prefix (including path) for output files"} },
-                                                                  {"--gff-file", {"", "string", "GFF file for gene-specific output"} }
-                                                                };
+            // Generate option name, if positional -> just the name, if not positional -> <short_flag, long_flag>
+            name = opt->get_name();
+            type = opt->get_type_name();
+            description = opt->get_description();
+            default_value = opt->get_default_str();
 
-        std::vector<std::string> print_order {"#Input", "--input-file", "--input-format", "--pool1", "--pool2", "--gff-file", "#Output", "--output-prefix", "--output-fst-pos",
-                                              "--output-fst-win", "--output-snps-pos", "--output-snps-win", "--output-depth", "#Computations", "--min-depth", "--min-fst",
-                                              "--freq-het", "--range-het", "--freq-hom", "--range-hom", "--window-size", "--output-resolution"};
+            // Generate the help string for this option, adding the right number of spaces after each column based on column_widths
+            option = name + std::string(border_width + column_widths[0] - name.size(), ' ');
+            option += type + std::string(border_width + column_widths[1] - type.size(), ' ');
+            option += description + std::string(border_width + column_widths[2] - description.size(), ' ');
+            if (opt->get_required()) default_value = required;
+            if (default_value != "") option += "[" + default_value + "]";
+            option += "\n";
 
-        ArgParser(int &argc, char **argv);
-        void set_parameters(Parameters& parameters);
-        const std::string get_value(const std::string& setting) const;
-        bool contains(const std::string &option) const ;
-        const std::string set_value(const std::string& field);
-        void usage();
-        void print_parameters();
-        void output_parameters();
+            return option;
+        }
 
-    private:
+        void set_column_widths(CLI::App& parser) {
+            std::string tmp = "";
+            for (auto opt: parser.get_options()) {
+                opt->get_positional() ? tmp = opt->get_name() : tmp = "--" + opt->get_lnames()[0];
+                if (tmp.size() > this->column_widths[0]) this->column_widths[0] = static_cast<uint>(tmp.size());
+                tmp = opt->get_type_name();
+                if (tmp.size() > this->column_widths[1]) this->column_widths[1] = static_cast<uint>(tmp.size());
+                tmp = opt->get_description();
+                if (tmp.size() > this->column_widths[2]) this->column_widths[2] = static_cast<uint>(tmp.size());
+            }
+        }
 
-        std::vector<std::string> fields;
 };
+
+
+// Argument parsing main function
+inline Parameters parse_args(int& argc, char** argv) {
+
+    CLI::App parser {""};  // Parser instance from CLI App parser
+    Parameters parameters;
+
+    std::shared_ptr<CustomFormatter> formatter(new CustomFormatter);
+
+    // Main parser options
+    parser.formatter(formatter);  // Set custom help format defined above
+    parser.require_subcommand();  // Check that there is a subcommand
+    parser.failure_message(failure_message);  // Formatting for error message
+
+    CLI::App* analyze = parser.add_subcommand("analyze", "Compute metrics from a sync file from psass convert or from popoolation2.");
+    CLI::App* convert = parser.add_subcommand("convert", "Convert a pileup file from samtools to a synchronized pool file.");
+
+    // Options for 'analyze'
+    CLI::Option* option = analyze->add_option("INPUT_FILE", parameters.input_file_path, "Path to a sync file generated by psass convert or popoolation2");
+    option->required();
+    option->check(CLI::ExistingFile);
+
+    option = analyze->add_option("OUTPUT_PREFIX", parameters.output_prefix, "Prefix for output files");
+    option->required();
+
+    analyze->add_option("--pool1", parameters.pool1_id, "Name of the first pool (order in the pileup file)", true);
+    option = analyze->add_option("--pool2", parameters.pool2_id, "Name of the second pool (order in the pileup file)", true);
+    option = analyze->add_option("--popoolation", parameters.popoolation_format, "If set, assumes the input file was generated with popoolation2", true);
+    option = analyze->add_option("--gff-file", parameters.gff_file_path, "Path to a GFF file for gene-specific output", true);
+    option = analyze->add_flag("--no-output-fst-pos", parameters.no_output_fst_pos, "If set, do not output high fst positions");
+    option = analyze->add_flag("--no-output-fst-win", parameters.no_output_fst_win, "If set, do not output fst sliding window");
+    option = analyze->add_flag("--no-output-snps-pos", parameters.no_output_snps_pos, "If set, do not output snps positions");
+    option = analyze->add_flag("--no-output-snps-win", parameters.no_output_snps_win, "If set, do not output snps sliding window");
+    option = analyze->add_flag("--no-output-depth", parameters.no_output_depth, "If set, do not output depth");
+    option = analyze->add_option("--min-depth", parameters.min_depth, "Minimum depth to include a site in the analyses", true);
+    option = analyze->add_option("--min-fst", parameters.min_fst, "Minimum FST to output a site in the FST positions file", true);
+    option = analyze->add_option("--freq-het", parameters.freq_het, "Frequency of a sex-linked SNP in the heterogametic sex", true);
+    option = analyze->add_option("--range-het", parameters.range_het, "Range of frequency for a sex-linked SNP in the heterogametic sex", true);
+    option = analyze->add_option("--freq-hom", parameters.freq_hom, "Frequency of a sex-linked SNP in the homogametic sex", true);
+    option = analyze->add_option("--range-hom", parameters.range_hom, "Range of frequency for a sex-linked SNP in the homogametic sex", true);
+    option = analyze->add_option("--window-size", parameters.window_size, "Size of the sliding window (in bp)", true);
+    option = analyze->add_option("--output-resolution", parameters.output_resolution, "Output resolution for sliding window metrics (in bp)", true);
+    option = analyze->add_flag("--group-snps", parameters.group_snps, "If set, group consecutive snps to count them as a single polymorphism");
+
+    // Options for 'convert'
+    option = convert->add_option("INPUT", parameters.input_file_path, "Either a path to a samtools pileup output file or \"-\" for stdin");
+    option->required();
+    //    option->check(CLI::ExistingFile);  // NEED TO ADD A CUSTOM CHECK IF VALUE IS NOT -
+
+    option = convert->add_option("--output-file", parameters.output_file_path, "Write to an output file instead of stdout");
+
+    // The parser throws an exception upon failure and implements an exit() method which output an error message and returns the exit code.
+    try {
+
+        parser.parse(argc, argv);
+
+    } catch (const CLI::ParseError &e) {
+
+        if (parser.get_subcommands().size() > 0) {
+
+            std::string tmp = "";
+            for (auto opt: parser.get_subcommands()[0]->get_options()) {
+                tmp = opt->get_name();
+                if (tmp.size() > formatter->column_widths[0]) formatter->column_widths[0] = static_cast<uint>(tmp.size());
+                tmp = opt->get_type_name();
+                if (tmp.size() > formatter->column_widths[1]) formatter->column_widths[1] = static_cast<uint>(tmp.size());
+                tmp = opt->get_description();
+                if (tmp.size() > formatter->column_widths[2]) formatter->column_widths[2] = static_cast<uint>(tmp.size());
+            }
+
+        } else {
+            formatter->column_widths[0] = 10;
+            formatter->column_widths[1] = 0;
+            formatter->column_widths[2] = 50;
+        }
+
+        exit(parser.exit(e));
+
+    }
+
+    // Set some parameter values after parsing
+    parameters.min_het = parameters.freq_het - parameters.range_het;
+    parameters.max_het = parameters.freq_het + parameters.range_het;
+    parameters.min_hom = parameters.freq_hom- parameters.range_hom;
+
+    // Get subcommand name
+    CLI::App* subcommand = parser.get_subcommands()[0];
+    parameters.command = subcommand->get_name();
+
+    return parameters;
+}

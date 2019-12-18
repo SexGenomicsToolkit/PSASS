@@ -2,66 +2,21 @@
 #include <string.h>
 #include <stdio.h>
 
-PileupConverter::PileupConverter(int argc, char *argv[]) {
+PileupConverter::PileupConverter(Parameters& parameters) {
 
     /* Constructor for PileupConverter.
      * Handles arguments parsing for the 'convert' subcommand.
      */
 
-    if (argc != 3 and argc != 5) {  // 3 arguments if no output file, 5 arguments if output file
-
-        this->usage();
-        exit(1);
-
+    if (parameters.output_file_path != "") {
+        this->to_stdout = false;
+        this->ofile.open(parameters.output_file_path);
     }
 
-    if (std::string(argv[2]) == "-") {  // Detect if input should be read from stdin
-
-        this->from_stdin = true;  // Boolean indicating reading from stdin
-
-    } else {
-
-        this->input_file.open(std::string(argv[2]));  // Try to open input file if specified
-
-        if (not this->input_file.is_open()) {
-
-            std::cerr << "Error: cannot open input file (" << std::string(argv[2]) << ")." << std::endl;
-            exit(1);
-
-        }
+    if (parameters.input_file_path == "-") {
+        this->from_stdin = true;
+        this->input_file.open(parameters.input_file_path);
     }
-
-    if (argc == 5) {
-
-        this->ofile.open(argv[4]);
-
-        if (not this->ofile.is_open()) {  // Try to open output file if specified
-
-            std::cerr << "Error: cannot open output file (" << std::string(argv[4]) << ")." << std::endl;
-            exit(1);
-
-        }
-
-    } else {
-
-        this->to_stdout = true;  // Boolean indicating writing to sdout
-
-    }
-
-}
-
-
-
-void PileupConverter::usage() {
-
-    /* Simple usage output function for PileupConverter.
-     */
-
-    std::cerr << std::endl << "Usage: psass convert <input_file> [ -o <output_file> ]" << std::endl << std::endl ;
-    std::cerr << "Options:" << std::endl << std::endl;
-    std::cerr << "input-file            <string>    Either a samtools pileup output file or \"-\" for stdin" << std::endl;
-    std::cerr << "-o <output_file>      <string>    Write output to <output_file> instead of stdout" << std::endl;
-    std::cerr << std::endl;
 
 }
 

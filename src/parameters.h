@@ -4,6 +4,8 @@
 
 struct Parameters{
 
+    std::string command = "";
+
     // Analysis parameters
     uint min_depth = 10;
     float min_fst = float(0.1);
@@ -20,12 +22,13 @@ struct Parameters{
     bool group_snps= false;
 
     // Output options
-    bool output_fst_pos = true;
-    bool output_fst_win = true;
-    bool output_snps_pos = true;
-    bool output_snps_win = true;
-    bool output_depth = true;
+    bool no_output_fst_pos = false;
+    bool no_output_fst_win = false;
+    bool no_output_snps_pos = false;
+    bool no_output_snps_win = false;
+    bool no_output_depth = false;
     bool output_genes = false;
+    std::string output_file_path = "";  // For 'convert'
 
     // Input options
     std::string input_file_path = "";
@@ -34,8 +37,4 @@ struct Parameters{
     std::string pool1_id = "females";
     std::string pool2_id = "males";
     bool popoolation_format = false;
-
-    // Input file streams
-    std::ifstream input_file;
-    std::ifstream gff_file;
 };

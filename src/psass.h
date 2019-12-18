@@ -59,7 +59,7 @@ class Psass {
 
         bool consecutive_snps[2] {false, false};
 
-        Psass(int argc, char *argv[]);
+        Psass(Parameters& parameters);
         void count_lines();
         void update_nucleotides();
         void update_fst_parts();
