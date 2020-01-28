@@ -51,6 +51,12 @@ class CustomFormatter : public CLI::Formatter {
             return option;
         }
 
+
+        virtual std::string make_description(const CLI::App *app) const {
+
+            return "";
+        }
+
         void set_column_widths(CLI::App& parser) {
             std::string tmp = "";
             for (auto opt: parser.get_options()) {
@@ -90,28 +96,28 @@ inline Parameters parse_args(int& argc, char** argv) {
     option = analyze->add_option("OUTPUT_PREFIX", parameters.output_prefix, "Prefix for output files");
     option->required();
 
-    analyze->add_option("--pool1", parameters.pool1_id, "Name of the first pool (order in the pileup file)", true);
-    option = analyze->add_option("--pool2", parameters.pool2_id, "Name of the second pool (order in the pileup file)", true);
-    option = analyze->add_option("--popoolation", parameters.popoolation_format, "If set, assumes the input file was generated with popoolation2", true);
-    option = analyze->add_option("--gff-file", parameters.gff_file_path, "Path to a GFF file for gene-specific output", true);
-    option = analyze->add_flag("--no-output-fst-pos", parameters.no_output_fst_pos, "If set, do not output high fst positions");
-    option = analyze->add_flag("--no-output-fst-win", parameters.no_output_fst_win, "If set, do not output fst sliding window");
-    option = analyze->add_flag("--no-output-snps-pos", parameters.no_output_snps_pos, "If set, do not output snps positions");
-    option = analyze->add_flag("--no-output-snps-win", parameters.no_output_snps_win, "If set, do not output snps sliding window");
-    option = analyze->add_flag("--no-output-depth", parameters.no_output_depth, "If set, do not output depth");
-    option = analyze->add_option("--min-depth", parameters.min_depth, "Minimum depth to include a site in the analyses", true);
-    option = analyze->add_option("--min-fst", parameters.min_fst, "Minimum FST to output a site in the FST positions file", true);
-    option = analyze->add_option("--freq-het", parameters.freq_het, "Frequency of a sex-linked SNP in the heterogametic sex", true);
-    option = analyze->add_option("--range-het", parameters.range_het, "Range of frequency for a sex-linked SNP in the heterogametic sex", true);
-    option = analyze->add_option("--freq-hom", parameters.freq_hom, "Frequency of a sex-linked SNP in the homogametic sex", true);
-    option = analyze->add_option("--range-hom", parameters.range_hom, "Range of frequency for a sex-linked SNP in the homogametic sex", true);
-    option = analyze->add_option("--window-size", parameters.window_size, "Size of the sliding window (in bp)", true);
-    option = analyze->add_option("--output-resolution", parameters.output_resolution, "Output resolution for sliding window metrics (in bp)", true);
-    option = analyze->add_flag("--group-snps", parameters.group_snps, "If set, group consecutive snps to count them as a single polymorphism");
+    analyze->add_option("--pool1", parameters.pool1_id, "Name of the first pool (order in the pileup file)", true)->group("Input/Output");
+    analyze->add_option("--pool2", parameters.pool2_id, "Name of the second pool (order in the pileup file)", true)->group("Input/Output");
+    analyze->add_flag("--popoolation", parameters.popoolation_format, "If set, assumes the input file was generated with popoolation2")->group("Input/Output");
+    analyze->add_option("--gff-file", parameters.gff_file_path, "Path to a GFF file for gene-specific output", true)->group("Input/Output");
+    analyze->add_flag("--no-output-fst-pos", parameters.no_output_fst_pos, "If set, do not output high fst positions")->group("Input/Output");
+    analyze->add_flag("--no-output-fst-win", parameters.no_output_fst_win, "If set, do not output fst sliding window")->group("Input/Output");
+    analyze->add_flag("--no-output-snps-pos", parameters.no_output_snps_pos, "If set, do not output snps positions")->group("Input/Output");
+    analyze->add_flag("--no-output-snps-win", parameters.no_output_snps_win, "If set, do not output snps sliding window")->group("Input/Output");
+    analyze->add_flag("--no-output-depth", parameters.no_output_depth, "If set, do not output depth")->group("Input/Output");
+
+    analyze->add_option("--min-depth", parameters.min_depth, "Minimum depth to include a site in the analyses", true)->group("Analysis");
+    analyze->add_option("--min-fst", parameters.min_fst, "Minimum FST to output a site in the FST positions file", true)->group("Analysis");
+    analyze->add_option("--freq-het", parameters.freq_het, "Frequency of a sex-linked SNP in the heterogametic sex", true)->group("Analysis");
+    analyze->add_option("--range-het", parameters.range_het, "Range of frequency for a sex-linked SNP in the heterogametic sex", true)->group("Analysis");
+    analyze->add_option("--freq-hom", parameters.freq_hom, "Frequency of a sex-linked SNP in the homogametic sex", true)->group("Analysis");
+    analyze->add_option("--range-hom", parameters.range_hom, "Range of frequency for a sex-linked SNP in the homogametic sex", true)->group("Analysis");
+    analyze->add_option("--window-size", parameters.window_size, "Size of the sliding window (in bp)", true)->group("Analysis");
+    analyze->add_option("--output-resolution", parameters.output_resolution, "Output resolution for sliding window metrics (in bp)", true)->group("Analysis");
+    analyze->add_flag("--group-snps", parameters.group_snps, "If set, group consecutive snps to count them as a single polymorphism")->group("Analysis");
 
     // Options for 'convert'
-    option = convert->add_option("INPUT", parameters.input_file_path, "Either a path to a samtools pileup output file or \"-\" for stdin");
-    option->required();
+    option = convert->add_option("INPUT", parameters.input_file_path, "Either a path to a samtools pileup output file or \"-\" for stdin")->required();
     //    option->check(CLI::ExistingFile);  // NEED TO ADD A CUSTOM CHECK IF VALUE IS NOT -
 
     option = convert->add_option("--output-file", parameters.output_file_path, "Write to an output file instead of stdout");
