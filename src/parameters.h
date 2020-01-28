@@ -22,18 +22,14 @@ struct Parameters{
     bool group_snps= false;
 
     // Output options
-    bool no_output_fst_pos = false;
-    bool no_output_fst_win = false;
-    bool no_output_snps_pos = false;
-    bool no_output_snps_win = false;
-    bool no_output_depth = false;
-    bool output_genes = false;
-    std::string output_file_path = "";  // For 'convert'
+    std::string output_file_path = "";
+    std::string snp_pos_file_path = "";
+    std::string fst_pos_file_path = "";
+    std::string genes_file_path = "";
 
     // Input options
     std::string input_file_path = "";
     std::string gff_file_path = "";
-    std::string output_prefix = "";
     std::string pool1_id = "females";
     std::string pool2_id = "males";
     bool popoolation_format = false;

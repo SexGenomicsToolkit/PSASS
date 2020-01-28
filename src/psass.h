@@ -52,9 +52,9 @@ class Psass {
         WindowBaseData window_base_data;  // Object containing information about a single base in the sliding window
         Window window;  // Sliding window object
 
-        std::map<std::string, std::map<uint, float[3]>> depth_data;  // Coverage per base for entire genome (needed for relative coverage)
-        uint64_t total_depth[2] {0, 0};  // Total coverage (needed for relative coverage)
-        uint64_t total_bases = 0;  // Total bases (needed for relative coverage)
+        std::map<std::string, std::map<uint, float[6]>> output_data;  // Each contig -> each position -> [depth_p1, depth_p2, w_size, snp_p1, snp_p2, fst]
+        uint64_t total_depth[2] {0, 0};  // Total depth (needed for relative depth)
+        uint64_t total_bases = 0;  // Total bases (needed for relative depth)
         float average_depth[2] = {0.0, 0.0};  // Average depth in male and female pool
 
         bool consecutive_snps[2] {false, false};

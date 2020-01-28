@@ -10,14 +10,11 @@ Psass::Psass(Parameters& parameters) {
     log("PSASS started.");
 //    cmd_options.output_parameters();
 
-    this->output_handler = OutputHandler(&this->parameters, &this->input_data, &this->pair_data, &this->depth_data, &this->gff_data.genes);
+    this->output_handler = OutputHandler(this->parameters);
 
     std::cout << "Preprocessing data ..." << std::endl;
-    if (this->parameters.output_genes) {
-
+    if (this->parameters.genes_file_path != "") {
         this->gff_data.read_gff_file(this->parameters.gff_file_path);
-        this->parameters.output_genes = true;
-
     }
 }
 
@@ -145,24 +142,16 @@ void Psass::update_snps() {
 
 
 
-// Update window_base_data.coverage from each pool's data depth
+// Update window_base_data.depth from each pool's data depth
 void Psass::update_depth() {
 
     // Update data to push in window
-    if (!this->parameters.no_output_depth) {
-
-        this->window_base_data.depth[0] = this->pair_data.pool1.depth;
-        this->window_base_data.depth[1] = this->pair_data.pool2.depth;
-
-    }
+    this->window_base_data.depth[0] = this->pair_data.pool1.depth;
+    this->window_base_data.depth[1] = this->pair_data.pool2.depth;
 
     // Update total depth count to compute relative coverage later
-    if (!this->parameters.no_output_depth or this->parameters.output_genes) {
-
-        this->total_depth[0] += this->pair_data.pool1.depth;
-        this->total_depth[1] += this->pair_data.pool2.depth;
-
-    }
+    this->total_depth[0] += this->pair_data.pool1.depth;
+    this->total_depth[1] += this->pair_data.pool2.depth;
 }
 
 
@@ -176,66 +165,21 @@ void Psass::update_window(bool end) {
     // If the window is smaller than window_size, only add to total (beginning of the contig)
     if (this->window.data.size() <= this->parameters.window_size) {
 
-        if (!this->parameters.no_output_snps_win) {
-
-            this->window.snps_in_window[0] += this->window_base_data.snps[0];
-            this->window.snps_in_window[1] += this->window_base_data.snps[1];
-
-        }
-
-        if (!this->parameters.no_output_depth) {
-
-            this->window.depth_in_window[0] += this->window_base_data.depth[0];
-            this->window.depth_in_window[1] += this->window_base_data.depth[1];
-
-        }
-
-        if (!this->parameters.no_output_fst_win) {
-
-            this->window.fst_parts[0] += this->window_base_data.fst_parts[0];
-            this->window.fst_parts[1] += this->window_base_data.fst_parts[1];
-
-        }
-
+        this->window.snps_in_window[0] += this->window_base_data.snps[0];
+        this->window.snps_in_window[1] += this->window_base_data.snps[1];
+        this->window.depth_in_window[0] += this->window_base_data.depth[0];
+        this->window.depth_in_window[1] += this->window_base_data.depth[1];
+        this->window.fst_parts[0] += this->window_base_data.fst_parts[0];
+        this->window.fst_parts[1] += this->window_base_data.fst_parts[1];
 
     } else if (this->window.data.size() == this->parameters.window_size + 1) {  // Normal case (within contig) : substract front, add new value, remove front.
 
-        if (!this->parameters.no_output_fst_win) {
-
-            this->window.fst_parts[0] = this->window.fst_parts[0]
-                                        - this->window.data[0].fst_parts[0]
-                                        + this->window_base_data.fst_parts[0];
-
-            this->window.fst_parts[1] = this->window.fst_parts[1]
-                                        - this->window.data[0].fst_parts[1]
-                                        + this->window_base_data.fst_parts[1];
-
-        }
-
-        if (!this->parameters.no_output_snps_win) {
-
-            this->window.snps_in_window[0] = this->window.snps_in_window[0]
-                                                            - this->window.data[0].snps[0]
-                                                            + this->window_base_data.snps[0];
-
-            this->window.snps_in_window[1] = this->window.snps_in_window[1]
-                                                              - this->window.data[0].snps[1]
-                                                              + this->window_base_data.snps[1];
-
-        }
-
-        if (!this->parameters.no_output_depth) {
-
-            this->window.depth_in_window[0] = this->window.depth_in_window[0]
-                                                             - this->window.data[0].depth[0]
-                                                             + this->pair_data.pool1.depth;
-
-            this->window.depth_in_window[1] = this->window.depth_in_window[1]
-                                                               - this->window.data[0].depth[1]
-                                                               + this->pair_data.pool2.depth;
-
-        }
-
+        this->window.fst_parts[0] = this->window.fst_parts[0] - this->window.data[0].fst_parts[0] + this->window_base_data.fst_parts[0];
+        this->window.fst_parts[1] = this->window.fst_parts[1] - this->window.data[0].fst_parts[1] + this->window_base_data.fst_parts[1];
+        this->window.snps_in_window[0] = this->window.snps_in_window[0] - this->window.data[0].snps[0] + this->window_base_data.snps[0];
+        this->window.snps_in_window[1] = this->window.snps_in_window[1] - this->window.data[0].snps[1] + this->window_base_data.snps[1];
+        this->window.depth_in_window[0] = this->window.depth_in_window[0] - this->window.data[0].depth[0] + this->pair_data.pool1.depth;
+        this->window.depth_in_window[1] = this->window.depth_in_window[1] - this->window.data[0].depth[1] + this->pair_data.pool2.depth;
         this->window.data.pop_front();
 
     }
@@ -274,17 +218,16 @@ void Psass::update_genes() {
 // Handles output of sliding window
 void Psass::output_window_step() {
 
-    if (!this->parameters.no_output_fst_win) this->output_handler.output_fst_window(this->window.fst_parts);
+        this->output_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][0] = this->window.depth_in_window[0];
+        this->output_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][1] = this->window.depth_in_window[1];
+        this->output_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][2] = float(this->window.data.size());
+        this->output_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][3] = this->window.snps_in_window[0];
+        this->output_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][4] = this->window.snps_in_window[1];
 
-    if (!this->parameters.no_output_snps_win) this->output_handler.output_snp_window(this->window.snps_in_window);
+        float fst = 0;
+        (this->window.fst_parts[1] > 0) ? fst = std::max(float(0.0), this->window.fst_parts[0] / this->window.fst_parts[1]) : fst = 0.0;
+        this->output_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][5] = fst;
 
-    if (!this->parameters.no_output_depth) {
-
-        this->depth_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][0] = this->window.depth_in_window[0];
-        this->depth_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][1] = this->window.depth_in_window[1];
-        this->depth_data[this->input_data.contig][this->input_data.position - this->parameters.window_range][2] = float(this->window.data.size());
-
-    }
 }
 
 
@@ -355,44 +298,24 @@ void Psass::process_line() {
             if(this->window.data.size() >= this->parameters.window_size) this->process_contig_end();
 
             log("Processing of contig <" + this->input_data.current_contig + "> ended without errors.");
-            log("Processing of contig <" + this->input_data.contig + "> started.");
 
-            if (!parameters.no_output_snps_win) {
-
-                this->window.snps_in_window[0] = 0;
-                this->window.snps_in_window[1] = 0;
-
-            }
-
-            if (!parameters.no_output_depth) {
-
-                this->window.depth_in_window[0] = 0;
-                this->window.depth_in_window[1] = 0;
-
-            }
-
-            if (!parameters.no_output_fst_win) {
-
-                this->window.fst_parts[0] = 0;
-                this->window.fst_parts[1] = 0;
-
-            }
-
+            this->window.snps_in_window[0] = 0;
+            this->window.snps_in_window[1] = 0;
+            this->window.depth_in_window[0] = 0;
+            this->window.depth_in_window[1] = 0;
+            this->window.fst_parts[0] = 0;
+            this->window.fst_parts[1] = 0;
             this->window.data.resize(0);
-
-        } else {
-
-            log("Processing of contig <" + this->input_data.contig + "> started.");
 
         }
 
-        if (parameters.output_genes) this->gff_data.new_contig(this->input_data);
+        log("Processing of contig <" + this->input_data.contig + "> started.");
+
+        if (parameters.genes_file_path != "") this->gff_data.new_contig(this->input_data);
 
         if (parameters.group_snps) {
-
             this->consecutive_snps[0] = false;
             this->consecutive_snps[1] = false;
-
         }
     }
 
@@ -403,45 +326,31 @@ void Psass::process_line() {
     this->input_data.temp = "";
 
     // Update data (depth per pool, fst, pi ...)
-    this->pair_data.update(!this->parameters.no_output_fst_pos);
-
-    // Update nucleotides data for window
-    if (!this->parameters.no_output_fst_win) this->update_fst_parts();
-
-    // Update depth data for window
-    if (!this->parameters.no_output_depth or this->parameters.output_genes) this->update_depth();
-
-    // Update SNPs data for window
-    if (!this->parameters.no_output_snps_win or !this->parameters.no_output_snps_pos or this->parameters.output_genes) this->update_snps();
-
-    // Update window data
-    if (!this->parameters.no_output_fst_win or !this->parameters.no_output_snps_win or !this->parameters.no_output_depth) this->update_window();
+    this->pair_data.update(this->parameters.fst_pos_file_path != "");  // Only update some components if output fst pos
+    this->update_fst_parts();
+    this->update_depth();
+    this->update_snps();
+    this->update_window();
 
     // Update genes data
-    if (this->parameters.output_genes) this->update_genes();
+    if (this->parameters.genes_file_path != "") this->update_genes();
 
     ++this->total_bases;
 
     // Output Fst positions
-    if (!parameters.no_output_fst_pos) {
-
-        if (this->pair_data.fst > this->parameters.min_fst) this->output_handler.output_fst_position(this->pair_data.fst);
+    if (this->parameters.fst_pos_file_path != "") {
+        if (this->pair_data.fst > this->parameters.min_fst) this->output_handler.output_fst(this->pair_data.fst, this->input_data);
     }
 
     // Output SNPs positions
-    if (!parameters.no_output_snps_pos) {
-
-        if (this->window_base_data.snps[0]) this->output_handler.output_snp_position(parameters.pool1_id);
-        if (this->window_base_data.snps[1]) this->output_handler.output_snp_position(parameters.pool2_id);
-
+    if (this->parameters.snp_pos_file_path != "") {
+        if (this->window_base_data.snps[0]) this->output_handler.output_snp(parameters.pool1_id, this->pair_data, this->input_data);
+        if (this->window_base_data.snps[1]) this->output_handler.output_snp(parameters.pool2_id, this->pair_data, this->input_data);
     }
 
     // Output window information and update coverage
-    if ((this->input_data.position == 1 or (this->input_data.position - this->parameters.window_range) % this->parameters.output_resolution == 0)
-        and this->input_data.position >= this->parameters.window_range) {
-
+    if ((this->input_data.position == 1 or (this->input_data.position - this->parameters.window_range) % this->parameters.output_resolution == 0) and this->input_data.position >= this->parameters.window_range) {
         this->output_window_step();
-
     }
 }
 
@@ -648,9 +557,9 @@ void Psass::run() {
 
     this->average_depth[0] = float(this->total_depth[0]) / float(this->total_bases);
     this->average_depth[1] = float(this->total_depth[1]) / float(this->total_bases);
+    this->output_handler.output_window(this->output_data, this->average_depth);
 
-    if (!this->parameters.no_output_depth) this->output_handler.output_depth(this->average_depth);
-    if (this->parameters.output_genes) this->output_handler.output_genes(this->average_depth);
+    if (this->parameters.genes_file_path != "") this->output_handler.output_genes(this->gff_data.genes, this->average_depth);
 
     std::chrono::steady_clock::time_point t_end = std::chrono::steady_clock::now();
     long seconds = std::chrono::duration_cast<std::chrono::seconds>(t_end - t_begin).count();
