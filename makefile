@@ -39,4 +39,3 @@ init:
 	mkdir -p $(BIN) $(BIN)
 
 rebuild: clean $(TARGET)
-: clean $(TARGET)
