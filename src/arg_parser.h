@@ -99,13 +99,13 @@ inline Parameters parse_args(int& argc, char** argv) {
     analyze->add_option("--fst-file", parameters.fst_pos_file_path, "Output high FST positions to this file", true)->group("Input/Output");
 
     analyze->add_option("--min-depth", parameters.min_depth, "Minimum depth to include a site in the analyses", true)->group("Analysis");
-    analyze->add_option("--min-fst", parameters.min_fst, "Minimum FST to output a site in the FST positions file", true)->group("Analysis");
+    analyze->add_option("--window-size", parameters.window_size, "Size of the sliding window (in bp)", true)->group("Analysis");
+    analyze->add_option("--output-resolution", parameters.output_resolution, "Output resolution for sliding window metrics (in bp)", true)->group("Analysis");
     analyze->add_option("--freq-het", parameters.freq_het, "Frequency of a sex-linked SNP in the heterogametic sex", true)->group("Analysis");
     analyze->add_option("--range-het", parameters.range_het, "Range of frequency for a sex-linked SNP in the heterogametic sex", true)->group("Analysis");
     analyze->add_option("--freq-hom", parameters.freq_hom, "Frequency of a sex-linked SNP in the homogametic sex", true)->group("Analysis");
     analyze->add_option("--range-hom", parameters.range_hom, "Range of frequency for a sex-linked SNP in the homogametic sex", true)->group("Analysis");
-    analyze->add_option("--window-size", parameters.window_size, "Size of the sliding window (in bp)", true)->group("Analysis");
-    analyze->add_option("--output-resolution", parameters.output_resolution, "Output resolution for sliding window metrics (in bp)", true)->group("Analysis");
+    analyze->add_option("--min-fst", parameters.min_fst, "Minimum FST to output a site in the FST positions file", true)->group("Analysis");
     analyze->add_flag("--group-snps", parameters.group_snps, "If set, group consecutive snps to count them as a single polymorphism")->group("Analysis");
 
     // Options for 'convert'
