@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <vector>
 #include "htslib/htslib/sam.h"
-#include "htslib/faidx.h"
+#include "htslib/htslib/faidx.h"
 #include "parameters.h"
 #include "utils.h"
 
