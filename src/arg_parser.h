@@ -111,7 +111,6 @@ inline Parameters parse_args(int& argc, char** argv) {
     // Options for 'convert'
     convert->add_option("INPUT", parameters.input_file_path, "Either a path to a samtools pileup output file or \"-\" for stdin")->required();
     //    option->check(CLI::ExistingFile);  // NEED TO ADD A CUSTOM CHECK IF VALUE IS NOT -
-
     convert->add_option("--output-file", parameters.output_file_path, "Write to an output file instead of stdout");
 
     // The parser throws an exception upon failure and implements an exit() method which output an error message and returns the exit code.
