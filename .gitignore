@@ -77,4 +77,9 @@ bin/
 build/
 test/
 *.tsv
-
+include/*/*.pico
+include/*/*/*.pico
+include/htslib/bgzip
+include/htslib/htsfile
+include/htslib/tabix
+include/htslib/version.h
