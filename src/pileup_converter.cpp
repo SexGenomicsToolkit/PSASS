@@ -1,6 +1,4 @@
 #include "pileup_converter.h"
-#include <string.h>
-#include <stdio.h>
 
 PileupConverter::PileupConverter(Parameters& parameters) {
 
@@ -8,14 +6,17 @@ PileupConverter::PileupConverter(Parameters& parameters) {
      * Handles arguments parsing for the 'convert' subcommand.
      */
 
+    if (parameters.input_file_path == "-") {
+        this->from_stdin = true;
+    } else {
+        this->input_file.open(parameters.input_file_path);
+        this->input_file_path = parameters.input_file_path;
+    }
+
     if (parameters.output_file_path != "") {
         this->to_stdout = false;
         this->ofile.open(parameters.output_file_path);
-    }
-
-    if (parameters.input_file_path == "-") {
-        this->from_stdin = true;
-        this->input_file.open(parameters.input_file_path);
+        this->output_file_path = parameters.output_file_path;
     }
 
 }
@@ -47,7 +48,7 @@ void PileupConverter::add_counts_to_buffer(uint8_t pool_number) {
             ++this->j;
             this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i]);
             ++this->j;
-            this->obuff[this->j] = '\t';
+            i == 5 ? this->obuff[this->j] = '\t' : this->obuff[this->j] = ',';
             ++this->j;
 
         } else if (this->pool[pool_number][i] > 999) {
@@ -63,7 +64,7 @@ void PileupConverter::add_counts_to_buffer(uint8_t pool_number) {
             ++this->j;
             this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i]);
             ++this->j;
-            this->obuff[this->j] = '\t';
+            i == 5 ? this->obuff[this->j] = '\t' : this->obuff[this->j] = ',';
             ++this->j;
 
         } else if (this->pool[pool_number][i] > 99) {
@@ -76,7 +77,7 @@ void PileupConverter::add_counts_to_buffer(uint8_t pool_number) {
             ++this->j;
             this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i]);
             ++this->j;
-            this->obuff[this->j] = '\t';
+            i == 5 ? this->obuff[this->j] = '\t' : this->obuff[this->j] = ',';
             ++this->j;
 
         } else if (this->pool[pool_number][i] > 9) {
@@ -86,14 +87,14 @@ void PileupConverter::add_counts_to_buffer(uint8_t pool_number) {
             ++this->j;
             this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i]);
             ++this->j;
-            this->obuff[this->j] = '\t';
+            i == 5 ? this->obuff[this->j] = '\t' : this->obuff[this->j] = ',';
             ++this->j;
 
         } else {
 
             this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i]);
             ++this->j;
-            this->obuff[this->j] = '\t';
+            i == 5 ? this->obuff[this->j] = '\t' : this->obuff[this->j] = ',';
             ++this->j;
 
         }
@@ -111,7 +112,7 @@ void PileupConverter::process_line() {
     this->add_counts_to_buffer(0);  // Add nucleotide counts to output buffer for first pool
     this->add_counts_to_buffer(1);  // Add nucleotide counts to output buffer for second pool
 
-    --j;
+    --this->j;
     this->obuff[this->j] = '\n';  // Add return character at the end of the line
     ++this->j;
 
@@ -124,6 +125,7 @@ void PileupConverter::process_line() {
     // Reset variables
     this->field = 0;
     this->temp = "";
+    this->contig = "";
 
     for (uint i=0; i<6; ++i) {
         this->pool[0][i] = 0;
@@ -143,18 +145,16 @@ void PileupConverter::process_field() {
     switch (this->field) {
 
         case 0:
-            this->obuff[this->j] = '\t';  // Add tab after contig field
-            ++this->j;
-            break;
-
-        case 1:
-            this->obuff[this->j] = '\t';  // Add tab after position field
-            ++this->j;
-            break;
-
-        case 2:
-            this->obuff[this->j] = '\t';  // Add tab after reference base field
-            ++this->j;
+            if (this->contig != this->current_contig or this->current_contig == "") {
+                if (this->current_contig == "") this->current_contig = this->contig;
+                std::string header = "region=" + this->current_contig + "\t len=NA";
+                if (not this->to_stdout) {
+                    this->ofile.write(this->current_contig.c_str(), static_cast<uint>(this->current_contig.size())) ;  // Write contig to output file
+                } else {
+                    fwrite(this->current_contig.c_str(), static_cast<uint>(this->current_contig.size()), 1, stdout);   // Write contig to sdout
+                }
+                this->current_contig = this->contig;
+            }
             break;
 
         default:
@@ -289,6 +289,11 @@ void PileupConverter::run() {
      * Reading input streams this way is much faster than using std::getline()
      */
 
+    log("Pileup converter started");
+
+    this->from_stdin ? log("Reading input from stdin") : log("Reading input from <" + this->input_file_path + ">");
+    this->to_stdout ? log("Outputting to stdout") : log("Outputting to <" + this->output_file_path + ">");
+
     do {
 
         if (not this->from_stdin) {
@@ -324,19 +329,7 @@ void PileupConverter::run() {
                     switch (field) {
 
                         case 0:
-                            this->obuff[j] = this->buff[i];  // Field 0 --> scaffold name
-                            ++this->j;
-                            break;
-
-                        case 1:
-                            this->obuff[j] = this->buff[i];  // Field 1 --> position on scaffold
-                            ++this->j;
-                            break;
-
-                        case 2:
-                            this->obuff[j] = this->buff[i];  // Field 2 --> reference allele
-                            ++this->j;
-                            this->ref_allele = this->buff[i];
+                            this->contig += this->buff[i];  // Field 0 --> scaffold name
                             break;
 
                         case 4:
@@ -358,4 +351,5 @@ void PileupConverter::run() {
 
     } while ((not this->from_stdin and this->input_file) or (this->from_stdin and std::cin));
 
+    log("Pileup converter ended successfully");
 }

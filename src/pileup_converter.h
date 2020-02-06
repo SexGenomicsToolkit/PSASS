@@ -2,7 +2,9 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <stdio.h>
 #include <string>
+#include <string.h>
 #include <unordered_map>
 #include "parameters.h"
 #include "utils.h"
@@ -22,6 +24,8 @@ class PileupConverter {
         long k = 0;
 
         // I/O parameters
+        std::string input_file_path = "";
+        std::string output_file_path = "";
         bool from_stdin = false;
         bool to_stdout = true;
         std::ifstream input_file;
@@ -36,7 +40,7 @@ class PileupConverter {
         uint n_lines = 0;
 
         // Fields
-        std::string contig = "";
+        std::string contig = "", current_contig = "";
         uint position = 0;
         char ref_allele = 'N';
         uint depth[2] = {0, 0};
