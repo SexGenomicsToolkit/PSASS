@@ -8,12 +8,12 @@ Psass::Psass(Parameters& parameters) {
     this->parameters = parameters;
 
     log("PSASS started.");
-//    cmd_options.output_parameters();
+    parameters.print_psass();
 
     this->output_handler = OutputHandler(this->parameters);
 
-    std::cout << "Preprocessing data ..." << std::endl;
     if (this->parameters.genes_file_path != "") {
+        log("Reading GFF file");
         this->gff_data.read_gff_file(this->parameters.gff_file_path);
     }
 }
@@ -244,7 +244,11 @@ void Psass::process_contig_end() {
 
     this->input_data.contig = this->input_data.current_contig;
 
+    std::cerr << first_spot << "\t" << last_spot << std::endl;
+
     for (auto i = first_spot; i <= last_spot; i += this->parameters.output_resolution) {
+
+        std::cerr << i << std::endl;
 
         this->window.fst_parts[0] = 0;
         this->window.fst_parts[1] = 0;
@@ -282,34 +286,23 @@ void Psass::process_contig_end() {
 // Function called on a line from the input file (i.e. when meeting a '\n')
 void Psass::process_line() {
 
-    // Fill last pool2 base
-    this->pair_data.pool2.nucleotides[5] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
+   // If in a header line or the last line of the file, reset values and process end of contig
+    if (this->input_data.header or this->input_data.temp == "\n") {
 
-    // Reset values
-    this->pair_data.fst = 0;
-    this->window_base_data.snps[0] = false;
-    this->window_base_data.snps[1] = false;
+        std::cerr << "<" << this->input_data.temp << ">\t<" << this->input_data.current_contig << ">\t<" << this->input_data.contig << ">" << std::endl;
 
-    // Update / reset values if change of contig
-    if (this->input_data.contig != this->input_data.current_contig) {
-
-        if (this->input_data.current_contig != "") {
-
+        if (this->input_data.current_contig != "") {  //
             if(this->window.data.size() >= this->parameters.window_size) this->process_contig_end();
-
             log("Processing of contig <" + this->input_data.current_contig + "> ended without errors.");
-
-            this->window.snps_in_window[0] = 0;
-            this->window.snps_in_window[1] = 0;
-            this->window.depth_in_window[0] = 0;
-            this->window.depth_in_window[1] = 0;
-            this->window.fst_parts[0] = 0;
-            this->window.fst_parts[1] = 0;
-            this->window.data.resize(0);
-
         }
 
-        log("Processing of contig <" + this->input_data.contig + "> started.");
+        this->window.snps_in_window[0] = 0;
+        this->window.snps_in_window[1] = 0;
+        this->window.depth_in_window[0] = 0;
+        this->window.depth_in_window[1] = 0;
+        this->window.fst_parts[0] = 0;
+        this->window.fst_parts[1] = 0;
+        this->window.data.resize(0);
 
         if (parameters.genes_file_path != "") this->gff_data.new_contig(this->input_data);
 
@@ -317,13 +310,20 @@ void Psass::process_line() {
             this->consecutive_snps[0] = false;
             this->consecutive_snps[1] = false;
         }
+
+        // Update current contig
+        this->input_data.current_contig = this->input_data.contig;
     }
 
     // Reset line parsing values
-    this->input_data.current_contig = this->input_data.contig;
     this->input_data.last_position = this->input_data.position;
     this->input_data.field = 0;
     this->input_data.temp = "";
+
+    // Reset values
+    this->pair_data.fst = 0;
+    this->window_base_data.snps[0] = false;
+    this->window_base_data.snps[1] = false;
 
     // Update data (depth per pool, fst, pi ...)
     this->pair_data.update(this->parameters.fst_pos_file_path != "");  // Only update some components if output fst pos
@@ -334,8 +334,6 @@ void Psass::process_line() {
 
     // Update genes data
     if (this->parameters.genes_file_path != "") this->update_genes();
-
-    ++this->total_bases;
 
     // Output Fst positions
     if (this->parameters.fst_pos_file_path != "") {
@@ -352,6 +350,13 @@ void Psass::process_line() {
     if ((this->input_data.position == 1 or (this->input_data.position - this->parameters.window_range) % this->parameters.output_resolution == 0) and this->input_data.position >= this->parameters.window_range) {
         this->output_window_step();
     }
+
+    if (not this->input_data.header and not this->input_data.comment) {
+        ++this->input_data.position;
+        ++this->total_bases;
+    }
+    if (this->input_data.header) this->input_data.header = false;
+    if (this->input_data.comment) this->input_data.comment = false;
 }
 
 
@@ -416,61 +421,57 @@ void Psass::process_psass_field() {
     switch (this->input_data.field) {
 
         case 0:
-            this->input_data.contig = this->input_data.temp;
+            if (this->input_data.temp.substr(0, 7) == "region=") {
+                this->input_data.contig = this->input_data.temp.substr(7, this->input_data.temp.size() - 7);
+                this->input_data.position = 0;
+                --this->total_bases;
+                this->input_data.header = true;
+            } else {
+                this->pair_data.pool1.nucleotides[0] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
+            }
             break;
 
         case 1:
-            this->input_data.position = static_cast<uint32_t>(fast_stoi(this->input_data.temp.c_str()));
-            break;
-
-        case 2:
-            break;
-
-        case 3:
-            this->pair_data.pool1.nucleotides[0] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
-            break;
-
-        case 4:
             this->pair_data.pool1.nucleotides[1] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
-        case 5:
+        case 2:
             this->pair_data.pool1.nucleotides[2] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
-        case 6:
+        case 3:
             this->pair_data.pool1.nucleotides[3] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
-        case 7:
+        case 4:
             this->pair_data.pool1.nucleotides[4] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
-        case 8:
+        case 5:
             this->pair_data.pool1.nucleotides[5] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
-        case 9:
+        case 6:
             this->pair_data.pool2.nucleotides[0] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
-        case 10:
+        case 7:
             this->pair_data.pool2.nucleotides[1] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
-        case 11:
+        case 8:
             this->pair_data.pool2.nucleotides[2] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
-        case 12:
+        case 9:
             this->pair_data.pool2.nucleotides[3] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
-        case 13:
+        case 10:
             this->pair_data.pool2.nucleotides[4] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
-        case 14:
+        case 11:
             this->pair_data.pool2.nucleotides[5] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             break;
 
@@ -489,7 +490,6 @@ void Psass::process_psass_field() {
 void Psass::run() {
 
     log("Processing of <" + this->parameters.input_file_path + "> started.");
-    std::cerr << "PSASS started." << std::endl;
 
     std::ifstream input_file;
     input_file.open(parameters.input_file_path);
@@ -530,30 +530,35 @@ void Psass::run() {
 
                 switch (this->input_data.buff[i]) {
 
+                    case ',':
+                        this->process_psass_field();
+                        this->input_data.new_line = false;
+                        break;
+
                     case '\t':
                         this->process_psass_field();
+                        this->input_data.new_line = false;
+                        break;
+
+                    case '#':
+                        if (this->input_data.new_line) this->input_data.comment = true;
+                        this->input_data.new_line = false;
                         break;
 
                     case '\n':
                         this->process_line();
+                        this->input_data.new_line = true;
                         break;
 
                     default:
                         this->input_data.temp += this->input_data.buff[i];
+                        this->input_data.new_line = false;
                         break;
-
                 }
             }
-
         }
 
-    } while (input_file);
-
-    this->input_data.contig = "";
-    this->process_line();
-
-    log("Processing of <" + this->parameters.input_file_path + "> ended without errors.");
-    log("Processed <" + std::to_string(this->total_bases) + "> lines.");  // One base per line
+    } while (input_file);  // We expect an empty line at the end of the file
 
     this->average_depth[0] = float(this->total_depth[0]) / float(this->total_bases);
     this->average_depth[1] = float(this->total_depth[1]) / float(this->total_bases);
@@ -565,8 +570,6 @@ void Psass::run() {
     long seconds = std::chrono::duration_cast<std::chrono::seconds>(t_end - t_begin).count();
     long minutes = seconds / 60;
     long hours = minutes / 60;
-    log("Total runtime : " + std::to_string(hours) + "h " + std::to_string(minutes%60) + "m " + std::to_string(seconds%60) + "s.");
-    log("PSASS ended without errors.");
-    std::cerr << "PSASS ended successfully." << std::endl;
-
+    std::string runtime = std::to_string(hours) + "h " + std::to_string(minutes%60) + "m " + std::to_string(seconds%60) + "s";
+    log("PSASS ended successfully (processed <" + std::to_string(this->total_bases) + "> lines in " + runtime + ").");  // One base per line
 }
