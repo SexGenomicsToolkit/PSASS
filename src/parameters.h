@@ -1,7 +1,9 @@
 #pragma once
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
+#include "utils.h"
 
 struct Parameters{
 
@@ -39,4 +41,33 @@ struct Parameters{
     std::vector<std::string> alignment_files;
     std::string reference_file = "";
     uint min_mapping_quality = 0;
+
+    void print_psass() {
+
+        log("Parameter values:");
+        std::cerr << "Input:\n";
+        std::cerr << "    - Input file:     " << "" << this->input_file_path << "\n";
+        std::cerr << "    - Input format:   ";
+        this->popoolation_format ? std::cerr <<  "popoolation2\n" : std::cerr << "psass\n";
+        std::cerr << "    - GFF file:       ";
+        this->gff_file_path != "" ?  std::cerr << "\"" << this->gff_file_path << "\"\n" : std::cerr << "None\n";
+        std::cerr << "    - Pool 1 name:    " << this->pool1_id << "\n";
+        std::cerr << "    - Pool 2 name:    " << this->pool2_id << "\n";
+        std::cerr << "Output:\n";
+        std::cerr << "    - Size of sliding window:               " << this->window_size << "\n";
+        std::cerr << "    - Output resolution:                    " << this->output_resolution << "\n";
+        std::cerr << "    - Output file for sliding window:       " << this->output_file_path << "\n";
+        std::cerr << "    - Output file for pool-specific SNPs:   ";
+        this->snp_pos_file_path != "" ? std::cerr << this->snp_pos_file_path << "\n" : std::cerr << "None\n";
+        std::cerr << "    - Output file for high FST positions:   ";
+        this->fst_pos_file_path != "" ? std::cerr << this->fst_pos_file_path << "\n" : std::cerr << "None\n";
+        std::cerr << "Analysis:\n";
+        std::cerr << "    - Minimum depth to consider a site:                    " << this->min_depth << "\n";
+        std::cerr << "    - Minimum fst to output high fst site:                 " << this->min_fst << "\n";
+        std::cerr << "    - Allele frequency of a heterozygous locus:            " << this->freq_het << "\n";
+        std::cerr << "    - Allele frequency of a homozygous locus:              " << this->freq_hom << "\n";
+        std::cerr << "    - Range of allele frequency of a heterozygous locus:   " << this->range_het << "\n";
+        std::cerr << "    - Range of allele frequency of a homozygous locus:     " << this->range_hom << "\n";
+        std::cerr << "    - Count contiguous snps as one: " << std::boolalpha << this->group_snps << "\n";
+    }
 };
