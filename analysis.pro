@@ -6,8 +6,10 @@ CONFIG -= qt
 INCLUDEPATH += include/
 
 SOURCES += \
+    pileup.cpp \
     src/main.cpp \
     src/gff_file.cpp \
+    src/pileup.cpp \
     src/psass.cpp \
     src/pool_data.cpp \
     src/pair_data.cpp \
@@ -16,8 +18,10 @@ SOURCES += \
 
 HEADERS += \
     include/CLI11/CLI11.hpp \
+    pileup.h \
     src/arg_parser.h \
     src/parameters.h \
+    src/pileup.h \
     src/utils.h \
     src/gff_file.h \
     src/psass.h \

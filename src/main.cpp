@@ -1,7 +1,8 @@
 #include "arg_parser.h"
 #include "parameters.h"
-#include "psass.h"
 #include "pileup_converter.h"
+#include "pileup.h"
+#include "psass.h"
 
 
 int main(int argc, char *argv[]) {
@@ -20,6 +21,7 @@ int main(int argc, char *argv[]) {
 
     } else if (parameters.command == "pileup") {
 
+        pileup(parameters);
 
     }
 

@@ -1,6 +1,7 @@
 #pragma once
-#include <string>
 #include <fstream>
+#include <string>
+#include <vector>
 
 struct Parameters{
 
@@ -33,4 +34,9 @@ struct Parameters{
     std::string pool1_id = "females";
     std::string pool2_id = "males";
     bool popoolation_format = false;
+
+    // Pileup options
+    std::vector<std::string> alignment_files;
+    std::string reference_file = "";
+    uint min_mapping_quality = 0;
 };
