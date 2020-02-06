@@ -147,11 +147,11 @@ void PileupConverter::process_field() {
         case 0:
             if (this->contig != this->current_contig or this->current_contig == "") {
                 if (this->current_contig == "") this->current_contig = this->contig;
-                std::string header = "region=" + this->current_contig + "\t len=NA";
+                std::string header = "region=" + this->contig + "\tlen=NA\n";
                 if (not this->to_stdout) {
-                    this->ofile.write(this->current_contig.c_str(), static_cast<uint>(this->current_contig.size())) ;  // Write contig to output file
+                    this->ofile.write(header.c_str(), static_cast<uint>(header.size())) ;  // Write contig to output file
                 } else {
-                    fwrite(this->current_contig.c_str(), static_cast<uint>(this->current_contig.size()), 1, stdout);   // Write contig to sdout
+                    fwrite(header.c_str(), static_cast<uint>(header.size()), 1, stdout);   // Write contig to sdout
                 }
                 this->current_contig = this->contig;
             }
@@ -293,6 +293,15 @@ void PileupConverter::run() {
 
     this->from_stdin ? log("Reading input from stdin") : log("Reading input from <" + this->input_file_path + ">");
     this->to_stdout ? log("Outputting to stdout") : log("Outputting to <" + this->output_file_path + ">");
+
+    std::string comment = "#Files\t";
+    this->from_stdin ? comment += "stdin\n" : comment += this->input_file_path + "\n";
+    if (not this->to_stdout) {
+        this->ofile.write(comment.c_str(), static_cast<uint>(comment.size()));  // Write to output file
+    } else {
+        fwrite(comment.c_str(), static_cast<uint>(comment.size()), 1, stdout);   // Write to sdout
+    }
+    this->current_contig = this->contig;
 
     do {
 
