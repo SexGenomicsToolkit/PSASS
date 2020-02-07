@@ -42,6 +42,16 @@ struct Parameters{
     std::string reference_file = "";
     uint min_mapping_quality = 0;
 
+    // Kpool options
+    std::string table1_file_path = "";
+    std::string table2_file_path = "";
+    std::string tmp_file_prefix = "";
+    std::string output_prefix = "";
+    uint32_t min_kmer_presence_depth = 0;
+    uint32_t max_kmer_presence_depth = 99999;
+    uint32_t max_kmer_absence_depth = 0;
+    std::string pool_to_filter = "";
+
     void print_psass() {
 
         log("Parameter values:");
