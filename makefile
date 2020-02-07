@@ -13,16 +13,9 @@ INCLUDE = $(BASEDIR)/include
 CPP = $(wildcard $(SRC)/*.cpp)
 
 # Target
-TARGET = psass
+TARGETS = psass
 
-# Variables
-OBJS = $(addprefix $(BUILD)/, $(notdir $(CPP:.cpp=.o)))
-
-# Rules
-
-all: htslib init print-OBJS $(TARGET)
-
-print-%  : ; @echo $* = $($*)
+all: htslib init $(TARGETS)
 
 init:
 	mkdir -p $(BUILD) $(BUILD)
@@ -34,18 +27,18 @@ htslib:
 clean-htslib:
 	$(MAKE) -C include/htslib clean
 
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -I $(INCLUDE) -o $(BIN)/$(TARGET) $^ $(INCLUDE)/htslib/libhts.a $(LDFLAGS)
+psass: $(BUILD)/analyze.o  $(BUILD)/gff_file.o  $(BUILD)/output_handler.o  $(BUILD)/pair_data.o  $(BUILD)/pileup_converter.o  $(BUILD)/pileup.o  $(BUILD)/pool_data.o  $(BUILD)/psass.o
+	$(CC) $(CFLAGS) -I $(INCLUDE) -o $(BIN)/psass $^ $(INCLUDE)/htslib/libhts.a $(LDFLAGS)
 
 $(BUILD)/%.o: $(SRC)/%.cpp
 	$(CC) $(CFLAGS) -I $(INCLUDE) -c -o $@ $^
 
 clean:
 	rm -rf $(BUILD)/*.o
-	rm -rf $(BIN)/$(TARGET)
+	rm -rf $(BIN)/*
 
 clean-all: clean clean-htslib
 
-rebuild: clean $(TARGET)
+rebuild: clean $(TARGETS)
 
 rebuild-all: clean-all all
