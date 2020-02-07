@@ -10,16 +10,20 @@ int open_input(std::string& fn_in, inputFile *file, std::string &reference, uint
         return 1;
     }
 
-    // CRAM files require a reference. Need to add the reference path and reference index path to the file descriptor
+    // CRAM files require a reference. Add the reference path and reference index path to the file descriptor
     if (file->sam->is_cram) {
         // Add reference file path to file descriptor
         std::string ref_option = "reference=" + reference; // Create the string "reference=<provided/path/to/ref>" to add as option to format in htsFile
         hts_opt_add(reinterpret_cast<hts_opt **>(&file->sam->format.specific), ref_option.c_str());  // Add reference to htsFile
         std::string fai_path = reference + ".fai";  // Create the string "<provided/path/to/ref.fai>"
         if (hts_set_fai_filename(file->sam, fai_path.c_str()) < 0) {  // Set reference index path in file descriptor
-            log("Warning: index file not found for reference file <" + reference + ">. Indexing reference");
+            log("Info: building index for reference file <" + reference + ">");
             if (fai_build(reference.c_str()) < 0) {  // Build reference fasta index if missing
                 log("Error: could not build index for reference file <" + reference + ">");
+                return 1;
+            }
+            if (hts_set_fai_filename(file->sam, fai_path.c_str()) < 0) {
+                log("Error: failed to find index for reference file <" + reference + "> after building");
                 return 1;
             }
         }
@@ -31,7 +35,33 @@ int open_input(std::string& fn_in, inputFile *file, std::string &reference, uint
         return 1;
     }
 
-    file->idx = sam_index_load(file->sam, fn_in.c_str()); // Load index for alignment file. Index name is automatically infered from alignment file name
+    // Load index for alignment file. Index name is automatically infered from alignment file name
+    int return_code = 0;
+    if ((file->idx = sam_index_load(file->sam, fn_in.c_str())) == nullptr) {
+        log("Info: building index for alignment file <" + fn_in + ">");
+        if ((return_code = sam_index_build(fn_in.c_str(), 0)) < 0) {
+            switch (return_code) {
+                case -2:
+                    log("Error: could not open alignment file <" + fn_in + "> when building index");
+                    break;
+                case -3:
+                    log("Error: alignment file <" + fn_in + "> is in a non-indexable format");
+                    break;
+                case -4:
+                    log("Error: could create/save index file for alignment file <" + fn_in + ">");
+                    break;
+                default:
+                    log("Error: could index alignment file <" + fn_in + ">");
+                    break;
+            }
+            return 1;
+        } else {
+            if ((file->idx = sam_index_load(file->sam, fn_in.c_str())) == nullptr) {
+                log("Error: failed to find index for alignment file <" + fn_in + "> after building");
+                return 1;
+            }
+        }
+    }
 
     // Handle error opening index for alignment file
     if (file->idx == nullptr) {
