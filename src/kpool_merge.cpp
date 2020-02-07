@@ -6,7 +6,7 @@ void kpool_merge(Parameters& parameters) {
     // Open input files
     std::ifstream table_1_file, table_2_file;
     table_1_file.open(parameters.table1_file_path);
-    table_2_file.open(parameters.table1_file_path);
+    table_2_file.open(parameters.table2_file_path);
 
     IndexFiles index_files;
 
