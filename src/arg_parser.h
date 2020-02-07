@@ -149,6 +149,7 @@ inline Parameters parse_args(int& argc, char** argv) {
     }
 
     // Set some parameter values after parsing
+    parameters.window_range = static_cast<uint>(parameters.window_size / 2);
     parameters.min_het = parameters.freq_het - parameters.range_het;
     parameters.max_het = parameters.freq_het + parameters.range_het;
     parameters.min_hom = parameters.freq_hom- parameters.range_hom;

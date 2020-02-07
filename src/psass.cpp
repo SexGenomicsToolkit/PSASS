@@ -244,11 +244,8 @@ void Psass::process_contig_end() {
 
     this->input_data.contig = this->input_data.current_contig;
 
-    std::cerr << first_spot << "\t" << last_spot << std::endl;
-
     for (auto i = first_spot; i <= last_spot; i += this->parameters.output_resolution) {
 
-        std::cerr << i << std::endl;
 
         this->window.fst_parts[0] = 0;
         this->window.fst_parts[1] = 0;
@@ -288,8 +285,6 @@ void Psass::process_line() {
 
    // If in a header line or the last line of the file, reset values and process end of contig
     if (this->input_data.header or this->input_data.temp == "\n") {
-
-        std::cerr << "<" << this->input_data.temp << ">\t<" << this->input_data.current_contig << ">\t<" << this->input_data.contig << ">" << std::endl;
 
         if (this->input_data.current_contig != "") {  //
             if(this->window.data.size() >= this->parameters.window_size) this->process_contig_end();
