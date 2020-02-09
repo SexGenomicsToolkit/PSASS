@@ -32,10 +32,16 @@ class CustomFormatter : public CLI::Formatter {
         // Formatter for an Option line, overrides the same function from CLI::Formatter
         virtual std::string make_option(const CLI::Option* opt, bool is_positional) const {
 
-            std::string option = "", name = "", type = "", description = "", default_value = "", required = "REQUIRED";
+            std::string option = "", name = "", type = "", description = "", default_value = "", required = "REQUIRED", short_name = "";
+            std::vector<std::string> options;
 
             // Generate option name, if positional -> just the name, if not positional -> <short_flag, long_flag>
-            name = opt->get_name();
+            if (is_positional) {
+                name = opt->get_name();
+            } else {
+                options = split(opt->get_name(false, true), ",");
+                options.size() == 1 ? name = options[0] : name = options[1] + ", " + options[0];
+            }
             type = opt->get_type_name();
             description = opt->get_description();
             default_value = opt->get_default_str();
@@ -58,14 +64,15 @@ class CustomFormatter : public CLI::Formatter {
 
         void set_column_widths(CLI::App& parser) {
             std::string tmp = "";
-            for (auto opt: parser.get_options()) {
-                opt->get_positional() ? tmp = opt->get_name() : tmp = "--" + opt->get_lnames()[0];
+            for (auto opt: parser.get_subcommands()[0]->get_options()) {
+                tmp = opt->get_name();
                 if (tmp.size() > this->column_widths[0]) this->column_widths[0] = static_cast<uint>(tmp.size());
                 tmp = opt->get_type_name();
                 if (tmp.size() > this->column_widths[1]) this->column_widths[1] = static_cast<uint>(tmp.size());
                 tmp = opt->get_description();
                 if (tmp.size() > this->column_widths[2]) this->column_widths[2] = static_cast<uint>(tmp.size());
             }
+            this->column_widths[0] += 2;
         }
 
 };
