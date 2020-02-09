@@ -163,6 +163,13 @@ int pileup(Parameters& parameters) {
     uint64_t ref_len = 0, ref_processed = 0;
     uint16_t percent_complete = 0;
 
+    std::ofstream output_file;
+    bool to_stdout = true;
+    if (parameters.output_file_path != "") {
+        output_file.open(parameters.output_file_path);
+        to_stdout = false;
+    }
+
     // Properly open all alignment files with all necessary information (header, indexes, reference ...) and store them in a vector
     std::string comment = "#Files";  // Comment line in output with names of all processed alignment files in order
     std::vector<inputFile> input;
@@ -175,7 +182,8 @@ int pileup(Parameters& parameters) {
         input.push_back(tmp);
         comment += "\t" + parameters.alignment_files[i];  // Output alignment file path to comment output string
     }
-    std::cout << comment << "\n";
+
+    to_stdout ? std::cout << comment << "\n" : output_file << comment << "\n";
 
     for (int i=0; i<input[0].header->n_targets; ++i) ref_len += input[0].header->target_len[i];
 
@@ -203,14 +211,14 @@ int pileup(Parameters& parameters) {
         // Output depths for this region. Format:
         // - 1 line with format "region=<region>\t<len=<region_length>"
         // - for each position in region (in order), "nA, nT, nC, nG, nN, nOther" for each alignment file, alignment files are tab-separated
-        std::cout << "region=" << region << "\tlen=" << region_len << "\n";
+        to_stdout ? std::cout << "region=" << region << "\tlen=" << region_len << "\n" : output_file << "region=" << region << "\tlen=" << region_len << "\n";
         for (uint j=0; j<region_len; ++j) {
             for (uint k=0; k<n_files; ++k) {
                 for (uint l=0; l<6; ++l) {
-                    std::cout << depths[j][l + 6 * k];
-                    if (l < 5) std::cout << ",";
+                    to_stdout ? std::cout << depths[j][l + 6 * k] : output_file << depths[j][l + 6 * k];
+                    if (l < 5) to_stdout ? std::cout << "," : output_file << ",";
                 }
-                (k < input.size() - 1) ? std::cout << "\t" : std::cout << "\n";
+                to_stdout ? ((k < input.size() - 1) ? std::cout << "\t" : std::cout << "\n") : ((k < input.size() - 1) ? output_file << "\t" : output_file << "\n");
             }
         }
 
