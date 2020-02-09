@@ -56,6 +56,7 @@ class Psass {
         uint64_t total_depth[2] {0, 0};  // Total depth (needed for relative depth)
         uint64_t total_bases = 0;  // Total bases (needed for relative depth)
         float average_depth[2] = {0.0, 0.0};  // Average depth in male and female pool
+        std::unordered_map<std::string, uint64_t> contig_lengths;
 
         bool consecutive_snps[2] {false, false};
 

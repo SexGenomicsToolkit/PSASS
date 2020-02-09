@@ -283,14 +283,16 @@ void Psass::process_contig_end() {
 // Function called on a line from the input file (i.e. when meeting a '\n')
 void Psass::process_line() {
 
-   // If in a header line or the last line of the file, reset values and process end of contig
-    if (this->input_data.header or this->input_data.temp == "\n") {
+    // If in a header line or the last line of the file, reset values and process end of contig
+    if (this->input_data.header or this->input_data.temp == "") {
 
-        if (this->input_data.current_contig != "") {  //
+        if (this->input_data.current_contig != "") {
+            this->contig_lengths[this->input_data.current_contig] = this->input_data.position;
             if(this->window.data.size() >= this->parameters.window_size) this->process_contig_end();
             log("Processing of contig <" + this->input_data.current_contig + "> ended without errors.");
         }
 
+        this->input_data.position = 0;
         this->window.snps_in_window[0] = 0;
         this->window.snps_in_window[1] = 0;
         this->window.depth_in_window[0] = 0;
@@ -346,10 +348,12 @@ void Psass::process_line() {
         this->output_window_step();
     }
 
+    // Increment base and position counters
     if (not this->input_data.header and not this->input_data.comment) {
         ++this->input_data.position;
         ++this->total_bases;
     }
+
     if (this->input_data.header) this->input_data.header = false;
     if (this->input_data.comment) this->input_data.comment = false;
 }
@@ -418,9 +422,9 @@ void Psass::process_psass_field() {
         case 0:
             if (this->input_data.temp.substr(0, 7) == "region=") {
                 this->input_data.contig = this->input_data.temp.substr(7, this->input_data.temp.size() - 7);
-                this->input_data.position = 0;
                 --this->total_bases;
                 this->input_data.header = true;
+                this->contig_lengths[this->input_data.contig] = 0;
             } else {
                 this->pair_data.pool1.nucleotides[0] = static_cast<uint16_t>(fast_stoi(this->input_data.temp.c_str()));
             }
@@ -555,9 +559,11 @@ void Psass::run() {
 
     } while (input_file);  // We expect an empty line at the end of the file
 
+    this->process_line();  // Have to manually specify to process last line (the last empty line from the input file is ignored by the parser somehow)
+
     this->average_depth[0] = float(this->total_depth[0]) / float(this->total_bases);
     this->average_depth[1] = float(this->total_depth[1]) / float(this->total_bases);
-    this->output_handler.output_window(this->output_data, this->average_depth);
+    this->output_handler.output_window(this->output_data, this->average_depth, this->contig_lengths);
 
     if (this->parameters.genes_file_path != "") this->output_handler.output_genes(this->gff_data.genes, this->average_depth);
 

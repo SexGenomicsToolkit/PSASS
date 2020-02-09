@@ -152,15 +152,15 @@ OUTPUT_FILE              |  `string`  |  Path to an output file for sliding wind
 
 **Sliding window output file**
 
-A tabulated file with number of pool-specific SNPs, between-pool FST in the window, absolute depth, and relative depth for each pool in a sliding window of size given by `--window-size`. Output every *N* bp, with *N* given by `--output-resolution`.
+A tabulated file with contig, position on the contig, contig length, number of pool-specific SNPs, between-pool FST in the window, absolute depth, and relative depth for each pool in a sliding window of size given by `--window-size`. Output every *N* bp, with *N* given by `--output-resolution`.
 
 ```
-Contig   Position  Snps_<pool1>  Snps_<pool2>       Fst  Abs_depth_<pool1>  Abs_depth_<pool2>  Rel_depth_<pool1>  Rel_depth_<pool2>
-Contig1         0             4             5    0.0000                166                174               0.73               0.74
-Contig1     10000             4             6    0.0000                156                165               0.68               0.70
-Contig1     20000             5             6    0.0000                181                193               0.79               0.82
-Contig1     30000             5             6    0.0000                167                178               0.74               0.76
-Contig1     40000             6             6    0.0000                154                164               0.68               0.70
+Contig   Position  Length  Snps_<pool1>  Snps_<pool2>       Fst  Abs_depth_<pool1>  Abs_depth_<pool2>  Rel_depth_<pool1>  Rel_depth_<pool2>
+Contig1         0    6000             4             5    0.0000                166                174               0.73               0.74
+Contig1     10000    6000             4             6    0.0000                156                165               0.68               0.70
+Contig1     20000    6000             5             6    0.0000                181                193               0.79               0.82
+Contig1     30000    6000             5             6    0.0000                167                178               0.74               0.76
+Contig1     40000    6000             6             6    0.0000                154                164               0.68               0.70
 ...
 ```
 
