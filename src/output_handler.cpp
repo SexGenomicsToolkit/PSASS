@@ -13,10 +13,10 @@ OutputHandler::OutputHandler(Parameters& parameters) {
         this->snp_position_output_file << "Contig" << "\t" << "Position" << "\t" << "Pool" << "\t" <<
                                           parameters.pool1_id << "_A" << "\t" << parameters.pool1_id << "_T" << "\t" <<
                                           parameters.pool1_id << "_C" << "\t" << parameters.pool1_id << "_G" << "\t" <<
-                                          parameters.pool1_id << "_N" << "\t" << parameters.pool1_id << "_I" << "\t" <<
+                                          parameters.pool1_id << "_N" << "\t" << parameters.pool1_id << "_O" << "\t" <<
                                           parameters.pool2_id << "_A" << "\t" << parameters.pool2_id << "_T" << "\t" <<
                                           parameters.pool2_id << "_C" << "\t" << parameters.pool2_id << "_G" << "\t" <<
-                                          parameters.pool2_id << "_N" << "\t" << parameters.pool2_id << "_I" << "\n";
+                                          parameters.pool2_id << "_N" << "\t" << parameters.pool2_id << "_O" << "\n";
     }
 
     if (parameters.genes_file_path != "") {

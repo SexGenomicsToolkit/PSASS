@@ -29,7 +29,7 @@ inline Parameters parse_args(int& argc, char** argv) {
     analyze->add_option("--pool2", parameters.pool2_id, "Name of the second pool (order in the pileup file)", true)->group("Input/Output");
     analyze->add_option("--gff-file", parameters.gff_file_path, "Path to a GFF file for gene-specific output", true)->group("Input/Output");
     analyze->add_flag("--popoolation", parameters.popoolation_format, "If set, assumes the input file was generated with popoolation2")->group("Input/Output");
-    analyze->add_option("--snps-file", parameters.snp_pos_file_path, "Output sex-biased SNPs to this file", true)->group("Input/Output");
+    analyze->add_option("--snp-file", parameters.snp_pos_file_path, "Output sex-biased SNPs to this file", true)->group("Input/Output");
     analyze->add_option("--fst-file", parameters.fst_pos_file_path, "Output high FST positions to this file", true)->group("Input/Output");
 
     analyze->add_option("--min-depth", parameters.min_depth, "Minimum depth to include a site in the analyses", true)->group("Analysis");
@@ -47,8 +47,8 @@ inline Parameters parse_args(int& argc, char** argv) {
     convert->add_option("--output-file", parameters.output_file_path, "Write to an output file instead of stdout");
 
     // Options for 'pileup'
-    pileup->add_option("ALIGNMENT_FILES", parameters.alignment_files, "Alignment files to include in pileup, in bam or cram format and indexed")->required();
-    pileup->add_option("--reference", parameters.reference_file, "Reference file in fasta format, required with CRAM input files", true);
+    pileup->add_option("ALIGNMENT_FILES", parameters.alignment_files, "Alignment files to include in pileup, in bam or cram format and indexed")->required()->check(CLI::ExistingFile);
+    pileup->add_option("--reference", parameters.reference_file, "Reference file in fasta format, required with CRAM input files", true)->check(CLI::ExistingFile);
     pileup->add_option("--output-file", parameters.output_file_path, "Write to an output file instead of stdout");
     pileup->add_option("--min-map-quality", parameters.min_mapping_quality, "Minimum mapping quality to include a read in pileup", true);
 

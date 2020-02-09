@@ -13,6 +13,10 @@ int open_input(std::string& fn_in, inputFile *file, std::string &reference, uint
     // CRAM files require a reference. Add the reference path and reference index path to the file descriptor
     if (file->sam->is_cram) {
         // Add reference file path to file descriptor
+        if (reference == "") {
+            log("Error: reference file required with CRAM input files (use --reference)");
+            return 1;
+        }
         std::string ref_option = "reference=" + reference; // Create the string "reference=<provided/path/to/ref>" to add as option to format in htsFile
         hts_opt_add(reinterpret_cast<hts_opt **>(&file->sam->format.specific), ref_option.c_str());  // Add reference to htsFile
         std::string fai_path = reference + ".fai";  // Create the string "<provided/path/to/ref.fai>"
