@@ -23,7 +23,7 @@ inline Parameters parse_args(int& argc, char** argv) {
     merge->add_option("KMER_TABLE_1", parameters.table1_file_path, "Path to the first Jellyfish kmer counts table")->required()->check(CLI::ExistingFile);
     merge->add_option("KMER_TABLE_2", parameters.table2_file_path, "Path to the second Jellyfish kmer counts table")->required()->check(CLI::ExistingFile);
     merge->add_option("OUTPUT_FILE", parameters.output_file_path, "Path to the output file (merged kmer counts table)")->required();
-    merge->add_option("--tmp-prefix. -t", parameters.tmp_file_prefix, "Prefix for temporary index files (directories need to exist)", true);
+    merge->add_option("--tmp-prefix, -t", parameters.tmp_file_prefix, "Prefix for temporary index files (directories need to exist)", true);
     merge->add_option("--pool1, -p", parameters.pool1_id, "Name of the pool for the first table", true);
     merge->add_option("--pool2, -q", parameters.pool2_id, "Name of the pool for the second table", true);
 
