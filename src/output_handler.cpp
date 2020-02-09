@@ -34,7 +34,7 @@ OutputHandler::OutputHandler(Parameters& parameters) {
     }
 
     this->open_output_file(this->window_output_file, parameters.output_file_path);
-    this->window_output_file << "Contig" << "\t" << "Position" << "\t"
+    this->window_output_file << "Contig" << "\t" << "Position" << "\t" << "Length" << "\t"
                              << "Snps_" << parameters.pool1_id << "\t" << "Snps_" << parameters.pool2_id << "\t"
                              << "Fst" << "\t"
                              << "Abs_depth_" << parameters.pool1_id << "\t" << "Abs_depth_" << parameters.pool2_id << "\t"
@@ -137,9 +137,11 @@ void OutputHandler::output_genes(std::unordered_map<std::string, Gene>& genes, f
 
 void OutputHandler::output_window(std::map<std::string, std::map<uint, float[6]>>& output_data, float* average_depth) {
 
+    uint contig_size = 0;
     for (auto const& contig : output_data) {
+        contig_size = output_data.size();
         for (auto const& position: contig.second) {
-            this->window_output_file << contig.first << "\t" << position.first << "\t"
+            this->window_output_file << contig.first << "\t" << position.first << "\t" << contig_size << "\t"
                                      << std::fixed << std::setprecision(0)
                                      << uint(position.second[3]) << "\t" << uint(position.second[4]) << "\t"
                                      << std::fixed << std::setprecision(4)
