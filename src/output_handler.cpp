@@ -5,12 +5,12 @@ OutputHandler::OutputHandler(Parameters& parameters) {
     // Open output file objects
     if (parameters.fst_pos_file_path != "") {
         this->open_output_file(this->fst_position_output_file, parameters.fst_pos_file_path);
-        this->fst_position_output_file << "Contig" << "\t" << "Position" << "\t" << "Fst" << "\n";
+        this->fst_position_output_file << "Contig" << "\t" << "Position" << "\t" << "Length" << "\t" << "Fst" << "\n";
     }
 
     if (parameters.snp_pos_file_path != "") {
         this->open_output_file(this->snp_position_output_file, parameters.snp_pos_file_path);
-        this->snp_position_output_file << "Contig" << "\t" << "Position" << "\t" << "Pool" << "\t" <<
+        this->snp_position_output_file << "Contig" << "\t" << "Position" << "\t" << "Length" << "\t" << "Pool" << "\t" <<
                                           parameters.pool1_id << "_A" << "\t" << parameters.pool1_id << "_T" << "\t" <<
                                           parameters.pool1_id << "_C" << "\t" << parameters.pool1_id << "_G" << "\t" <<
                                           parameters.pool1_id << "_N" << "\t" << parameters.pool1_id << "_O" << "\t" <<
@@ -39,6 +39,9 @@ OutputHandler::OutputHandler(Parameters& parameters) {
                              << "Fst" << "\t"
                              << "Abs_depth_" << parameters.pool1_id << "\t" << "Abs_depth_" << parameters.pool2_id << "\t"
                              << "Rel_depth_" << parameters.pool1_id << "\t" << "Rel_depth_" << parameters.pool2_id << "\n";
+
+    this->pool_id[0] = parameters.pool1_id;
+    this->pool_id[1] = parameters.pool2_id;
 }
 
 
@@ -59,20 +62,23 @@ void OutputHandler::open_output_file(std::ofstream& output_file, std::string& pa
 
 
 
-// Write Fst information if current base has fst higher than specified threshold
-void OutputHandler::output_fst(float fst, InputData& input_data) {
+// Output single-base information for snp and fst output files
+void OutputHandler::output_bases(std::vector<PointOutputData> base_output_data, std::unordered_map<std::string, uint64_t>& contig_lengths) {
 
-    this->fst_position_output_file << std::fixed << std::setprecision(4) << input_data.contig << "\t" << input_data.position << "\t" << fst <<  "\n";
-}
+    for (auto base: base_output_data) {
 
+        if (base.type == 0) {
 
+            this->fst_position_output_file << base.contig << "\t" << base.position << "\t" << contig_lengths[base.contig] << "\t" << std::fixed << std::setprecision(4) << base.base_data.fst << "\n";
 
-// Write SNP and nucleotide information if current base is a sex-specific SNP
-void OutputHandler::output_snp(std::string& pool_id, PairBaseData& pair_data, InputData& input_data) {
+        } else {
 
-    this->snp_position_output_file << input_data.contig << "\t" << input_data.position << "\t" << pool_id << "\t"
-                                   << pair_data.pool1.output_frequencies() << "\t"
-                                   << pair_data.pool2.output_frequencies() << "\n";
+            this->snp_position_output_file << base.contig << "\t" << base.position << "\t" << contig_lengths[base.contig] << "\t" << this->pool_id[base.type - 1] << "\t"
+                                           << base.base_data.pool1.output_frequencies() << "\t"
+                                           << base.base_data.pool2.output_frequencies() << "\n";
+
+        }
+    }
 }
 
 

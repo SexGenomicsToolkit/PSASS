@@ -53,6 +53,7 @@ class Psass {
         Window window;  // Sliding window object
 
         std::map<std::string, std::map<uint, float[6]>> output_data;  // Each contig -> each position -> [depth_p1, depth_p2, w_size, snp_p1, snp_p2, fst]
+        std::vector<PointOutputData> base_output_data;  // Vector storing snp and fst base output (not window)
         uint64_t total_depth[2] {0, 0};  // Total depth (needed for relative depth)
         uint64_t total_bases = 0;  // Total bases (needed for relative depth)
         float average_depth[2] = {0.0, 0.0};  // Average depth in male and female pool

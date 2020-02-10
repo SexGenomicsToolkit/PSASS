@@ -334,13 +334,13 @@ void Psass::process_line() {
 
     // Output Fst positions
     if (this->parameters.fst_pos_file_path != "") {
-        if (this->pair_data.fst > this->parameters.min_fst) this->output_handler.output_fst(this->pair_data.fst, this->input_data);
+        if (this->pair_data.fst > this->parameters.min_fst) this->base_output_data.push_back(PointOutputData(this->pair_data, this->input_data.current_contig, this->input_data.position, 0));
     }
 
     // Output SNPs positions
     if (this->parameters.snp_pos_file_path != "") {
-        if (this->window_base_data.snps[0]) this->output_handler.output_snp(parameters.pool1_id, this->pair_data, this->input_data);
-        if (this->window_base_data.snps[1]) this->output_handler.output_snp(parameters.pool2_id, this->pair_data, this->input_data);
+        if (this->window_base_data.snps[0]) this->base_output_data.push_back(PointOutputData(this->pair_data, this->input_data.current_contig, this->input_data.position, 1));
+        if (this->window_base_data.snps[1]) this->base_output_data.push_back(PointOutputData(this->pair_data, this->input_data.current_contig, this->input_data.position, 2));
     }
 
     // Output window information and update coverage
@@ -564,6 +564,7 @@ void Psass::run() {
     this->average_depth[0] = float(this->total_depth[0]) / float(this->total_bases);
     this->average_depth[1] = float(this->total_depth[1]) / float(this->total_bases);
     this->output_handler.output_window(this->output_data, this->average_depth, this->contig_lengths);
+    this->output_handler.output_bases(this->base_output_data, this->contig_lengths);
 
     if (this->parameters.genes_file_path != "") this->output_handler.output_genes(this->gff_data.genes, this->average_depth);
 
