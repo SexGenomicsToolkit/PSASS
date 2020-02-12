@@ -45,6 +45,7 @@ class OutputHandler {
         std::ofstream genes_output_file;
 
         std::string pool_id[2];
+        uint min_depth = 0;
 
         void create_output_files();
         void open_output_file(std::ofstream& output_file, std::string& path);

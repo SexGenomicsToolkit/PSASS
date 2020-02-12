@@ -38,10 +38,12 @@ OutputHandler::OutputHandler(Parameters& parameters) {
                              << "Snps_" << parameters.pool1_id << "\t" << "Snps_" << parameters.pool2_id << "\t"
                              << "Fst" << "\t"
                              << "Abs_depth_" << parameters.pool1_id << "\t" << "Abs_depth_" << parameters.pool2_id << "\t"
-                             << "Rel_depth_" << parameters.pool1_id << "\t" << "Rel_depth_" << parameters.pool2_id << "\n";
+                             << "Rel_depth_" << parameters.pool1_id << "\t" << "Rel_depth_" << parameters.pool2_id << "\t"
+                             << "Depth_ratio" << "\n";
 
     this->pool_id[0] = parameters.pool1_id;
     this->pool_id[1] = parameters.pool2_id;
+    this->min_depth = parameters.min_depth;
 }
 
 
@@ -155,7 +157,17 @@ void OutputHandler::output_window(std::map<std::string, std::map<uint, float[6]>
                                      << float(position.second[1] / position.second[2]) << "\t"
                                      << std::fixed << std::setprecision(2)
                                      << float((position.second[0] / position.second[2])/ average_depth[0]) << "\t"
-                                     << float((position.second[1] / position.second[2])/ average_depth[1]) << "\n";
+                                     << float((position.second[1] / position.second[2])/ average_depth[1]) << "\t";
+
+            if (position.second[0] >= this->min_depth and position.second[1] >= this->min_depth) {
+
+                this->window_output_file << float(position.second[0] / position.second[1]) << "\n";
+
+            } else {
+
+                this->window_output_file << 1.00 << "\n";
+
+            }
         }
     }
 }
