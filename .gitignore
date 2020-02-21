@@ -92,4 +92,4 @@ include/htslib/test/test_kstring
 include/htslib/test/test_realn
 include/htslib/test/test_str2int
 include/htslib/test/test_view
-
+include/htslib_configured

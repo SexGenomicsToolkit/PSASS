@@ -1,3 +1,7 @@
+ifndef HTSLIB_CORES
+	HTSLIB_CORES = 1
+endif
+
 # Compiler options
 CC = g++
 OPTCFLAGS = -Ofast
@@ -14,29 +18,38 @@ INCLUDE = $(BASEDIR)/include
 CPP = $(wildcard $(SRC)/*.cpp)
 
 # Target
-TARGETS = psass kpool
+TARGETS = $(BIN)/psass $(BIN)/kpool
 
-all: htslib init $(TARGETS)
+.PHONY: all
+all: include/htslib $(BIN) $(BUILD) $(TARGETS)
 
-init:
-	mkdir -p $(BUILD) $(BUILD)
-	mkdir -p $(BIN) $(BIN)
+$(BUILD):
+	mkdir -p $(BUILD)
 
-htslib:
-	$(MAKE) -C include/htslib
+$(BIN):
+	mkdir -p $(BIN)
+
+include/htslib_configured:
+	cd include/htslib && ./configure
+	touch $@
+
+include/htslib: include/htslib_configured
+	$(MAKE) -C include/htslib -j $(HTSLIB_CORES)
 
 clean-htslib:
+	rm include/htslib_configured
 	$(MAKE) -C include/htslib clean
 
-psass: $(BUILD)/analyze.o  $(BUILD)/gff_file.o  $(BUILD)/output_handler.o  $(BUILD)/pair_data.o  $(BUILD)/pileup_converter.o  $(BUILD)/pileup.o  $(BUILD)/pool_data.o  $(BUILD)/psass.o
+$(BIN)/psass: $(BUILD)/analyze.o  $(BUILD)/gff_file.o  $(BUILD)/output_handler.o  $(BUILD)/pair_data.o  $(BUILD)/pileup_converter.o  $(BUILD)/pileup.o  $(BUILD)/pool_data.o  $(BUILD)/psass.o
 	$(CC) $(CFLAGS) -I $(INCLUDE) -o $(BIN)/psass $^ $(INCLUDE)/htslib/libhts.a $(LDFLAGS_PSASS)
 
-kpool: $(BUILD)/kpool.o $(BUILD)/kpool_merge.o $(BUILD)/kpool_filter.o
-	$(CC) $(CFLAGS) -I $(INCLUDE) -o $(BIN)/kpool $^ $(LDFLAGS_KPOOL)
+$(BIN)/kpool: $(BUILD)/kpool.o $(BUILD)/kpool_merge.o $(BUILD)/kpool_filter.o
+	$(CC) $(CFLAGS) -I $(INCLUDE) -o $(BIN)/psass $^ $(LDFLAGS_KPOOL)
 
 $(BUILD)/%.o: $(SRC)/%.cpp
 	$(CC) $(CFLAGS) -I $(INCLUDE) -c -o $@ $^
 
+.PHONY: clean
 clean:
 	rm -rf $(BUILD)/*.o
 	rm -rf $(BIN)/*
