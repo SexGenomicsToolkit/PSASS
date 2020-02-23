@@ -36,8 +36,16 @@ To build psass, follow these instructions:
 git clone https://github.com/RomainFeron/PSASS.git
 # Navigate to the PSASS directory
 cd psass
-# Build PSASS
-make
+# Build PSASS; HTSLIB_CORES defines number of cores used for compilation of htslib library (1 if not defined)
+make all HTSLIB_CORES=4
+```
+
+If your system does not have well configured autotools to configure compilation of `htslib`, you can try using the default configuration
+
+```bash
+make clean-htslib
+touch include/htslib_configured
+make HTSLIB_CORES=4
 ```
 
 ## Usage: *psass*
@@ -263,4 +271,3 @@ OUTPUT_PREFIX             |  `string`  |  Prefix for output files (one output fi
 --max-presence-depth, -e  |   `int`    |  Maximum depth to consider a kmer present in the focal pool      |   99999   |
 --max-absence-depth, -a   |   `int`    |  Maximum depth to consider a kmer absent in the other pool       |       0   |
 --help                    |            |  Display help message                                            |           |
-
