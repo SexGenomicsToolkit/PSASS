@@ -93,3 +93,9 @@ include/htslib/test/test_realn
 include/htslib/test/test_str2int
 include/htslib/test/test_view
 include/.htslib_configured
+include/htslib/config.h
+include/htslib/config.log
+include/htslib/config.mk
+include/htslib/config.status
+include/htslib/htslib.pc.tmp
+
