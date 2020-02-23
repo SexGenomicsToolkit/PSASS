@@ -1,7 +1,3 @@
-ifndef HTSLIB_CORES
-	HTSLIB_CORES = 1
-endif
-
 # Compiler options
 CC = g++
 OPTCFLAGS = -Ofast
@@ -12,50 +8,78 @@ LDFLAGS_KPOOL = -pthread -lstdc++ -lz
 # Directory organisation
 BASEDIR = .
 BIN = $(BASEDIR)/bin
-SRC = $(BASEDIR)/src
 BUILD = $(BASEDIR)/build
 INCLUDE = $(BASEDIR)/include
+SRC = $(BASEDIR)/src
 CPP = $(wildcard $(SRC)/*.cpp)
+
+# Get number of parallel jobs
+MAKE_PID := $(shell echo $$PPID)
+JOBS := $(shell ps T | sed -n 's/.*$(MAKE_PID).*$(MAKE).* \(-j\|--jobs\) *\([0-9][0-9]*\).*/\2/p')
+ifeq ($(JOBS),)
+	JOBS := 1
+endif
+
+# Dummy flag to indicate that htslib was configured
+HTSLIB_CONF_FLAG = $(INCLUDE)/.htslib_configured
 
 # Target
 TARGETS = $(BIN)/psass $(BIN)/kpool
 
-.PHONY: all
-all: include/htslib $(BIN) $(BUILD) $(TARGETS)
+# Declare phony targets (i.e. targets which are not files)
+.PHONY: all clean clean-all rebuild rebuild-all
 
+# Main rule
+all: $(BIN) $(BUILD) $(TARGETS)
+
+# Build directory
 $(BUILD):
 	mkdir -p $(BUILD)
 
+# Bin directory
 $(BIN):
 	mkdir -p $(BIN)
 
-include/htslib_configured:
-	cd include/htslib && ./configure
+# Special rule to configure htslib with autoconf only on first build and full rebuild (using a dummy flag file)
+$(HTSLIB_CONF_FLAG):
+	cd $(INCLUDE)/htslib && ./configure --disable-libcurl
 	touch $@
 
-include/htslib: include/htslib_configured
-	$(MAKE) -C include/htslib -j $(HTSLIB_CORES)
+# Build htslib
+$(INCLUDE)/htslib/libhts.a: $(HTSLIB_CONF_FLAG)
+	$(MAKE) -C include/htslib -j $(JOBS)
 
+# Clean htslib (run make clean and remove configure dummy flag)
 clean-htslib:
-	rm include/htslib_configured
+	rm $(HTSLIB_CONF_FLAG)
 	$(MAKE) -C include/htslib clean
 
-$(BIN)/psass: $(BUILD)/analyze.o  $(BUILD)/gff_file.o  $(BUILD)/output_handler.o  $(BUILD)/pair_data.o  $(BUILD)/pileup_converter.o  $(BUILD)/pileup.o  $(BUILD)/pool_data.o  $(BUILD)/psass.o
-	$(CC) $(CFLAGS) -I $(INCLUDE) -o $(BIN)/psass $^ $(INCLUDE)/htslib/libhts.a $(LDFLAGS_PSASS)
+# Linking for psass
+$(BIN)/psass: $(BUILD)/analyze.o  $(BUILD)/gff_file.o  $(BUILD)/output_handler.o  $(BUILD)/pair_data.o  $(BUILD)/pileup_converter.o  $(BUILD)/pileup.o  $(BUILD)/pool_data.o  $(BUILD)/psass.o $(INCLUDE)/htslib/libhts.a
+	$(CC) $(CFLAGS) -I $(INCLUDE) -o $(BIN)/psass $^ $(LDFLAGS_PSASS)
 
+# Linking for kpool
 $(BIN)/kpool: $(BUILD)/kpool.o $(BUILD)/kpool_merge.o $(BUILD)/kpool_filter.o
-	$(CC) $(CFLAGS) -I $(INCLUDE) -o $(BIN)/psass $^ $(LDFLAGS_KPOOL)
+	$(CC) $(CFLAGS) -I $(INCLUDE) -o $(BIN)/kpool $^ $(LDFLAGS_KPOOL)
 
-$(BUILD)/%.o: $(SRC)/%.cpp
-	$(CC) $(CFLAGS) -I $(INCLUDE) -c -o $@ $^
+# Build a single object file. Added htslib as dependency so that it is build before object files
+$(BUILD)/%.o: $(SRC)/%.cpp $(INCLUDE)/htslib/libhts.a $(BUILD)
+	$(CC) $(CFLAGS) -I $(INCLUDE) -c -o $@ $<
 
-.PHONY: clean
+# Clean PSASS files
 clean:
 	rm -rf $(BUILD)/*.o
 	rm -rf $(BIN)/*
 
+# Clean all files
 clean-all: clean clean-htslib
 
-rebuild: clean $(TARGETS)
+# Rebuild PSASS only
+rebuild:
+	$(MAKE) clean
+	$(MAKE) -j $(JOBS)
 
-rebuild-all: clean-all all
+# Rebuild PSASS and dependencies
+rebuild-all:
+	$(MAKE) clean-all
+	$(MAKE) -j $(JOBS)

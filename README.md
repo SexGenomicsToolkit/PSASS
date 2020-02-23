@@ -27,7 +27,7 @@ conda install -c bioconda psass
 
 ### Install from source
 
-PSASS implements parsing of alignment files using the [htslib](https://github.com/samtools/htslib) library, which depends on **zlib**, **libbz2**, and **liblzma** to read CRAM files. All three libraries are installed by default on most linux distributions. Compilation was tested with **gcc >= 5.3.0**.
+PSASS implements parsing of alignment files using the [htslib](https://github.com/samtools/htslib) library, which requires **autotools** to build and depends on **zlib**, **libbz2**, and **liblzma** to read CRAM files. All are installed by default on most linux distributions. Compilation was tested with **gcc >= 5.3.0**.
 
 To build psass, follow these instructions:
 
@@ -36,16 +36,8 @@ To build psass, follow these instructions:
 git clone https://github.com/RomainFeron/PSASS.git
 # Navigate to the PSASS directory
 cd psass
-# Build PSASS; HTSLIB_CORES defines number of cores used for compilation of htslib library (1 if not defined)
-make all HTSLIB_CORES=4
-```
-
-If your system does not have well configured autotools to configure compilation of `htslib`, you can try using the default configuration
-
-```bash
-make clean-htslib
-touch include/htslib_configured
-make HTSLIB_CORES=4
+# Build PSASS
+make
 ```
 
 ## Usage: *psass*
