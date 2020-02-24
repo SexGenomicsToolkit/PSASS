@@ -34,11 +34,15 @@ all: $(BIN) $(BUILD) $(TARGETS)
 
 # Build directory
 $(BUILD):
-	mkdir -p $(BUILD)
+	if [ ! -e $@ ]; then \
+		mkdir $@;        \
+	fi;
 
 # Bin directory
 $(BIN):
-	mkdir -p $(BIN)
+	if [ ! -e $@ ]; then \
+		mkdir $@;        \
+	fi;
 
 # Special rule to configure htslib with autoconf only on first build and full rebuild (using a dummy flag file)
 $(HTSLIB_CONF_FLAG):
@@ -63,7 +67,7 @@ $(BIN)/kpool: $(BUILD)/kpool.o $(BUILD)/kpool_merge.o $(BUILD)/kpool_filter.o
 	$(CC) $(CFLAGS) -I $(INCLUDE) -o $(BIN)/kpool $^ $(LDFLAGS_KPOOL)
 
 # Build a single object file. Added htslib as dependency so that it is build before object files
-$(BUILD)/%.o: $(SRC)/%.cpp $(INCLUDE)/htslib/libhts.a $(BUILD)
+$(BUILD)/%.o: $(SRC)/%.cpp $(INCLUDE)/htslib/libhts.a
 	$(CC) $(CFLAGS) -I $(INCLUDE) -c -o $@ $<
 
 # Clean PSASS files
