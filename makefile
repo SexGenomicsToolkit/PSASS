@@ -55,7 +55,7 @@ $(INCLUDE)/htslib/libhts.a: $(HTSLIB_CONF_FLAG)
 
 # Clean htslib (run make clean and remove configure dummy flag)
 clean-htslib:
-	rm $(HTSLIB_CONF_FLAG)
+	rm -f $(HTSLIB_CONF_FLAG)
 	$(MAKE) CC=gcc -C include/htslib clean
 
 # Linking for psass
