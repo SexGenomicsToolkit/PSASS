@@ -46,17 +46,17 @@ $(BIN):
 
 # Special rule to configure htslib with autoconf only on first build and full rebuild (using a dummy flag file)
 $(HTSLIB_CONF_FLAG):
-	cd $(INCLUDE)/htslib && ./configure --disable-libcurl
+	cd $(INCLUDE)/htslib && ./configure CC=gcc --disable-libcurl
 	touch $@
 
 # Build htslib
 $(INCLUDE)/htslib/libhts.a: $(HTSLIB_CONF_FLAG)
-	$(MAKE) -C include/htslib -j $(JOBS)
+	$(MAKE) CC=gcc -C include/htslib -j $(JOBS)
 
 # Clean htslib (run make clean and remove configure dummy flag)
 clean-htslib:
 	rm $(HTSLIB_CONF_FLAG)
-	$(MAKE) -C include/htslib clean
+	$(MAKE) CC=gcc -C include/htslib clean
 
 # Linking for psass
 $(BIN)/psass: $(BUILD)/analyze.o  $(BUILD)/gff_file.o  $(BUILD)/output_handler.o  $(BUILD)/pair_data.o  $(BUILD)/pileup_converter.o  $(BUILD)/pileup.o  $(BUILD)/pool_data.o  $(BUILD)/psass.o $(INCLUDE)/htslib/libhts.a
