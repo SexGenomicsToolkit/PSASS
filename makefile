@@ -11,7 +11,6 @@ BIN = $(BASEDIR)/bin
 BUILD = $(BASEDIR)/build
 INCLUDE = $(BASEDIR)/include
 SRC = $(BASEDIR)/src
-CPP = $(wildcard $(SRC)/*.cpp)
 
 # Get number of parallel jobs
 MAKE_PID := $(shell echo $$PPID)
