@@ -1,7 +1,8 @@
 # Compiler options
-CC = g++
-OPTCFLAGS = -Ofast
-CFLAGS = -Wall -std=c++11 $(OPTCFLAGS)
+CC = gcc
+CXX = g++
+OPTCXXFLAGS = -Ofast
+CXXFLAGS = -Wall -std=c++11 $(OPTCFLAGS)
 LDFLAGS_PSASS = -pthread -lstdc++ -lz -llzma -lbz2
 
 # Directory organisation
@@ -45,25 +46,25 @@ $(BIN):
 
 # Special rule to configure htslib with autoconf only on first build and full rebuild (using a dummy flag file)
 $(HTSLIB_CONF_FLAG):
-	cd $(INCLUDE)/htslib && ./configure CC=gcc --disable-libcurl
+	cd $(INCLUDE)/htslib && ./configure CC=$(CC) --disable-libcurl
 	touch $@
 
 # Build htslib
 $(INCLUDE)/htslib/libhts.a: $(HTSLIB_CONF_FLAG)
-	$(MAKE) CC=gcc -C include/htslib -j $(JOBS)
+	$(MAKE) CC=$(CC) -C include/htslib -j $(JOBS)
 
 # Clean htslib (run make clean and remove configure dummy flag)
 clean-htslib:
 	rm -f $(HTSLIB_CONF_FLAG)
-	$(MAKE) CC=gcc -C include/htslib clean
+	$(MAKE) CC=$(CC) -C include/htslib clean
 
 # Linking for psass
 $(BIN)/psass: $(BUILD)/analyze.o  $(BUILD)/gff_file.o  $(BUILD)/output_handler.o  $(BUILD)/pair_data.o  $(BUILD)/pileup_converter.o  $(BUILD)/pileup.o  $(BUILD)/pool_data.o  $(BUILD)/psass.o $(INCLUDE)/htslib/libhts.a
-	$(CC) $(CFLAGS) -I $(INCLUDE) -o $(BIN)/psass $^ $(LDFLAGS_PSASS)
+	$(CXX) $(CXXFLAGS) -I $(INCLUDE) -o $(BIN)/psass $^ $(LDFLAGS_PSASS)
 
 # Build a single object file. Added htslib as dependency so that it is build before object files
 $(BUILD)/%.o: $(SRC)/%.cpp $(INCLUDE)/htslib/libhts.a
-	$(CC) $(CFLAGS) -I $(INCLUDE) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) -I $(INCLUDE) -c -o $@ $<
 
 # Clean PSASS files
 clean:
