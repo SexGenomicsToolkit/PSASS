@@ -9,9 +9,6 @@ SOURCES += \
     pileup.cpp \
     src/analyze.cpp \
     src/gff_file.cpp \
-    src/kpool.cpp \
-    src/kpool_filter.cpp \
-    src/kpool_merge.cpp \
     src/pileup.cpp \
     src/pool_data.cpp \
     src/pair_data.cpp \
@@ -24,8 +21,6 @@ HEADERS += \
     pileup.h \
     src/analyze.h \
     src/arg_parser.h \
-    src/kpool_filter.h \
-    src/kpool_merge.h \
     src/parameters.h \
     src/pileup.h \
     src/utils.h \

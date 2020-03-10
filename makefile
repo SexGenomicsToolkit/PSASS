@@ -3,7 +3,6 @@ CC = g++
 OPTCFLAGS = -Ofast
 CFLAGS = -Wall -std=c++11 $(OPTCFLAGS)
 LDFLAGS_PSASS = -pthread -lstdc++ -lz -llzma -lbz2
-LDFLAGS_KPOOL = -pthread -lstdc++ -lz
 
 # Directory organisation
 BASEDIR = .
@@ -24,7 +23,7 @@ endif
 HTSLIB_CONF_FLAG = $(INCLUDE)/.htslib_configured
 
 # Target
-TARGETS = $(BIN)/psass $(BIN)/kpool
+TARGETS = $(BIN)/psass
 
 # Declare phony targets (i.e. targets which are not files)
 .PHONY: all clean clean-all rebuild rebuild-all
@@ -61,10 +60,6 @@ clean-htslib:
 # Linking for psass
 $(BIN)/psass: $(BUILD)/analyze.o  $(BUILD)/gff_file.o  $(BUILD)/output_handler.o  $(BUILD)/pair_data.o  $(BUILD)/pileup_converter.o  $(BUILD)/pileup.o  $(BUILD)/pool_data.o  $(BUILD)/psass.o $(INCLUDE)/htslib/libhts.a
 	$(CC) $(CFLAGS) -I $(INCLUDE) -o $(BIN)/psass $^ $(LDFLAGS_PSASS)
-
-# Linking for kpool
-$(BIN)/kpool: $(BUILD)/kpool.o $(BUILD)/kpool_merge.o $(BUILD)/kpool_filter.o
-	$(CC) $(CFLAGS) -I $(INCLUDE) -o $(BIN)/kpool $^ $(LDFLAGS_KPOOL)
 
 # Build a single object file. Added htslib as dependency so that it is build before object files
 $(BUILD)/%.o: $(SRC)/%.cpp $(INCLUDE)/htslib/libhts.a
