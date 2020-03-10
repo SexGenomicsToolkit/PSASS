@@ -1,9 +1,9 @@
 # Compiler options
 CC = gcc
 CXX = g++
-OPTCXXFLAGS = -Ofast
-CXXFLAGS = -Wall -std=c++11 $(OPTCFLAGS)
-LDFLAGS_PSASS = -pthread -lstdc++ -lz -llzma -lbz2
+OPTCXXFLAGS += -Ofast
+CXXFLAGS += -Wall -std=c++11 $(OPTCFLAGS)
+LDFLAGS += -pthread -lstdc++ -lz -llzma -lbz2
 
 # Directory organisation
 BASEDIR = .
@@ -59,7 +59,7 @@ clean-htslib:
 
 # Linking for psass
 $(BIN)/psass: $(BUILD)/analyze.o  $(BUILD)/gff_file.o  $(BUILD)/output_handler.o  $(BUILD)/pair_data.o  $(BUILD)/pileup_converter.o  $(BUILD)/pileup.o  $(BUILD)/pool_data.o  $(BUILD)/psass.o $(INCLUDE)/htslib/libhts.a
-	$(CXX) $(CXXFLAGS) -I $(INCLUDE) -o $(BIN)/psass $^ $(LDFLAGS_PSASS)
+	$(CXX) $(CXXFLAGS) -I $(INCLUDE) -o $(BIN)/psass $^ $(LDFLAGS)
 
 # Build a single object file. Added htslib as dependency so that it is build before object files
 $(BUILD)/%.o: $(SRC)/%.cpp $(INCLUDE)/htslib/libhts.a
