@@ -1,25 +1,24 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2615936.svg)](https://doi.org/10.5281/zenodo.2615936)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/RomainFeron/PSASS?color=lightorange)](https://github.com/RomainFeron/PSASS/releases)
+[![Conda (channel only)](https://img.shields.io/conda/vn/bioconda/psass?color=lightorange)](https://bioconda.github.io/recipes/psass/README.html)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3702337.svg)](https://doi.org/10.5281/zenodo.3702337)
 
-# PSASS
-
-Current release: 2.2.0
+# Pooled Sequencing Analyses for Sex Signal (PSASS)
 
 ## Overview
 
-PSASS (Pooled Sequencing Analysis for Sex Signal) is a software to compare pooled sequencing datasets from two groups (usually two sexes). It is part of a general pipeline handling data processing ([PSASS-process](https://github.com/RomainFeron/PSASS-process)), analysis (PSASS), and visualisation ([PSASS-vis](https://github.com/RomainFeron/PSASS-vis)). PSASS was developed as part of a project by the [LPGP](https://www6.rennes.inra.fr/lpgp/) lab from INRA, Rennes, France.
+PSASS (Pooled Sequencing Analyses for Sex Signal) is a software to compare pooled sequencing datasets from two groups (usually two sexes). It is part of a general pipeline handling data processing ([PSASS-snake](https://github.com/RomainFeron/PSASS-snake)), analysis ([PSASS](https://github.com/RomainFeron/PSASS)), and visualisation ([PSASS-vis](https://github.com/RomainFeron/PSASS-vis)).
 
-Currently, PSASS contains two binaries:
+PSASS was developed as part of a project by the [LPGP](https://www6.rennes.inra.fr/lpgp/) lab from INRA, Rennes, France.
 
-- *psass* for the analysis of pooled sequencing datasets aligned to an assembly
-- *kpool* for the analysis of kmer tables generated from the pooled sequencing datasets with Jellyfish
+**Citing PSASS**
 
-A more detailed README will be available soon.
+There is currently no paper officially describing PSASS. To cite PSASS, use the DOI provided by [Zenodo](https://doi.org/10.5281/zenodo.3702337).
 
 ## Installation
 
 ### Install with conda
 
-PSASS is available in [Bioconda](https://bioconda.github.io/). To install psass with conda, run the following command:
+PSASS is available in [Bioconda](https://bioconda.github.io/recipes/psass/README.html). To install psass with conda, run the following command:
 
 ```bash
 conda install -c bioconda psass
@@ -218,48 +217,3 @@ Argument           | Type       | Description                                   
 INPUT              |  `file`    |  Either the path to a samtools pileup output file or "-" for stdin  |         |
 --output-file, -o  |  `string`  |  Write output to this file instead of stdout                        |         |
 --help             |            |  Display help message                                               |         |
-
-## Usage: *kpool*
-
-*kpool* takes as input one kmer counts table (from [Jellyfish](https://github.com/gmarcais/Jellyfish)) for each pool and generates a file with pool-specific kmers per pool.
-
-Currently, *kpool* implements two commands:
-
-- `merge` : merge two kmer counts table from Jellyfish into a single table
-- `filter` : extract kmers specific to each pool (or a single pool)
-
-### merge
-
-```
-Usage: kpool merge [OPTIONS] KMER_TABLE_1 KMER_TABLE_2 OUTPUT_FILE
-```
-
-**Arguments**:
-
-Argument           | Type       | Description                                                      |  Default  |
--------------------|------------|------------------------------------------------------------------|-----------|
-KMER_TABLE_1       |  `file`    |  Path to the Jellyfish kmer counts table for the first pool      |           |
-KMER_TABLE_2       |  `file`    |  Path to the Jellyfish kmer counts table for the second pool     |           |
-OUTPUT_FILE        |  `file`    |  Path to the output file (merged kmer counts table)              |           |
---tmp-prefix, -t   |  `string`  |  Prefix for temporary index files (directories need to exist)    |    ""     |
---pool1, -p        |  `string`  |  Name of the first pool                                          |  females  |
---pool2, -q        |  `string`  |  Name of the second pool                                         |  males    |
---help             |            |  Display help message                                            |           |
-
-### filter
-
-```
-Usage: kpool filter [OPTIONS] KMER_TABLE OUTPUT_PREFIX
-```
-
-**Arguments**:
-
-Argument                  | Type       | Description                                                      |  Default  |
---------------------------|------------|------------------------------------------------------------------|-----------|
-KMER_TABLE                |  `file`    |  Path to a merged kmer counts table from kpool merge             |           |
-OUTPUT_PREFIX             |  `string`  |  Prefix for output files (one output file per pool)              |           |
---single-pool, -s         |  `string`  |  Only output filtered kmers for specified pool                   |           |
---min-presence-depth, -d  |   `int`    |  Minimum depth to consider a kmer present in the focal pool      |       0   |
---max-presence-depth, -e  |   `int`    |  Maximum depth to consider a kmer present in the focal pool      |   99999   |
---max-absence-depth, -a   |   `int`    |  Maximum depth to consider a kmer absent in the other pool       |       0   |
---help                    |            |  Display help message                                            |           |
