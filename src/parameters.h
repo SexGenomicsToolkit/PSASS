@@ -71,6 +71,8 @@ struct Parameters{
         this->snp_pos_file_path != "" ? std::cerr << this->snp_pos_file_path << "\n" : std::cerr << "None\n";
         std::cerr << "    - Output file for high FST positions:   ";
         this->fst_pos_file_path != "" ? std::cerr << this->fst_pos_file_path << "\n" : std::cerr << "None\n";
+        std::cerr << "    - Output file for gene metrics:   ";
+        this->genes_file_path != "" ? std::cerr << this->genes_file_path << "\n" : std::cerr << "None\n";
         std::cerr << "Analysis:\n";
         std::cerr << "    - Minimum depth to consider a site:                    " << this->min_depth << "\n";
         std::cerr << "    - Minimum fst to output high fst site:                 " << this->min_fst << "\n";

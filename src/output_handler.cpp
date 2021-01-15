@@ -19,7 +19,7 @@ OutputHandler::OutputHandler(Parameters& parameters) {
                                           parameters.pool2_id << "_N" << "\t" << parameters.pool2_id << "_O" << "\n";
     }
 
-    if (parameters.genes_file_path != "") {
+    if (parameters.gff_file_path != "") {
         this->open_output_file(this->genes_output_file, parameters.genes_file_path);
         this->genes_output_file << "Contig" << "\t" << "Start" << "\t" << "End" << "\t" << "ID" << "\t" << "Name" << "\t" << "Product" << "\t" <<
                                    parameters.pool1_id << "_depth" << "\t" << parameters.pool1_id << "_depth_corr" << "\t" <<

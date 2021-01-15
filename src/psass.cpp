@@ -27,10 +27,12 @@ inline Parameters parse_args(int& argc, char** argv) {
 
     analyze->add_option("--pool1, -p", parameters.pool1_id, "Name of the first pool (order in the pileup file)", true)->group("Input/Output");
     analyze->add_option("--pool2, -q", parameters.pool2_id, "Name of the second pool (order in the pileup file)", true)->group("Input/Output");
-    analyze->add_option("--gff-file, -g", parameters.gff_file_path, "Path to a GFF file for gene-specific output", true)->group("Input/Output");
     analyze->add_flag("--popoolation", parameters.popoolation_format, "If set, assumes the input file was generated with popoolation2")->group("Input/Output");
     analyze->add_option("--snp-file, -s", parameters.snp_pos_file_path, "Output sex-biased SNPs to this file", true)->group("Input/Output");
     analyze->add_option("--fst-file, -f", parameters.fst_pos_file_path, "Output high FST positions to this file", true)->group("Input/Output");
+    CLI::Option* gff_opt = analyze->add_option("--genes-file, -g", parameters.genes_file_path, "Output gene metrics to this file (requires a GFF file)", true)->group("Input/Output");
+    CLI::Option* gene_opt = analyze->add_option("--gff-file, -G", parameters.gff_file_path, "Path to a GFF file for gene-specific output", true)->group("Input/Output");
+    gff_opt->needs(gene_opt);
 
     analyze->add_option("--min-depth, -d", parameters.min_depth, "Minimum depth to include a site in the analyses", true)->group("Analysis");
     analyze->add_option("--window-size, -w", parameters.window_size, "Size of the sliding window (in bp)", true)->group("Analysis");
@@ -59,12 +61,16 @@ inline Parameters parse_args(int& argc, char** argv) {
 
     } catch (const CLI::ParseError &e) {
 
-        if (parser.get_subcommands().size() > 0) {          
+        if (parser.get_subcommands().size() > 0) {
+
             formatter->set_column_widths(parser);
+
         } else {
+
             formatter->column_widths[0] = 10;
             formatter->column_widths[1] = 0;
             formatter->column_widths[2] = 50;
+
         }
 
         exit(parser.exit(e));

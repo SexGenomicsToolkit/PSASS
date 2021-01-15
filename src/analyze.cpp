@@ -12,8 +12,7 @@ Psass::Psass(Parameters& parameters) {
 
     this->output_handler = OutputHandler(this->parameters);
 
-    if (this->parameters.genes_file_path != "") {
-        log("Reading GFF file");
+    if (this->parameters.gff_file_path != "") {
         this->gff_data.read_gff_file(this->parameters.gff_file_path);
     }
 }
@@ -287,9 +286,11 @@ void Psass::process_line() {
     if (this->input_data.header or this->input_data.temp == "") {
 
         if (this->input_data.current_contig != "") {
+
             this->contig_lengths[this->input_data.current_contig] = this->input_data.position;
             if(this->window.data.size() >= this->parameters.window_size) this->process_contig_end();
             log("Processing of contig <" + this->input_data.current_contig + "> ended without errors.");
+
         }
 
         this->input_data.position = 0;
@@ -301,7 +302,7 @@ void Psass::process_line() {
         this->window.fst_parts[1] = 0;
         this->window.data.resize(0);
 
-        if (parameters.genes_file_path != "") this->gff_data.new_contig(this->input_data);
+        if (parameters.genes_file_path != "" and this->input_data.temp != "") this->gff_data.new_contig(this->input_data);
 
         if (parameters.group_snps) {
             this->consecutive_snps[0] = false;
@@ -566,7 +567,7 @@ void Psass::run() {
     this->output_handler.output_window(this->output_data, this->average_depth, this->contig_lengths);
     this->output_handler.output_bases(this->base_output_data, this->contig_lengths);
 
-    if (this->parameters.genes_file_path != "") this->output_handler.output_genes(this->gff_data.genes, this->average_depth);
+    if (this->parameters.gff_file_path != "") this->output_handler.output_genes(this->gff_data.genes, this->average_depth);
 
     std::chrono::steady_clock::time_point t_end = std::chrono::steady_clock::now();
     long seconds = std::chrono::duration_cast<std::chrono::seconds>(t_end - t_begin).count();
