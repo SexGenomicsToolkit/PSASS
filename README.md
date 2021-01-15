@@ -1,20 +1,24 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2615936.svg)](https://doi.org/10.5281/zenodo.2615936)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/RomainFeron/PSASS?color=lightorange)](https://github.com/RomainFeron/PSASS/releases)
+[![Conda (channel only)](https://img.shields.io/conda/vn/bioconda/psass?color=lightorange)](https://bioconda.github.io/recipes/psass/README.html)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3702337.svg)](https://doi.org/10.5281/zenodo.3702337)
 
-# PSASS
+# Pooled Sequencing Analyses for Sex Signal (PSASS)
 
-Current release: 3.1.0
+Current release: 3.2.0
 
 ## Overview
 
 PSASS (Pooled Sequencing Analysis for Sex Signal) is a software to compare pooled sequencing datasets from two groups (usually two sexes). Results from PSASS can be easily visualized using the [sgtr](https://github.com/SexGenomicsToolkit/sgtr) R package. PSASS is integrated in a [Snakemake workflow](https://github.com/SexGenomicsToolkit/PSASS-workflow) to perform all required steps starting from a genome and reads files. PSASS was developed as part of a project by the [LPGP](https://www6.rennes.inra.fr/lpgp/) lab from INRA, Rennes, France.
 
-A more detailed README will be available soon.
+**Citing PSASS**
+
+There is currently no paper officially describing PSASS. To cite PSASS, use the DOI provided by [Zenodo](https://doi.org/10.5281/zenodo.3702337).
 
 ## Installation
 
 ### Install with conda
 
-PSASS is available in [Bioconda](https://bioconda.github.io/). To install psass with conda, run the following command:
+PSASS is available in [Bioconda](https://bioconda.github.io/recipes/psass/README.html). To install psass with conda, run the following command:
 
 ```bash
 conda install -c bioconda psass
@@ -128,10 +132,11 @@ INPUT_FILE               |  `file`    |  Path to a nucleotides depth file genera
 OUTPUT_FILE              |  `string`  |  Path to an output file for sliding window metrics                      |           |
 --pool1, -p              |  `string`  |  Name of the first pool                                                 |  females  |
 --pool2, -q              |  `string`  |  Name of the second pool                                                |  males    |
---gff-file, -g           |  `string`  |  Path to a GFF file for gene-specific output                            |           |
---popoolation            |            |  If set, assumes the input file was generated with popoolation2         |           |
 --snp-file, -s           |  `string`  |  Output pool-specific SNPs to this file                                 |           |
 --fst-file, -f           |  `string`  |  Output high FST positions to this file                                 |           |
+--genes-file, -g         |  `string`  |  Output gene metrics to this file (requires a GFF file)                 |           |
+--gff-file, -G           |  `string`  |  Path to a GFF file for gene-specific output                            |           |
+--popoolation            |            |  If set, assumes the input file was generated with popoolation2         |           |
 --min-depth, -d          |  `int`     |  Minimum depth to include a site in the analyses                        |   10      |
 --window-size, -w        |  `int`     |  Size of the sliding window (in bp)                                     |   100000  |
 --output-resolution, -r  |  `int`     |  Output resolution for sliding window metrics (in bp)                   |   10000   |
