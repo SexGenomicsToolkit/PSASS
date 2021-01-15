@@ -2,16 +2,11 @@
 
 # PSASS
 
-Current release: 2.2.0
+Current release: 3.1.0
 
 ## Overview
 
-PSASS (Pooled Sequencing Analysis for Sex Signal) is a software to compare pooled sequencing datasets from two groups (usually two sexes). It is part of a general pipeline handling data processing ([PSASS-process](https://github.com/RomainFeron/PSASS-process)), analysis (PSASS), and visualisation ([PSASS-vis](https://github.com/RomainFeron/PSASS-vis)). PSASS was developed as part of a project by the [LPGP](https://www6.rennes.inra.fr/lpgp/) lab from INRA, Rennes, France.
-
-Currently, PSASS contains two binaries:
-
-- *psass* for the analysis of pooled sequencing datasets aligned to an assembly
-- *kpool* for the analysis of kmer tables generated from the pooled sequencing datasets with Jellyfish
+PSASS (Pooled Sequencing Analysis for Sex Signal) is a software to compare pooled sequencing datasets from two groups (usually two sexes). Results from PSASS can be easily visualized using the [sgtr](https://github.com/SexGenomicsToolkit/sgtr) R package. PSASS is integrated in a [Snakemake workflow](https://github.com/SexGenomicsToolkit/PSASS-workflow) to perform all required steps starting from a genome and reads files. PSASS was developed as part of a project by the [LPGP](https://www6.rennes.inra.fr/lpgp/) lab from INRA, Rennes, France.
 
 A more detailed README will be available soon.
 
@@ -40,9 +35,9 @@ cd psass
 make
 ```
 
-## Usage: *psass*
+## Usage
 
-*psass* takes as input one alignment file for each pool and computes the following metrics:
+In summary, *psass* takes as input one reads alignment file for each pool and computes the following metrics:
 
 - Between-pools Fst in a sliding window
 - Number of SNPs specific to each pool, defined as SNPs heterozygous in one pool and homozygous in the other, in a sliding window
@@ -55,7 +50,7 @@ Currently, *psass* implements three commands:
 
 - `pileup` : generate a nucleotides depth file from two alignment files
 - `analyze` : compute pool comparison metrics from a nucleotides depth file
-- `convert` : convert output from samtools mpileup to a nucleotides depth file (deprecated, use `psass pileup`)
+- `convert` : convert output from samtools mpileup to a nucleotides depth file (deprecated, use `pileup` instead)
 
 
 ### Quickstart
@@ -218,48 +213,3 @@ Argument           | Type       | Description                                   
 INPUT              |  `file`    |  Either the path to a samtools pileup output file or "-" for stdin  |         |
 --output-file, -o  |  `string`  |  Write output to this file instead of stdout                        |         |
 --help             |            |  Display help message                                               |         |
-
-## Usage: *kpool*
-
-*kpool* takes as input one kmer counts table (from [Jellyfish](https://github.com/gmarcais/Jellyfish)) for each pool and generates a file with pool-specific kmers per pool.
-
-Currently, *kpool* implements two commands:
-
-- `merge` : merge two kmer counts table from Jellyfish into a single table
-- `filter` : extract kmers specific to each pool (or a single pool)
-
-### merge
-
-```
-Usage: kpool merge [OPTIONS] KMER_TABLE_1 KMER_TABLE_2 OUTPUT_FILE
-```
-
-**Arguments**:
-
-Argument           | Type       | Description                                                      |  Default  |
--------------------|------------|------------------------------------------------------------------|-----------|
-KMER_TABLE_1       |  `file`    |  Path to the Jellyfish kmer counts table for the first pool      |           |
-KMER_TABLE_2       |  `file`    |  Path to the Jellyfish kmer counts table for the second pool     |           |
-OUTPUT_FILE        |  `file`    |  Path to the output file (merged kmer counts table)              |           |
---tmp-prefix, -t   |  `string`  |  Prefix for temporary index files (directories need to exist)    |    ""     |
---pool1, -p        |  `string`  |  Name of the first pool                                          |  females  |
---pool2, -q        |  `string`  |  Name of the second pool                                         |  males    |
---help             |            |  Display help message                                            |           |
-
-### filter
-
-```
-Usage: kpool filter [OPTIONS] KMER_TABLE OUTPUT_PREFIX
-```
-
-**Arguments**:
-
-Argument                  | Type       | Description                                                      |  Default  |
---------------------------|------------|------------------------------------------------------------------|-----------|
-KMER_TABLE                |  `file`    |  Path to a merged kmer counts table from kpool merge             |           |
-OUTPUT_PREFIX             |  `string`  |  Prefix for output files (one output file per pool)              |           |
---single-pool, -s         |  `string`  |  Only output filtered kmers for specified pool                   |           |
---min-presence-depth, -d  |   `int`    |  Minimum depth to consider a kmer present in the focal pool      |       0   |
---max-presence-depth, -e  |   `int`    |  Maximum depth to consider a kmer present in the focal pool      |   99999   |
---max-absence-depth, -a   |   `int`    |  Maximum depth to consider a kmer absent in the other pool       |       0   |
---help                    |            |  Display help message                                            |           |
