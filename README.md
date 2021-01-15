@@ -4,8 +4,6 @@
 
 # Pooled Sequencing Analyses for Sex Signal (PSASS)
 
-Current release: 3.2.0
-
 ## Overview
 
 PSASS (Pooled Sequencing Analysis for Sex Signal) is a software to compare pooled sequencing datasets from two groups (usually two sexes). Results from PSASS can be easily visualized using the [sgtr](https://github.com/SexGenomicsToolkit/sgtr) R package. PSASS is integrated in a [Snakemake workflow](https://github.com/SexGenomicsToolkit/PSASS-workflow) to perform all required steps starting from a genome and reads files. PSASS was developed as part of a project by the [LPGP](https://www6.rennes.inra.fr/lpgp/) lab from INRA, Rennes, France.
