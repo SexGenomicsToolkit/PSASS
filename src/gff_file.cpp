@@ -16,12 +16,15 @@ bool GFFData::find_value(const std::string& field, const std::string& value) {
 
 
 
-void GFFData::read_gff_file(std::istream& input_file) {
+void GFFData::read_gff_file(std::string& input_file_path) {
 
     log("Reading GFF file started.");
 
     std::string line = "", name = "", id = "", product = "", parent = "";
     std::vector<std::string> fields, infos;
+
+    std::ifstream input_file;
+    input_file.open(input_file_path);
 
     while (std::getline(input_file, line)) {
 

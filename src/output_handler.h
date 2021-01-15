@@ -11,16 +11,19 @@
 #include "pool_data.h"
 
 
-struct OutputFile {
+struct PointOutputData {
 
-    std::string suffix = "";
-    std::string header = "";
-    std::string path = "";
-    std::ofstream file;
+    PairBaseData base_data;
+    std::string contig;
+    uint64_t position;
+    uint8_t type = 0;  // 0 -> fst, 1 --> snp in pool1, 2 --> snp in pool2
 
-    OutputFile() {}
-    OutputFile(const std::string& suffix) {this->suffix = suffix;}
-    void open(const std::string& prefix);
+    PointOutputData(PairBaseData base_data, std::string contig, uint64_t position, uint8_t type) {
+        this->base_data = base_data;
+        this->contig = contig;
+        this->position = position;
+        this->type = type;
+    }
 };
 
 
@@ -29,30 +32,22 @@ class OutputHandler {
     public:
 
         OutputHandler() {}
-        OutputHandler(Parameters* parameters, InputData* input_data, PairBaseData* pair_data, std::map<std::string, std::map<uint, float[3]>>* depth, std::unordered_map<std::string, Gene>* genes);
-        void output_fst_position(float fst);
-        void output_fst_window(float fst_parts[2]);
-        void output_snp_position(std::string& pool_id);
-        void output_snp_window(uint32_t snps_total[2]);
-        void output_depth(float* average_depth);
-        void output_genes(float* average_depth);
+        OutputHandler(Parameters& parameters);
+        void output_window(std::map<std::string, std::map<uint, float[6]>>& output_data, float* average_depth, std::unordered_map<std::string, uint64_t>& contig_lengths);
+        void output_bases(std::vector<PointOutputData> base_output_data, std::unordered_map<std::string, uint64_t>& contig_lengths);
+        void output_genes(std::unordered_map<std::string, Gene>& genes, float* average_depth);
 
     private:
 
-        OutputFile fst_position_output_file {"fst_position"};
-        OutputFile fst_window_output_file {"fst_window"};
-        OutputFile snps_position_output_file {"snps_position"};
-        OutputFile snps_window_output_file {"snps_window"};
-        OutputFile depth_output_file {"depth"};
-        OutputFile genes_output_file {"genes"};
+        std::ofstream window_output_file;
+        std::ofstream fst_position_output_file;
+        std::ofstream snp_position_output_file;
+        std::ofstream genes_output_file;
 
-        Parameters* parameters;
-        InputData* input_data;
-        PairBaseData* pair_data;
-        std::map<std::string, std::map<uint, float[3]>>* depth;
-        std::unordered_map<std::string, Gene>* genes;
+        std::string pool_id[2];
+        uint min_depth = 0;
 
         void create_output_files();
-        void open_output_file(OutputFile& output_file);
+        void open_output_file(std::ofstream& output_file, std::string& path);
 };
 

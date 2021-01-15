@@ -21,6 +21,9 @@ class InputData {
         std::string current_contig = "";
         uint32_t position = 0;
         uint32_t last_position = 0;
+        bool header = false;
+        bool comment = false;
+        bool new_line = false;
 
         InputData() {}
 };

@@ -1,6 +1,3 @@
-# This file is used to ignore files which are generated
-# ----------------------------------------------------------------------------
-
 *~
 *.autosave
 *.a
@@ -23,7 +20,6 @@ tags
 .DS_Store
 .directory
 *.debug
-Makefile*
 *.prl
 *.app
 moc_*.cpp
@@ -67,14 +63,39 @@ Thumbs.db
 *.pyc
 
 # Binaries
-# --------
 *.dll
 *.exe
-
 
 # Perso
 bin/
 build/
-test/
-*.tsv
+include/*/*.pico
+include/*/*/*.pico
+include/htslib/bgzip
+include/htslib/htsfile
+include/htslib/tabix
+include/htslib/version.h
+include/htslib/test/fieldarith
+include/htslib/test/hfile
+include/htslib/test/hts_endian
+include/htslib/test/pileup
+include/htslib/test/sam
+include/htslib/test/test-bcf-sr
+include/htslib/test/test-bcf-translate
+include/htslib/test/test-parse-reg
+include/htslib/test/test-regidx
+include/htslib/test/test-vcf-api
+include/htslib/test/test-vcf-sweep
+include/htslib/test/test_bgzf
+include/htslib/test/test_index
+include/htslib/test/test_kstring
+include/htslib/test/test_realn
+include/htslib/test/test_str2int
+include/htslib/test/test_view
+include/.htslib_configured
+include/htslib/config.h
+include/htslib/config.log
+include/htslib/config.mk
+include/htslib/config.status
+include/htslib/htslib.pc.tmp
 

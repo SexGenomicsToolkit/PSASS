@@ -1,67 +1,23 @@
 #include "pileup_converter.h"
-#include <string.h>
-#include <stdio.h>
 
-PileupConverter::PileupConverter(int argc, char *argv[]) {
+PileupConverter::PileupConverter(Parameters& parameters) {
 
     /* Constructor for PileupConverter.
      * Handles arguments parsing for the 'convert' subcommand.
      */
 
-    if (argc != 3 and argc != 5) {  // 3 arguments if no output file, 5 arguments if output file
-
-        this->usage();
-        exit(1);
-
-    }
-
-    if (std::string(argv[2]) == "-") {  // Detect if input should be read from stdin
-
-        this->from_stdin = true;  // Boolean indicating reading from stdin
-
+    if (parameters.input_file_path == "-") {
+        this->from_stdin = true;
     } else {
-
-        this->input_file.open(std::string(argv[2]));  // Try to open input file if specified
-
-        if (not this->input_file.is_open()) {
-
-            std::cerr << "Error: cannot open input file (" << std::string(argv[2]) << ")." << std::endl;
-            exit(1);
-
-        }
+        this->input_file.open(parameters.input_file_path);
+        this->input_file_path = parameters.input_file_path;
     }
 
-    if (argc == 5) {
-
-        this->ofile.open(argv[4]);
-
-        if (not this->ofile.is_open()) {  // Try to open output file if specified
-
-            std::cerr << "Error: cannot open output file (" << std::string(argv[4]) << ")." << std::endl;
-            exit(1);
-
-        }
-
-    } else {
-
-        this->to_stdout = true;  // Boolean indicating writing to sdout
-
+    if (parameters.output_file_path != "") {
+        this->to_stdout = false;
+        this->ofile.open(parameters.output_file_path);
+        this->output_file_path = parameters.output_file_path;
     }
-
-}
-
-
-
-void PileupConverter::usage() {
-
-    /* Simple usage output function for PileupConverter.
-     */
-
-    std::cerr << std::endl << "Usage: psass convert <input_file> [ -o <output_file> ]" << std::endl << std::endl ;
-    std::cerr << "Options:" << std::endl << std::endl;
-    std::cerr << "input-file            <string>    Either a samtools pileup output file or \"-\" for stdin" << std::endl;
-    std::cerr << "-o <output_file>      <string>    Write output to <output_file> instead of stdout" << std::endl;
-    std::cerr << std::endl;
 
 }
 
@@ -92,7 +48,7 @@ void PileupConverter::add_counts_to_buffer(uint8_t pool_number) {
             ++this->j;
             this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i]);
             ++this->j;
-            this->obuff[this->j] = '\t';
+            i == 5 ? this->obuff[this->j] = '\t' : this->obuff[this->j] = ',';
             ++this->j;
 
         } else if (this->pool[pool_number][i] > 999) {
@@ -108,7 +64,7 @@ void PileupConverter::add_counts_to_buffer(uint8_t pool_number) {
             ++this->j;
             this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i]);
             ++this->j;
-            this->obuff[this->j] = '\t';
+            i == 5 ? this->obuff[this->j] = '\t' : this->obuff[this->j] = ',';
             ++this->j;
 
         } else if (this->pool[pool_number][i] > 99) {
@@ -121,7 +77,7 @@ void PileupConverter::add_counts_to_buffer(uint8_t pool_number) {
             ++this->j;
             this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i]);
             ++this->j;
-            this->obuff[this->j] = '\t';
+            i == 5 ? this->obuff[this->j] = '\t' : this->obuff[this->j] = ',';
             ++this->j;
 
         } else if (this->pool[pool_number][i] > 9) {
@@ -131,14 +87,14 @@ void PileupConverter::add_counts_to_buffer(uint8_t pool_number) {
             ++this->j;
             this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i]);
             ++this->j;
-            this->obuff[this->j] = '\t';
+            i == 5 ? this->obuff[this->j] = '\t' : this->obuff[this->j] = ',';
             ++this->j;
 
         } else {
 
             this->obuff[this->j] = '0' + static_cast<char>(this->pool[pool_number][i]);
             ++this->j;
-            this->obuff[this->j] = '\t';
+            i == 5 ? this->obuff[this->j] = '\t' : this->obuff[this->j] = ',';
             ++this->j;
 
         }
@@ -156,7 +112,7 @@ void PileupConverter::process_line() {
     this->add_counts_to_buffer(0);  // Add nucleotide counts to output buffer for first pool
     this->add_counts_to_buffer(1);  // Add nucleotide counts to output buffer for second pool
 
-    --j;
+    --this->j;
     this->obuff[this->j] = '\n';  // Add return character at the end of the line
     ++this->j;
 
@@ -169,6 +125,7 @@ void PileupConverter::process_line() {
     // Reset variables
     this->field = 0;
     this->temp = "";
+    this->contig = "";
 
     for (uint i=0; i<6; ++i) {
         this->pool[0][i] = 0;
@@ -188,18 +145,16 @@ void PileupConverter::process_field() {
     switch (this->field) {
 
         case 0:
-            this->obuff[this->j] = '\t';  // Add tab after contig field
-            ++this->j;
-            break;
-
-        case 1:
-            this->obuff[this->j] = '\t';  // Add tab after position field
-            ++this->j;
-            break;
-
-        case 2:
-            this->obuff[this->j] = '\t';  // Add tab after reference base field
-            ++this->j;
+            if (this->contig != this->current_contig or this->current_contig == "") {
+                if (this->current_contig == "") this->current_contig = this->contig;
+                std::string header = "region=" + this->contig + "\tlen=NA\n";
+                if (not this->to_stdout) {
+                    this->ofile.write(header.c_str(), static_cast<uint>(header.size())) ;  // Write contig to output file
+                } else {
+                    fwrite(header.c_str(), static_cast<uint>(header.size()), 1, stdout);   // Write contig to sdout
+                }
+                this->current_contig = this->contig;
+            }
             break;
 
         default:
@@ -334,6 +289,20 @@ void PileupConverter::run() {
      * Reading input streams this way is much faster than using std::getline()
      */
 
+    log("Pileup converter started");
+
+    this->from_stdin ? log("Reading input from stdin") : log("Reading input from <" + this->input_file_path + ">");
+    this->to_stdout ? log("Outputting to stdout") : log("Outputting to <" + this->output_file_path + ">");
+
+    std::string comment = "#Files\t";
+    this->from_stdin ? comment += "stdin\n" : comment += this->input_file_path + "\n";
+    if (not this->to_stdout) {
+        this->ofile.write(comment.c_str(), static_cast<uint>(comment.size()));  // Write to output file
+    } else {
+        fwrite(comment.c_str(), static_cast<uint>(comment.size()), 1, stdout);   // Write to sdout
+    }
+    this->current_contig = this->contig;
+
     do {
 
         if (not this->from_stdin) {
@@ -369,19 +338,7 @@ void PileupConverter::run() {
                     switch (field) {
 
                         case 0:
-                            this->obuff[j] = this->buff[i];  // Field 0 --> scaffold name
-                            ++this->j;
-                            break;
-
-                        case 1:
-                            this->obuff[j] = this->buff[i];  // Field 1 --> position on scaffold
-                            ++this->j;
-                            break;
-
-                        case 2:
-                            this->obuff[j] = this->buff[i];  // Field 2 --> reference allele
-                            ++this->j;
-                            this->ref_allele = this->buff[i];
+                            this->contig += this->buff[i];  // Field 0 --> scaffold name
                             break;
 
                         case 4:
@@ -403,4 +360,5 @@ void PileupConverter::run() {
 
     } while ((not this->from_stdin and this->input_file) or (this->from_stdin and std::cin));
 
+    log("Pileup converter ended successfully");
 }

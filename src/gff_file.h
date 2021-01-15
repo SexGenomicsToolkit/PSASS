@@ -1,4 +1,5 @@
 #pragma once
+#include <fstream>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -39,7 +40,7 @@ class GFFData {
         std::unordered_map<std::string, std::string> transcripts;
 
         GFFData();
-        void read_gff_file(std::istream& input_file);
+        void read_gff_file(std::string& input_file_path);
         void new_contig(InputData& input_data);
 
     private:

@@ -1,58 +1,78 @@
 #pragma once
-#include <algorithm>
 #include <iostream>
-#include <map>
-#include <string>
-#include <vector>
+#include <stdio.h>
+#include "CLI11/CLI11.hpp"
 #include "parameters.h"
-#include "utils.h"
+
+// Failure message function for CLI parser
+inline std::string failure_message(const CLI::App* parser, const CLI::Error& error) {
+
+    std::string message = "";
+
+    if (error.what() == std::string("A subcommand is required")) {
+        message = "\nSubcommand error: missing or invalid subcommand\n\n" + parser->help();
+    } else if (error.get_exit_code() == 106) {  // 106 corresponds to wrong argument type
+        message = "\nArgument error: " + std::string(error.what()) + "\n\n" + parser->help();
+    } else {
+        message = "\nError: " + std::string(error.what()) + "\n\n" + parser->help();
+    }
+
+    return message;
+}
 
 
-class ArgParser {
+// Formatter for CLI
+class CustomFormatter : public CLI::Formatter {
 
     public:
 
-        // Options: flag -> [default, type, help message]
-        std::map<std::string, std::vector<std::string>> options { {"--help", {"0", "bool", "Prints this message"} },
+        uint column_widths[3] {0, 0, 0};  // Will be used to store the maximum width of each column : flags, type, description
+        uint border_width = 4;  // Space between two columns
 
-                                                                  {"--output-fst-pos", {"1", "bool", "Output fst positions"} },
-                                                                  {"--output-fst-win", {"1", "bool", "Output fst sliding window"} },
-                                                                  {"--output-snps-pos", {"1", "bool", "Output snps positions"} },
-                                                                  {"--output-snps-win", {"1", "bool", "Output snps sliding window"} },
-                                                                  {"--output-depth", {"1", "bool", "Output depth for each pool"} },
-                                                                  {"--pool1", {"females", "string", "ID of the first pool in the pileup file"} },
-                                                                  {"--pool2", {"males", "string", "ID of the second pool in the pileup file"} },
+        // Formatter for an Option line, overrides the same function from CLI::Formatter
+        virtual std::string make_option(const CLI::Option* opt, bool is_positional) const {
 
-                                                                  {"--min-depth", {"10", "int", "Minimum depth to consider a site"} },
-                                                                  {"--min-fst", {"0.25", "float", "FST threshold"} },
-                                                                  {"--freq-het", {"0.5", "float", "Frequency of a sex-linked SNP in the heterogametic sex"} },
-                                                                  {"--freq-hom", {"1", "float", "Frequency of a sex-linked SNP in the homogametic sex"} },
-                                                                  {"--range-het", {"0.1", "float", "Range of frequency for a sex-linked SNP in the heterogametic sex"} },
-                                                                  {"--range-hom", {"0.05", "float", "Range of frequency for a sex-linked SNP in the homogametic sex"} },
-                                                                  {"--window-size", {"100000", "int", "Size of the sliding window (in bp)"} },
-                                                                  {"--output-resolution", {"10000", "int", "Output resolution (in bp)"} } ,
-                                                                  {"--group-snps", {"1", "bool", "Group consecutive snps to count them as a single polymorphism"} },
+            std::string option = "", name = "", type = "", description = "", default_value = "", required = "REQUIRED", short_name = "";
+            std::vector<std::string> options;
 
-                                                                  {"--input-file", {"", "string", "Input file (psass convert output or popoolation sync file)"} },
-                                                                  {"--input-format", {"", "string", "Input format (psass/popoolation)"} },
-                                                                  {"--output-prefix", {"", "string", "Full prefix (including path) for output files"} },
-                                                                  {"--gff-file", {"", "string", "GFF file for gene-specific output"} }
-                                                                };
+            // Generate option name, if positional -> just the name, if not positional -> <short_flag, long_flag>
+            if (is_positional) {
+                name = opt->get_name();
+            } else {
+                options = split(opt->get_name(false, true), ",");
+                options.size() == 1 ? name = options[0] : name = options[1] + ", " + options[0];
+            }
+            type = opt->get_type_name();
+            description = opt->get_description();
+            default_value = opt->get_default_str();
 
-        std::vector<std::string> print_order {"#Input", "--input-file", "--input-format", "--pool1", "--pool2", "--gff-file", "#Output", "--output-prefix", "--output-fst-pos",
-                                              "--output-fst-win", "--output-snps-pos", "--output-snps-win", "--output-depth", "#Computations", "--min-depth", "--min-fst",
-                                              "--freq-het", "--range-het", "--freq-hom", "--range-hom", "--window-size", "--output-resolution"};
+            // Generate the help string for this option, adding the right number of spaces after each column based on column_widths
+            option = name + std::string(border_width + column_widths[0] - name.size(), ' ');
+            option += type + std::string(border_width + column_widths[1] - type.size(), ' ');
+            option += description + std::string(border_width + column_widths[2] - description.size(), ' ');
+            if (opt->get_required()) default_value = required;
+            if (default_value != "") option += "[" + default_value + "]";
+            option += "\n";
 
-        ArgParser(int &argc, char **argv);
-        void set_parameters(Parameters& parameters);
-        const std::string get_value(const std::string& setting) const;
-        bool contains(const std::string &option) const ;
-        const std::string set_value(const std::string& field);
-        void usage();
-        void print_parameters();
-        void output_parameters();
+            return option;
+        }
 
-    private:
+        virtual std::string make_description(const CLI::App *app) const {
 
-        std::vector<std::string> fields;
+            return "";
+        }
+
+        void set_column_widths(CLI::App& parser) {
+            std::string tmp = "";
+            for (auto opt: parser.get_subcommands()[0]->get_options()) {
+                tmp = opt->get_name();
+                if (tmp.size() > this->column_widths[0]) this->column_widths[0] = static_cast<uint>(tmp.size());
+                tmp = opt->get_type_name();
+                if (tmp.size() > this->column_widths[1]) this->column_widths[1] = static_cast<uint>(tmp.size());
+                tmp = opt->get_description();
+                if (tmp.size() > this->column_widths[2]) this->column_widths[2] = static_cast<uint>(tmp.size());
+            }
+            this->column_widths[0] += 2;
+        }
+
 };

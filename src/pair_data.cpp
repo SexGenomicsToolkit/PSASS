@@ -42,12 +42,10 @@ void PairBaseData::update(bool output_fst_pos) {
     this->pool2.update();
 
     if (output_fst_pos) {
-
         this->compute_average_freq();
         this->compute_total_pi();
         this->compute_within_pi();
         this->compute_fst();
-
     }
 
 };
