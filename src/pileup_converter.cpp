@@ -341,6 +341,14 @@ void PileupConverter::run() {
                             this->contig += this->buff[i];  // Field 0 --> scaffold name
                             break;
 
+                        case 1:
+                            this->position = fast_stoi(&this->buff[i]);
+                            break;
+
+                        case 2:
+                            this->ref_allele = this->buff[i];
+                            break;
+
                         case 4:
                             this->process_base(this->buff[i], 0);  // Field 4 --> nucleotides in first pool
                             break;

@@ -282,6 +282,11 @@ void Psass::process_contig_end() {
 // Function called on a line from the input file (i.e. when meeting a '\n')
 void Psass::process_line() {
 
+    if (this->input_data.comment) {
+        this->input_data.comment = false;
+        return;
+    }
+
     // If in a header line or the last line of the file, reset values and process end of contig
     if (this->input_data.header or this->input_data.temp == "") {
 
@@ -356,7 +361,7 @@ void Psass::process_line() {
     }
 
     if (this->input_data.header) this->input_data.header = false;
-    if (this->input_data.comment) this->input_data.comment = false;
+
 }
 
 
@@ -418,12 +423,13 @@ void Psass::process_popoolation_subfield() {
 // Function called on a field from the input file (i.e. when meeting a '\t')
 void Psass::process_psass_field() {
 
+    if (this->input_data.comment) return;
+
     switch (this->input_data.field) {
 
         case 0:
             if (this->input_data.temp.substr(0, 7) == "region=") {
                 this->input_data.contig = this->input_data.temp.substr(7, this->input_data.temp.size() - 7);
-                --this->total_bases;
                 this->input_data.header = true;
                 this->contig_lengths[this->input_data.contig] = 0;
             } else {

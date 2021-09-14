@@ -23,7 +23,7 @@ class InputData {
         uint32_t last_position = 0;
         bool header = false;
         bool comment = false;
-        bool new_line = false;
+        bool new_line = true;
 
         InputData() {}
 };
